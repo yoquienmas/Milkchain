@@ -1,4 +1,4 @@
-import { createContext } from 'react';
+// import { createContext } from 'react';
 
-// Solo el contexto
-export const AuthContext = createContext();
+// // Solo el contexto
+// export const AuthContext = createContext();
