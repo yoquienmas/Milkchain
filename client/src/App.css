@@ -153,3 +153,57 @@ input {
   flex-direction: column;
   min-height: 100vh;
 }
+
+/* Contenedor principal para centrar todo */
+.register-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 50px 20px;
+  min-height: 70vh; /* Para que no quede pegado al footer */
+}
+
+/* El formulario como una tarjeta */
+.register-form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 450px; /* Ancho fijo para que se vea ordenado */
+  background: white;
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  gap: 15px; /* Espacio entre cada input */
+}
+
+.register-form h1 {
+  text-align: center;
+  color: var(--texto-oscuro);
+  margin-bottom: 20px;
+  font-size: 1.8rem;
+}
+
+/* Inputs más elegantes */
+.register-form input {
+  width: 100%; /* Ahora cada uno ocupa su propia línea */
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 1rem;
+  box-sizing: border-box; /* Evita que el padding agrande el input */
+}
+
+.register-form input:focus {
+  outline: none;
+  border-color: var(--verde-milkchain);
+  box-shadow: 0 0 5px rgba(125, 196, 125, 0.3);
+}
+
+/* Botón de registro que ocupe todo el ancho */
+.register-form .btn-green {
+  margin-top: 10px;
+  width: 100%;
+  padding: 14px;
+  font-size: 1.1rem;
+}

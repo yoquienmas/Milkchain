@@ -31,5 +31,4 @@ function App() {
   );
 }
 
-// ¡ESTA ES LA LÍNEA QUE TE FALTA!
 export default App;
