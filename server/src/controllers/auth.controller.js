@@ -2,27 +2,32 @@ import { pool } from "../db.js";
 import bcrypt from "bcryptjs"; 
 import { createAccessToken } from "../libs/jwt.js";
 
-// --- LOGIN ---
+// --- LOGIN ACTUALIZADO ---
 export const login = async (req, res) => {
-    const { email, pass } = req.body; // Cambié 'pass' a 'pass' para que coincida con tu registro
+    const { email, pass } = req.body;
 
     try {
-        // Buscamos en la tabla 'usuario' (en minúsculas como en tu INSERT)
-        const [rows] = await pool.query("SELECT * FROM usuario WHERE email = ?", [email]);
+        // Hacemos un JOIN para traer el nombre del rol directamente
+        const [rows] = await pool.query(
+            `SELECT u.*, r.nombre as rol 
+             FROM usuario u
+             LEFT JOIN rol_usuario ru ON u.id = ru.id_Usuario
+             LEFT JOIN rol r ON ru.id_Rol = r.id
+             WHERE u.email = ?`, 
+            [email]
+        );
         
         if (rows.length === 0) return res.status(400).json(["El correo no existe"]);
 
         const user = rows[0];
-
-        // Comparación de contraseña (usando bcrypt porque en el register las encriptamos)
         const isMatch = await bcrypt.compare(pass, user.pass);
         if (!isMatch) return res.status(400).json(["Contraseña incorrecta"]);
 
-        const token = await createAccessToken({ id: user.id });
+        const token = await createAccessToken({ id: user.id, rol: user.rol }); // Agregamos rol al token
 
         res.cookie("token", token, {
             httpOnly: true,
-            secure: false, // Ponelo en true si usas HTTPS
+            secure: false,
             sameSite: 'lax'
         });
 
@@ -30,6 +35,7 @@ export const login = async (req, res) => {
             id: user.id,
             nombre: user.nombre,
             email: user.email,
+            rol: user.rol || "Cliente" // Si no tiene rol, por defecto es Cliente
         });
 
     } catch (error) {
@@ -37,36 +43,32 @@ export const login = async (req, res) => {
     }
 };
 
-// --- REGISTER ---
+// --- REGISTER ACTUALIZADO ---
 export const register = async (req, res) => {
     const { nombre, apellido, dni, telefono, email, pass } = req.body;
 
     try {
-        // 1. Encriptar la contraseña
         const passHash = await bcrypt.hash(pass, 10);
-
-        // 2. Insertar en la tabla 'usuario'
-        // IMPORTANTE: Asegurate que la columna en MySQL se llame 'pass'
         const [rows] = await pool.query(
             "INSERT INTO usuario (nombre, apellido, dni, telefono, email, pass) VALUES (?, ?, ?, ?, ?, ?)",
             [nombre, apellido, dni, telefono, email, passHash]
         );
 
-        // 3. Crear token para que quede logueado de una vez
-        const token = await createAccessToken({ id: rows.insertId });
+        const userId = rows.insertId;
+
+        // ASIGNACIÓN AUTOMÁTICA DE ROL: Por defecto ID 2 (Cliente)
+        await pool.query(
+            "INSERT INTO rol_usuario (id_Usuario, id_Rol, activo) VALUES (?, ?, ?)",
+            [userId, 2, 1] 
+        );
+
+        const token = await createAccessToken({ id: userId, rol: "Cliente" });
         res.cookie("token", token);
 
-        res.json({ 
-            id: rows.insertId, 
-            nombre, 
-            email 
-        });
+        res.json({ id: userId, nombre, email, rol: "Cliente" });
 
     } catch (error) {
-        // Si el email ya existe, MySQL tirará un error
-        if (error.code === 'ER_DUP_ENTRY') {
-            return res.status(400).json(["El correo ya está en uso"]);
-        }
+        if (error.code === 'ER_DUP_ENTRY') return res.status(400).json(["El correo ya está en uso"]);
         res.status(500).json({ message: error.message });
     }
 };

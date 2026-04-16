@@ -1,9 +1,7 @@
-import { createContext, useState, useContext } from "react";
+import { createContext, useState, useContext, useEffect } from "react";
 
-// 1. Creamos el contexto
 export const AuthContext = createContext();
 
-// 2. Hook personalizado
 // eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -13,24 +11,39 @@ export const useAuth = () => {
   return context;
 };
 
-// 3. Componente Provider
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // 1. Al iniciar, intentamos recuperar el usuario del localStorage
+  const [user, setUser] = useState(() => {
+    const savedUser = localStorage.getItem("milkchain_user");
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
 
-  // Función para actualizar el estado global
+  // 2. Definimos isAuthenticated basado en si existe el objeto user
+  const [isAuthenticated, setIsAuthenticated] = useState(!!user);
+
+  // 3. Efecto para mantener sincronizado isAuthenticated si el user cambia
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem("milkchain_user", JSON.stringify(user));
+      setIsAuthenticated(true);
+    } else {
+      localStorage.removeItem("milkchain_user");
+      setIsAuthenticated(false);
+    }
+  }, [user]);
+
   const signin = (userData) => {
-    console.log("AuthProvider: Actualizando usuario y estado...");
-    setUser(userData);
-    setIsAuthenticated(true);
+    console.log("AuthProvider: Iniciando sesión...");
+    setUser(userData); // El useEffect se encarga de guardar en localStorage
   };
 
   const logout = () => {
-  setUser(null);
-  setIsAuthenticated(false);
-  // Si querés usar la redirección nativa del navegador:
-  window.location.href = "/login"; // O "/" para la página principal
-};
+    console.log("AuthProvider: Cerrando sesión...");
+    setUser(null);
+    // Limpiamos también el carrito al cerrar sesión para seguridad
+    localStorage.removeItem("milkchain_cart");
+    window.location.href = "/login";
+  };
 
   return (
     <AuthContext.Provider value={{ user, isAuthenticated, signin, logout }}>
