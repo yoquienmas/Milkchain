@@ -10,8 +10,6 @@ export default function Navbar() {
         <Link to="/">MilkChain</Link>
       </div>
       <ul className="navbar-links">
-        <li><Link to="/home">Inicio</Link></li>
-        <li><Link to="/catalogue">Catálogo</Link></li>
         {isAuthenticated ? (
           <>
             <li><span>Hola, {user?.nombre}</span></li>

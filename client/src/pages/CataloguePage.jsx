@@ -1,74 +1,111 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { useCart } from "../context/CartContext"; // Hook correcto para el carrito
+import ProductCard from "../components/ProductCard";
+import { useNavigate } from "react-router-dom";
 
 function CataloguePage() {
-  const [products, setProducts] = useState([]);
-  const { addToCart } = useCart(); // Extraemos la función del contexto del carrito
+  const [productos, setProductos] = useState([]);
+  const [busqueda, setBusqueda] = useState("");
+  const navigate = useNavigate();
 
+  // 1. Cargar productos desde tu backend
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchProductos = async () => {
       try {
-        // Ajustado al puerto 3000 que muestra tu terminal
-        const res = await axios.get("http://localhost:3000/api/products", {
-          withCredentials: true,
-        });
-        setProducts(res.data);
+        const res = await axios.get("http://localhost:3000/api/productos"); // Ajusta tu ruta
+        setProductos(res.data);
       } catch (error) {
-        console.error("Error al cargar productos:", error);
+        console.error("Error al cargar productos", error);
       }
     };
-    fetchProducts();
+    fetchProductos();
   }, []);
 
-  // Función para manejar la subida al carrito con la cantidad elegida
-  const handleAddToCart = (product, quantity) => {
-    addToCart({ ...product, quantity: parseInt(quantity) });
-  };
+  // 2. Lógica de búsqueda filtrada
+  const productosFiltrados = productos.filter((p) =>
+    p.nombre.toLowerCase().includes(busqueda.toLowerCase())
+  );
 
   return (
-    <div className="catalogue-container">
-      <div className="search-bar" style={{ marginBottom: '20px' }}>
-        <input type="text" placeholder="Buscar producto..." className="search-input" />
-        <button className="btn-green">Buscar</button>
+    <div className="catalogue-container" style={{ backgroundColor: "#fff", minHeight: "100vh" }}>
+      
+      {/* Cabecera Gris - Agregar/Buscar */}
+      <header style={{ backgroundColor: "#ddd", padding: "20px", textAlign: "center" }}>
+        <h1 style={{ margin: 0, fontSize: "1.8rem", color: "#333" }}>
+          Agregar/buscar <br /> producto
+        </h1>
+      </header>
+
+      {/* Barra de Búsqueda */}
+      <div style={{ display: "flex", justifyContent: "center", padding: "20px", gap: "10px" }}>
+        <input
+          type="text"
+          placeholder="Buscar producto"
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.target.value)}
+          style={{
+            padding: "10px",
+            width: "300px",
+            border: "1px solid #ccc",
+            borderRadius: "4px"
+          }}
+        />
+        <button className="btn-green" style={{ padding: "10px 20px" }}>
+          Buscar
+        </button>
       </div>
 
-      <div className="products-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '20px' }}>
-        {products.map((product) => (
-          <div key={product.id} className="product-card" style={{ border: '1px solid #ddd', padding: '15px', borderRadius: '8px' }}>
-            {/* Imagen del producto desde tu DB o URL externa */}
-            <img 
-              src={product.image || 'https://via.placeholder.com/150'} 
-              alt={product.name} 
-              style={{ width: '100%', height: '150px', objectFit: 'cover' }} 
-            />
-            <h3>{product.name}</h3>
-            <p>{product.description}</p>
-            <span className="price" style={{ fontWeight: 'bold', fontSize: '1.2em' }}>
-              ${product.price}
-            </span>
-
-            <div className="card-actions" style={{ marginTop: '10px', display: 'flex', gap: '10px' }}>
-              <input 
-                type="number" 
-                id={`qty-${product.id}`} 
-                defaultValue={1} 
-                min="1" 
-                style={{ width: '50px' }} 
-              />
-              <button 
-                onClick={() => {
-                  const qty = document.getElementById(`qty-${product.id}`).value;
-                  handleAddToCart(product, qty);
-                }} 
-                className="btn-green"
-              >
-                Agregar al carrito
-              </button>
-            </div>
-          </div>
+      {/* Grilla de Productos */}
+      <div 
+        className="product-grid" 
+        style={{ 
+          display: "grid", 
+          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 350px))", 
+          gap: "30px", 
+          padding: "20px",
+          justifyContent: "center"
+        }}
+      >
+        {productosFiltrados.map((prod) => (
+          <ProductCard key={prod.id} producto={prod} />
         ))}
       </div>
+
+      {/* Botones de Navegación Inferiores */}
+      <footer style={{ 
+        display: "flex", 
+        justifyContent: "space-between", 
+        padding: "40px 20px",
+        marginTop: "20px" 
+      }}>
+        <button 
+          onClick={() => navigate("/home")}
+          style={{ 
+            backgroundColor: "#81c784", 
+            color: "white", 
+            border: "none", 
+            padding: "10px 20px", 
+            borderRadius: "4px",
+            cursor: "pointer"
+          }}
+        >
+          Volver al inicio
+        </button>
+        
+        <button 
+          onClick={() => navigate("/cart")}
+          style={{ 
+            backgroundColor: "#81c784", 
+            color: "white", 
+            border: "none", 
+            padding: "10px 20px", 
+            borderRadius: "4px",
+            cursor: "pointer"
+          }}
+        >
+          Comprar
+        </button>
+      </footer>
     </div>
   );
 }

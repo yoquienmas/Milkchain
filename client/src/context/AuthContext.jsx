@@ -1,47 +1,39 @@
 import { createContext, useState, useContext } from "react";
-import axios from "axios";
 
-const AuthContext = createContext();
+// 1. Creamos el contexto
+export const AuthContext = createContext();
 
-// Esta línea de abajo es la que elimina el error de ESLint:
+// 2. Hook personalizado
 // eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) throw new Error("useAuth debe usarse dentro de un AuthProvider");
+  if (!context) {
+    throw new Error("useAuth debe usarse dentro de un AuthProvider");
+  }
   return context;
 };
 
+// 3. Componente Provider
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  const signup = async (values) => {
-    try {
-      const res = await axios.post("http://localhost:3000/api/register", values);
-      setUser(res.data);
-      setIsAuthenticated(true);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const signin = async (user) => {
-    try {
-      const res = await axios.post("http://localhost:3000/api/login", user);
-      setUser(res.data);
-      setIsAuthenticated(true);
-    } catch (error) {
-      console.log(error);
-    }
+  // Función para actualizar el estado global
+  const signin = (userData) => {
+    console.log("AuthProvider: Actualizando usuario y estado...");
+    setUser(userData);
+    setIsAuthenticated(true);
   };
 
   const logout = () => {
-    setUser(null);
-    setIsAuthenticated(false);
-  };
+  setUser(null);
+  setIsAuthenticated(false);
+  // Si querés usar la redirección nativa del navegador:
+  window.location.href = "/login"; // O "/" para la página principal
+};
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, signup, signin, logout }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, signin, logout }}>
       {children}
     </AuthContext.Provider>
   );

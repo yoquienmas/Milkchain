@@ -1,12 +1,10 @@
-// app.js - CONFIGURACIÓN FINAL
 import express from 'express'
 import morgan from "morgan";
 import 'dotenv/config';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-
-
-
+import productRoutes from './routes/product.routes.js';
+import authRoutes from './routes/auth.routes.js'; 
 const app = express();
 
 app.use(cors({
@@ -17,5 +15,8 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(cookieParser());
 
-export default app;
+app.use('/api', authRoutes);
+app.use('/api', productRoutes); 
 
+// QUITAMOS el app.listen de acá para que no choque con index.js
+export default app;

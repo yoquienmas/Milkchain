@@ -1,33 +1,38 @@
 import { useForm } from "react-hook-form";
-import { useAuth } from "../context/AuthContext";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-function RegisterPage() {
- const { register, handleSubmit } = useForm();  
-  const { signup } = useAuth();
+export default function RegisterPage() {
+  const { register, handleSubmit } = useForm();
   const navigate = useNavigate();
 
   const onSubmit = handleSubmit(async (values) => {
-    await signup(values);
-    navigate("/login"); // Una vez registrado, al login
+    try {
+      // Enviamos los datos al servidor de Node
+      const res = await axios.post("http://localhost:3000/api/register", values);
+      console.log("Usuario registrado:", res.data);
+      
+      // Si todo sale bien, lo mandamos al login
+      navigate("/login");
+   } catch (error) {
+  // Cambiá el console.log para ver el mensaje real que viene del servidor
+  console.error("Error detallado:", error.response?.data);
+  alert("Error: " + (error.response?.data?.message || "Error interno del servidor"));
+    }
   });
 
   return (
     <div className="register-container">
       <form onSubmit={onSubmit} className="register-form">
-        <h1>Crear Cuenta en MilkChain</h1>
-        
-        <input type="text" {...register("nombre", { required: true })} placeholder="Nombre" />
-        <input type="text" {...register("apellido", { required: true })} placeholder="Apellido" />
-        <input type="number" {...register("dni", { required: true })} placeholder="DNI" />
-        <input type="number" {...register("telefono", { required: true })} placeholder="Teléfono" />
-        <input type="email" {...register("email", { required: true })} placeholder="Correo Electrónico" />
-        <input type="password" {...register("pass", { required: true })} placeholder="Contraseña" />
-
+        <h1>Crear Cuenta</h1>
+        <input type="text" {...register("nombre")} placeholder="Nombre" required />
+        <input type="text" {...register("apellido")} placeholder="Apellido" required />
+        <input type="number" {...register("dni")} placeholder="DNI" required />
+        <input type="number" {...register("telefono")} placeholder="Teléfono" required />
+        <input type="email" {...register("email")} placeholder="Correo Electrónico" required />
+        <input type="password" {...register("password")} placeholder="Contraseña" required />
         <button type="submit" className="btn-green">Registrarse</button>
       </form>
     </div>
   );
 }
-
-export default RegisterPage;

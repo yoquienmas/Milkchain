@@ -1,14 +1,15 @@
-// // src/routes/product.routes.js - CORREGIDO
-// import { Router } from "express";
-// import { authRequired } from "../middlewares/validateToken.js";
-// import { getProducts, getProduct, createProduct, updateProduct, deleteProduct } from "../controllers/product.controller.js";
+import { Router } from "express";
+import { pool } from "../db.js"; // Tu conexión a MySQL
 
-// const router = Router();
+const router = Router();
 
-// router.get("/", getProducts);                     
-// router.get("/:id", getProduct);                  
-// router.post("/", authRequired, createProduct);   
-// router.put("/:id", authRequired, updateProduct); 
-// router.delete("/:id", authRequired, deleteProduct); 
+router.get("/productos", async (req, res) => {
+  try {
+    const [rows] = await pool.query("SELECT * FROM Producto");
+    res.json(rows);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+});
 
-// export default router;
+export default router;

@@ -1,4 +1,4 @@
-import { createContext, useState, useContext } from "react";
+import { createContext, useState, useContext, useEffect } from "react";
 
 const CartContext = createContext();
 
@@ -10,17 +10,34 @@ export const useCart = () => {
 };
 
 export const CartProvider = ({ children }) => {
-  const [cart, setCart] = useState([]);
+  // 1. Al iniciar, intentamos cargar lo que haya en el almacenamiento local
+  const [cart, setCart] = useState(() => {
+    const savedCart = localStorage.getItem("milkchain_cart");
+    return savedCart ? JSON.parse(savedCart) : [];
+  });
+
+  // 2. Cada vez que el carrito cambie, lo guardamos automáticamente
+  useEffect(() => {
+    localStorage.setItem("milkchain_cart", JSON.stringify(cart));
+  }, [cart]);
 
   const addToCart = (product) => {
-    setCart([...cart, product]);
+    setCart((prev) => {
+      const exists = prev.find(item => item.id === product.id);
+      if (exists) {
+        // Actualiza la cantidad si ya existe
+        return prev.map(item => 
+          item.id === product.id ? { ...item, cantidad: product.cantidad } : item
+        );
+      }
+      return [...prev, product];
+    });
   };
 
   const removeFromCart = (id) => {
-    setCart(cart.filter(item => item.id !== id));
+    setCart((prev) => prev.filter(item => item.id !== id));
   };
 
-  // Calculamos el total (precio * cantidad) usando los nombres de tu tabla Producto
   const total = cart.reduce((acc, item) => acc + (item.precio * (item.cantidad || 1)), 0);
 
   return (
