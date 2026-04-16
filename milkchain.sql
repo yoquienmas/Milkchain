@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 14-04-2026 a las 04:24:14
+-- Tiempo de generación: 16-04-2026 a las 06:04:46
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -229,8 +229,17 @@ CREATE TABLE `producto` (
   `imagen` varchar(255) DEFAULT NULL,
   `activo` tinyint(1) DEFAULT NULL,
   `id_Categoria` int(11) DEFAULT NULL,
-  `id_Marca` int(11) DEFAULT NULL
+  `id_Marca` int(11) DEFAULT NULL,
+  `f_Creacion` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `producto`
+--
+
+INSERT INTO `producto` (`id`, `nombre`, `descripcion`, `precio`, `stock`, `imagen`, `activo`, `id_Categoria`, `id_Marca`, `f_Creacion`) VALUES
+(1, 'Queso Manchego', 'Queso tradicional español de leche de oveja.', 15.99, 50, '/images/queso-manchego.jpg', NULL, NULL, NULL, '2026-04-15 21:18:47'),
+(2, 'Queso Parmesano', 'Queso italiano duro de leche de vaca, perfecto para pastas.', 18.75, 30, '/images/queso-parmesano.jpg', NULL, NULL, NULL, '2026-04-15 21:18:47');
 
 -- --------------------------------------------------------
 
@@ -289,6 +298,13 @@ CREATE TABLE `usuario` (
   `f_Creacion` datetime DEFAULT NULL,
   `f_Modif` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `usuario`
+--
+
+INSERT INTO `usuario` (`id`, `email`, `pass`, `dni`, `nombre`, `apellido`, `activo`, `telefono`, `f_Creacion`, `f_Modif`) VALUES
+(1, 'admin@gmail.com', '$2b$10$n0p/fmwIjb7caj2/s5fwfebETwR5gOwX7pFy8ww4mJ3vj/T6d55a.', 0, 'admin', 'principal', NULL, 0, NULL, NULL);
 
 --
 -- Índices para tablas volcadas
@@ -519,7 +535,7 @@ ALTER TABLE `pedidodetalles`
 -- AUTO_INCREMENT de la tabla `producto`
 --
 ALTER TABLE `producto`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de la tabla `provincia`
@@ -543,7 +559,7 @@ ALTER TABLE `rol_usuario`
 -- AUTO_INCREMENT de la tabla `usuario`
 --
 ALTER TABLE `usuario`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- Restricciones para tablas volcadas
