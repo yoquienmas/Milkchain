@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 16-04-2026 a las 06:04:46
+-- Tiempo de generación: 16-04-2026 a las 19:02:59
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -267,6 +267,14 @@ CREATE TABLE `rol` (
   `estado` tinyint(1) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Volcado de datos para la tabla `rol`
+--
+
+INSERT INTO `rol` (`id`, `nombre`, `descripcion`, `estado`) VALUES
+(1, 'Administrador', 'Perfil con acceso total a la gestión de productos, pedidos y usuarios.', 1),
+(2, 'Cliente', 'Perfil para realizar compras y ver historial de pedidos.', 1);
+
 -- --------------------------------------------------------
 
 --
@@ -279,6 +287,13 @@ CREATE TABLE `rol_usuario` (
   `id_Usuario` int(11) DEFAULT NULL,
   `id_Rol` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `rol_usuario`
+--
+
+INSERT INTO `rol_usuario` (`id`, `activo`, `id_Usuario`, `id_Rol`) VALUES
+(1, 1, 1, 1);
 
 -- --------------------------------------------------------
 
@@ -547,13 +562,13 @@ ALTER TABLE `provincia`
 -- AUTO_INCREMENT de la tabla `rol`
 --
 ALTER TABLE `rol`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de la tabla `rol_usuario`
 --
 ALTER TABLE `rol_usuario`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `usuario`
