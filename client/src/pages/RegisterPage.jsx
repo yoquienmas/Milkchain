@@ -1,132 +1,38 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
-import '../styles/Auth.css';
+import { useForm } from "react-hook-form";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
-const API_URL = 'http://localhost:3000/api';
+export default function RegisterPage() {
+  const { register, handleSubmit } = useForm();
+  const navigate = useNavigate();
 
-function RegisterPage() {
-    const [formData, setFormData] = useState({
-        username: '',
-        email: '',
-        password: '',
-        confirmPassword: '',
-    });
-    const [error, setError] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const navigate = useNavigate();
+  const onSubmit = handleSubmit(async (values) => {
+    try {
+      // Enviamos los datos al servidor de Node
+      const res = await axios.post("http://localhost:3000/api/register", values);
+      console.log("Usuario registrado:", res.data);
+      
+      // Si todo sale bien, lo mandamos al login
+      navigate("/login");
+   } catch (error) {
+  // Cambiá el console.log para ver el mensaje real que viene del servidor
+  console.error("Error detallado:", error.response?.data);
+  alert("Error: " + (error.response?.data?.message || "Error interno del servidor"));
+    }
+  });
 
-    const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError(null);
-
-        if (formData.password !== formData.confirmPassword) {
-            setError('Las contraseñas no coinciden.');
-            return;
-        }
-
-        setLoading(true);
-
-        try {
-            await axios.post(`${API_URL}/auth/register`, {
-                username: formData.username,
-                email: formData.email,
-                password: formData.password
-            });
-            
-            alert('¡Registro exitoso! Por favor, inicia sesión.');
-            navigate('/login');
-        } catch (err) {
-            const errorMessage = err.response?.data?.message || 'Error desconocido al registrar.';
-            setError(errorMessage);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    return (
-        <div className="auth-container">
-            <div className="auth-card">               
-                <form onSubmit={handleSubmit}>
-                    {/* Mensaje de error */}
-                    {error && <div className="auth-error">{error}</div>}
-                    
-                    {/* Campo de nombre de usuario */}
-                    <div className="form-group">
-                        <label htmlFor="username">Nombre de Usuario</label>
-                        <input
-                            type="text"
-                            id="username"
-                            name="username"
-                            value={formData.username}
-                            onChange={handleChange}
-                            required
-                            placeholder="Nombre de usuario"
-                        />
-                    </div>
-                    
-                    {/* Campo de email */}
-                    <div className="form-group">
-                        <label htmlFor="email">Correo electrónico</label>
-                        <input
-                            type="email"
-                            id="email"
-                            name="email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            required
-                            placeholder="tu@email.com"
-                        />
-                    </div>
-                    
-                    {/* Campo de contraseña */}
-                    <div className="form-group">
-                        <label htmlFor="password">Contraseña</label>
-                        <input
-                            type="password"
-                            id="password"
-                            name="password"
-                            value={formData.password}
-                            onChange={handleChange}
-                            required
-                            placeholder="••••••••"
-                        />
-                    </div>
-                    
-                    {/* Campo de confirmar contraseña */}
-                    <div className="form-group">
-                        <label htmlFor="confirmPassword">Confirmar Contraseña</label>
-                        <input
-                            type="password"
-                            id="confirmPassword"
-                            name="confirmPassword"
-                            value={formData.confirmPassword}
-                            onChange={handleChange}
-                            required
-                            placeholder="••••••••"
-                        />
-                    </div>
-                    
-                    {/* Botón de registro */}
-                    <button type="submit" className="auth-button" disabled={loading}>
-                        {loading ? 'REGISTRANDO...' : 'CREAR CUENTA'}
-                    </button>
-                </form>
-
-                {/* Link para volver al login */}
-                <div className="auth-links">
-                    <div className="auth-divider"></div>
-                    <Link to="/login" className="auth-link-main">
-                        ¿Ya tienes cuenta? INICIAR SESIÓN
-                    </Link>
-                </div>
-            </div>
-        </div>
-    );
+  return (
+    <div className="register-container">
+      <form onSubmit={onSubmit} className="register-form">
+        <h1>Crear Cuenta</h1>
+        <input type="text" {...register("nombre")} placeholder="Nombre" required />
+        <input type="text" {...register("apellido")} placeholder="Apellido" required />
+        <input type="number" {...register("dni")} placeholder="DNI" required />
+        <input type="number" {...register("telefono")} placeholder="Teléfono" required />
+        <input type="email" {...register("email")} placeholder="Correo Electrónico" required />
+        <input type="password" {...register("password")} placeholder="Contraseña" required />
+        <button type="submit" className="btn-green">Registrarse</button>
+      </form>
+    </div>
+  );
 }
-
-export default RegisterPage;
