@@ -1,0 +1,92 @@
+# Milkchain
+
+**Desarrollo evolutivo grupal del trabajo de campo - Ingenieria II**
+---
+
+## Documentacion adjunta
+
+Se puede consultar el informe del proyecto descargandolo desde como PDF o tambien se puede visualizar desde el docs donde fue trabajado:  
+[TC_E1_Grupo18_ISII (PDF)](https://github.com/yoquienmas/Milkchain/blob/main/Tp%20integrador%20ingenieria%202.pdf)
+[TC_E1_Grupo18_ISII](https://docs.google.com/document/d/1AhuGLTd8zotH78pUz21tR1wL1b0vp-mbNQAwEmdIoNQ/edit?tab=t.0)
+
+---
+
+## Indice
+
+- [Requisitos de instalacion](#requisitos-de-instalacion)
+- [Instrucciones de instalacion](#instrucciones-de-instalacion)
+- [Datos de prueba](#datos-de-prueba)
+- [Notas adicionales](#notas-adicionales)
+
+---
+
+## Requisitos de instalacion
+
+- [Node.js](version 18 o superior recomendada).
+- [npm]
+- [MySQL, PostgreSQL o similar).
+- [Git](https://git-scm.com/).
+
+---
+
+## Instrucciones de instalacion
+
+1. **Clonar el repositorio**
+
+   git clone https://github.com/yoquienmas/Milkchain
+   cd milkchain
+
+2. **Instalar dependencias**
+
+   CLiente:  
+   -cd client
+   -npm install
+
+   Servidor:
+   -cd ../server
+   -npm install
+
+3. **Configurar variables de entorno**
+
+   - Crear o editar el archivo .env dentro de la carpeta server
+   - Configurar los datos de conexión a la base de datos
+   - PORT=3000
+	CLIENT_URL=http://localhost:5173/
+	JWT
+	TOKEN_SECRET=contraseña_secreta_unica_123
+	MySQL
+	DB_HOST=localhost
+	DB_USER=root
+	DB_PASSWORD=
+	DB_NAME=MilkChain
+	DB_PORT=3306
+
+4. **Configurar la base de datos**
+
+   - Importar el archivo milkchain.sql en tu gestor de base de datos.
+   - Verificar que las credenciales coincidan con las del .env
+
+5. **Ejecución del proyecto**
+
+   -Iniciar el backend
+    -cd server
+    -npm run dev
+
+   -Iniciar el frontend
+    -cd client
+    -npm run dev
+    -Abrir en el navegador
+     http://localhost:5173
+---
+
+## Datos de prueba
+
+- **Correo de administrador:** `admin@gmail.com`
+- **Contraseña:** `admin123`
+- Se cargan tambien **dos productos de prueba** en la base de datos.
+
+---
+
+> Proyecto desarrollado con por el grupo 22, equipo de **MILKCHAIN**.
+- [@Diaz Cristian Leandro](https://github.com/crisstih)
+- [@Fernandez Gotusso, Maria Daniela](https://github.com/yoquienmas)
