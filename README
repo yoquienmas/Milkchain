@@ -1,34 +1,31 @@
+-----
+
 # 🥛 Milkchain
 
-> **Desarrollo evolutivo grupal del trabajo de campo - Ingeniería de Software II**
-> Proyecto enfocado en la trazabilidad y gestión para la industria láctea.
+> **Desarrollo evolutivo grupal del trabajo de campo - Ingeniería de Software II** \> Proyecto enfocado en la trazabilidad y gestión para la industria láctea.
 
-![Versión](https://img.shields.io/badge/version-1.0.0-blue.svg)
-![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)
-![MySQL](https://img.shields.io/badge/Database-MySQL-orange.svg)
-![License](https://img.shields.io/badge/License-MIT-yellow.svg)
-
----
+-----
 
 ## 📑 Documentación Relacionada
 
-Se puede consultar el informe técnico y el avance del proyecto en los siguientes enlaces:
+Puedes consultar el informe técnico y el avance detallado en los siguientes enlaces:
 
-* 📄 **Informe del proyecto (PDF):** [Descargar archivo](https://github.com/yoquienmas/Milkchain/blob/main/Tp%20integrador%20ingenieria%202.pdf)
-* 🌐 **Documento de trabajo (Google Docs):** [Ver en línea](https://docs.google.com/document/d/1AhuGLTd8zotH78pUz21tR1wL1b0vp-mbNQAwEmdIoNQ/edit?tab=t.0)
+  * 📄 **Informe del proyecto (PDF):** [Descargar archivo](https://github.com/yoquienmas/Milkchain/blob/main/Tp%20integrador%20ingenieria%202.pdf)
+  * 🌐 **Documento de trabajo (Google Docs):** [Ver en línea](https://docs.google.com/document/d/1AhuGLTd8zotH78pUz21tR1wL1b0vp-mbNQAwEmdIoNQ/edit?tab=t.0)
 
----
+-----
 
 ## 🧭 Índice
 
-1. [Requisitos de instalación](#-requisitos-de-instalación)
-2. [Instrucciones de instalación](#-instrucciones-de-instalación)
-3. [Variables de entorno](#-variables-de-entorno)
-4. [Configuración de la base de datos](#-configuración-de-la-base-de-datos)
-5. [Ejecución del proyecto](#-ejecución-del-proyecto)
-6. [Datos de prueba](#-datos-de-prueba)
+1.  [Tecnologías Utilizadas](https://www.google.com/search?q=%23%EF%B8%8F-tecnolog%C3%ADas-utilizadas)
+2.  [Requisitos de Instalación](https://www.google.com/search?q=%23-requisitos-de-instalaci%C3%B3n)
+3.  [Instrucciones de Instalación](https://www.google.com/search?q=%23-instrucciones-de-instalaci%C3%B3n)
+4.  [Variables de Entorno](https://www.google.com/search?q=%23-variables-de-entorno)
+5.  [Configuración de la Base de Datos](https://www.google.com/search?q=%23-configuraci%C3%B3n-de-la-base-de-datos)
+6.  [Ejecución del Proyecto](https://www.google.com/search?q=%23-ejecuci%C3%B3n-del-proyecto)
+7.  [Datos de Prueba](https://www.google.com/search?q=%23-datos-de-prueba)
 
----
+-----
 
 ## 🛠️ Tecnologías Utilizadas
 
@@ -39,38 +36,47 @@ Se puede consultar el informe técnico y el avance del proyecto en los siguiente
 | **Base de Datos** | MySQL |
 | **Autenticación** | JWT (JSON Web Tokens) |
 
----
+-----
 
 ## 💻 Requisitos de instalación
 
-* **Node.js**: Versión 18 o superior recomendada.
-* **npm**: Gestor de paquetes de Node.
-* **Base de datos**: MySQL, PostgreSQL o similar.
-* **Git**: Para el control de versiones.
+  * **Node.js**: Versión 18 o superior recomendada.
+  * **npm**: Gestor de paquetes de Node.
+  * **Base de datos**: MySQL.
+  * **Git**: Para el control de versiones.
 
----
+-----
 
 ## 🚀 Instrucciones de instalación
 
-### 1. Clonar el repositorio
+### 1\. Clonar el repositorio
+
 ```bash
-git clone [https://github.com/yoquienmas/Milkchain](https://github.com/yoquienmas/Milkchain)
+git clone https://github.com/yoquienmas/Milkchain
 cd Milkchain
+```
 
-### 2. Configurar el Cliente
+### 2\. Configurar el Cliente (Frontend)
+
+```bash
+cd client
+npm install
+```
+
+### 3\. Configurar el Servidor (Backend)
+
 ```bash
 cd ../server
 npm install
+```
 
-### 3. Configurar el Servidor (Backend)
-```bash
-cd ../server
-npm install
+-----
 
 ## 🔑 Variables de Entorno
-Dentro de la carpeta server, crea un archivo .env y pega la siguiente configuración:
 
-Fragmento de código
+Dentro de la carpeta `server`, crea un archivo `.env` y pega la siguiente configuración:
+
+```env
 # Configuración del Servidor
 PORT=3000
 CLIENT_URL=http://localhost:5173/
@@ -84,42 +90,57 @@ DB_USER=root
 DB_PASSWORD=
 DB_NAME=MilkChain
 DB_PORT=3306
-🗄️ Configuración de la Base de Datos
-Abre tu gestor de base de datos (MySQL Workbench, phpMyAdmin, etc.).
+```
 
-Importa el archivo milkchain.sql que se encuentra en la raíz del proyecto.
+-----
 
-Verifica que las credenciales en el archivo .env coincidan con tu configuración local.
+## 🗄️ Configuración de la Base de Datos
 
-🏃 Ejecución del Proyecto
+1.  Abre tu gestor de base de datos (MySQL Workbench, phpMyAdmin, etc.).
+2.  Crea una base de datos llamada `MilkChain`.
+3.  Importa el archivo `milkchain.sql` que se encuentra en la raíz del proyecto.
+4.  Verifica que las credenciales en el archivo `.env` coincidan con tu configuración local.
+
+-----
+
+## 🏃 Ejecución del Proyecto
+
 Necesitarás abrir dos terminales en paralelo:
 
-Terminal 1: Backend
+**Terminal 1: Backend**
 
-Bash
+```bash
 cd server
 npm run dev
-Terminal 2: Frontend
+```
 
-Bash
+**Terminal 2: Frontend**
+
+```bash
 cd client
 npm run dev
-Una vez iniciados, abre en tu navegador: http://localhost:5173
+```
 
-🧪 Datos de Prueba
+Una vez iniciados, abre en tu navegador: **[http://localhost:5173](https://www.google.com/search?q=http://localhost:5173)**
+
+-----
+
+## 🧪 Datos de Prueba
+
 Para probar el sistema, puedes usar las siguientes credenciales de administrador:
 
-Email: admin@gmail.com
+  * **Email:** `admin@gmail.com`
+  * **Password:** `admin123`
 
-Password: admin123
+> **Nota:** La base de datos incluye dos productos de prueba para validación rápida.
 
-Nota: La base de datos incluye dos productos de prueba para validación rápida.
+-----
 
-👥 Equipo de Trabajo (Grupo 22)
-Proyecto desarrollado para la cátedra de Ingeniería de Software II por el equipo MILKCHAIN:
+## 👥 Equipo de Trabajo (Grupo 22)
 
-👤 Fernandez Gotusso, Maria Daniela - @yoquienmas
+Proyecto desarrollado para la cátedra de **Ingeniería de Software II** por el equipo **MILKCHAIN**:
 
-👤 Diaz Cristian Leandro - @crisstih
+  * 👤 **Fernandez Gotusso, Maria Daniela** - [@yoquienmas](https://www.google.com/search?q=https://github.com/yoquienmas)
+  * 👤 **Diaz Cristian Leandro** - [@crisstih](https://www.google.com/search?q=https://github.com/crisstih)
 
 Developed with ❤️ by Milkchain Team
