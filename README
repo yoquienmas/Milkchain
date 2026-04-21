@@ -1,90 +1,125 @@
-# Milkchain
+# 🥛 Milkchain
 
-**Desarrollo evolutivo grupal del trabajo de campo - Ingenieria II**
----
+> **Desarrollo evolutivo grupal del trabajo de campo - Ingeniería de Software II**
+> Proyecto enfocado en la trazabilidad y gestión para la industria láctea.
 
-## Documentacion adjunta
-
-Se puede consultar el informe del proyecto descargandolo desde como PDF o tambien se puede visualizar desde el docs donde fue trabajado:  
-[TC_E1_Grupo18_ISII (PDF)](https://github.com/yoquienmas/Milkchain/blob/main/Tp%20integrador%20ingenieria%202.pdf)
-[TC_E1_Grupo18_ISII](https://docs.google.com/document/d/1AhuGLTd8zotH78pUz21tR1wL1b0vp-mbNQAwEmdIoNQ/edit?tab=t.0)
-
----
-
-## Indice
-
-- [Requisitos de instalacion](#requisitos-de-instalacion)
-- [Instrucciones de instalacion](#instrucciones-de-instalacion)
-- [Datos de prueba](#datos-de-prueba)
----
-
-## Requisitos de instalacion
-
-- [Node.js](version 18 o superior recomendada).
-- [npm]
-- [MySQL, PostgreSQL o similar).
-- [Git](https://git-scm.com/).
+![Versión](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)
+![MySQL](https://img.shields.io/badge/Database-MySQL-orange.svg)
+![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 
 ---
 
-## Instrucciones de instalacion
+## 📑 Documentación Relacionada
 
-1. **Clonar el repositorio**
+Se puede consultar el informe técnico y el avance del proyecto en los siguientes enlaces:
 
-   git clone https://github.com/yoquienmas/Milkchain
-   cd milkchain
-
-2. **Instalar dependencias**
-
-   CLiente:  
-   -cd client
-   -npm install
-
-   Servidor:
-   -cd ../server
-   -npm install
-
-3. **Configurar variables de entorno**
-
-   - Crear o editar el archivo .env dentro de la carpeta server
-   - Configurar los datos de conexión a la base de datos
-   - PORT=3000
-	CLIENT_URL=http://localhost:5173/
-	JWT
-	TOKEN_SECRET=contraseña_secreta_unica_123
-	MySQL
-	DB_HOST=localhost
-	DB_USER=root
-	DB_PASSWORD=
-	DB_NAME=MilkChain
-	DB_PORT=3306
-
-4. **Configurar la base de datos**
-
-   - Importar el archivo milkchain.sql en tu gestor de base de datos.
-   - Verificar que las credenciales coincidan con las del .env
-
-5. **Ejecución del proyecto**
-
-   -Iniciar el backend
-    -cd server
-    -npm run dev
-
-   -Iniciar el frontend
-    -cd client
-    -npm run dev
-    -Abrir en el navegador
-     http://localhost:5173
----
-
-## Datos de prueba
-
-- **Correo de administrador:** `admin@gmail.com`
-- **Contraseña:** `admin123`
-- Se cargan tambien **dos productos de prueba** en la base de datos.
+* 📄 **Informe del proyecto (PDF):** [Descargar archivo](https://github.com/yoquienmas/Milkchain/blob/main/Tp%20integrador%20ingenieria%202.pdf)
+* 🌐 **Documento de trabajo (Google Docs):** [Ver en línea](https://docs.google.com/document/d/1AhuGLTd8zotH78pUz21tR1wL1b0vp-mbNQAwEmdIoNQ/edit?tab=t.0)
 
 ---
 
-> Proyecto desarrollado con por el grupo 22, equipo de **MILKCHAIN**.
-- [@Diaz Cristian Leandro](https://github.com/crisstih)
-- [@Fernandez Gotusso, Maria Daniela](https://github.com/yoquienmas)
+## 🧭 Índice
+
+1. [Requisitos de instalación](#-requisitos-de-instalación)
+2. [Instrucciones de instalación](#-instrucciones-de-instalación)
+3. [Variables de entorno](#-variables-de-entorno)
+4. [Configuración de la base de datos](#-configuración-de-la-base-de-datos)
+5. [Ejecución del proyecto](#-ejecución-del-proyecto)
+6. [Datos de prueba](#-datos-de-prueba)
+
+---
+
+## 🛠️ Tecnologías Utilizadas
+
+| Componente | Tecnología |
+| :--- | :--- |
+| **Frontend** | React / Vite |
+| **Backend** | Node.js / Express |
+| **Base de Datos** | MySQL |
+| **Autenticación** | JWT (JSON Web Tokens) |
+
+---
+
+## 💻 Requisitos de instalación
+
+* **Node.js**: Versión 18 o superior recomendada.
+* **npm**: Gestor de paquetes de Node.
+* **Base de datos**: MySQL, PostgreSQL o similar.
+* **Git**: Para el control de versiones.
+
+---
+
+## 🚀 Instrucciones de instalación
+
+### 1. Clonar el repositorio
+```bash
+git clone [https://github.com/yoquienmas/Milkchain](https://github.com/yoquienmas/Milkchain)
+cd Milkchain
+
+### 2. Configurar el Cliente
+```bash
+cd ../server
+npm install
+
+### 3. Configurar el Servidor (Backend)
+```bash
+cd ../server
+npm install
+
+## 🔑 Variables de Entorno
+Dentro de la carpeta server, crea un archivo .env y pega la siguiente configuración:
+
+Fragmento de código
+# Configuración del Servidor
+PORT=3000
+CLIENT_URL=http://localhost:5173/
+
+# Seguridad (JWT)
+TOKEN_SECRET=contraseña_secreta_unica_123
+
+# Base de Datos (MySQL)
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=
+DB_NAME=MilkChain
+DB_PORT=3306
+🗄️ Configuración de la Base de Datos
+Abre tu gestor de base de datos (MySQL Workbench, phpMyAdmin, etc.).
+
+Importa el archivo milkchain.sql que se encuentra en la raíz del proyecto.
+
+Verifica que las credenciales en el archivo .env coincidan con tu configuración local.
+
+🏃 Ejecución del Proyecto
+Necesitarás abrir dos terminales en paralelo:
+
+Terminal 1: Backend
+
+Bash
+cd server
+npm run dev
+Terminal 2: Frontend
+
+Bash
+cd client
+npm run dev
+Una vez iniciados, abre en tu navegador: http://localhost:5173
+
+🧪 Datos de Prueba
+Para probar el sistema, puedes usar las siguientes credenciales de administrador:
+
+Email: admin@gmail.com
+
+Password: admin123
+
+Nota: La base de datos incluye dos productos de prueba para validación rápida.
+
+👥 Equipo de Trabajo (Grupo 22)
+Proyecto desarrollado para la cátedra de Ingeniería de Software II por el equipo MILKCHAIN:
+
+👤 Fernandez Gotusso, Maria Daniela - @yoquienmas
+
+👤 Diaz Cristian Leandro - @crisstih
+
+Developed with ❤️ by Milkchain Team
