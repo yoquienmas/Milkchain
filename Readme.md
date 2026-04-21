@@ -5,7 +5,7 @@
 
 -----
 
-## 📄 Documentación
+## 📄 Documentacion
 
 Puedes acceder a la documentación técnica del proyecto a través de los siguientes enlaces:
 
