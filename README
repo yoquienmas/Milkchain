@@ -1,15 +1,13 @@
+###🥛 Milkchain
 
------
-
-# 🥛 Milkchain
-
-> **Desarrollo evolutivo grupal del trabajo de campo - Ingeniería de Software II** \> Proyecto enfocado en la trazabilidad y gestión para la industria láctea.
+> **Desarrollo evolutivo grupal del trabajo de campo - Ingeniería de Software II**
+> Proyecto enfocado en la trazabilidad y gestión para la industria láctea.
 
 -----
 
 ## 📑 Documentación Relacionada
 
-Puedes consultar el informe técnico y el avance detallado en los siguientes enlaces:
+Se puede consultar el informe técnico y el avance del proyecto en los siguientes enlaces:
 
   * 📄 **Informe del proyecto (PDF):** [Descargar archivo](https://github.com/yoquienmas/Milkchain/blob/main/Tp%20integrador%20ingenieria%202.pdf)
   * 🌐 **Documento de trabajo (Google Docs):** [Ver en línea](https://docs.google.com/document/d/1AhuGLTd8zotH78pUz21tR1wL1b0vp-mbNQAwEmdIoNQ/edit?tab=t.0)
@@ -19,12 +17,12 @@ Puedes consultar el informe técnico y el avance detallado en los siguientes enl
 ## 🧭 Índice
 
 1.  [Tecnologías Utilizadas](https://www.google.com/search?q=%23%EF%B8%8F-tecnolog%C3%ADas-utilizadas)
-2.  [Requisitos de Instalación](https://www.google.com/search?q=%23-requisitos-de-instalaci%C3%B3n)
-3.  [Instrucciones de Instalación](https://www.google.com/search?q=%23-instrucciones-de-instalaci%C3%B3n)
-4.  [Variables de Entorno](https://www.google.com/search?q=%23-variables-de-entorno)
-5.  [Configuración de la Base de Datos](https://www.google.com/search?q=%23-configuraci%C3%B3n-de-la-base-de-datos)
-6.  [Ejecución del Proyecto](https://www.google.com/search?q=%23-ejecuci%C3%B3n-del-proyecto)
-7.  [Datos de Prueba](https://www.google.com/search?q=%23-datos-de-prueba)
+2.  [Requisitos de instalación](https://www.google.com/search?q=%23-requisitos-de-instalaci%C3%B3n)
+3.  [Instrucciones de instalación](https://www.google.com/search?q=%23-instrucciones-de-instalaci%C3%B3n)
+4.  [Variables de entorno](https://www.google.com/search?q=%23-variables-de-entorno)
+5.  [Configuración de la base de datos](https://www.google.com/search?q=%23-configuraci%C3%B3n-de-la-base-de-datos)
+6.  [Ejecución del proyecto](https://www.google.com/search?q=%23-ejecuci%C3%B3n-del-proyecto)
+7.  [Datos de prueba](https://www.google.com/search?q=%23-datos-de-prueba)
 
 -----
 
@@ -53,7 +51,7 @@ Puedes consultar el informe técnico y el avance detallado en los siguientes enl
 ### 1\. Clonar el repositorio
 
 ```bash
-git clone https://github.com/yoquienmas/Milkchain
+git clone https://github.com/yoquienmas/Milkchain.git
 cd Milkchain
 ```
 
@@ -75,7 +73,7 @@ npm install
 
 ## 🔑 Variables de Entorno
 
-Dentro de la carpeta `server`, crea un archivo `.env` y pega la siguiente configuración:
+Dentro de la carpeta `server`, crea un archivo **.env** y pega la siguiente configuración:
 
 ```env
 # Configuración del Servidor
@@ -122,7 +120,7 @@ cd client
 npm run dev
 ```
 
-Una vez iniciados, abre en tu navegador: **[http://localhost:5173](https://www.google.com/search?q=http://localhost:5173)**
+Una vez iniciados, abre en tu navegador: **http://localhost:5173**
 
 -----
 
