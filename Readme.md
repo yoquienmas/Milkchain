@@ -1,6 +1,7 @@
 # 🥛 Milkchain
 
 **Plataforma logística que conecta productores correntinos con Pymes del Litoral. Permite gestionar catálogos, seleccionar transportistas y realizar pedidos sin mínimos de compra excesivos, optimizando la distribución regional de perecederos.**
+
 Proyecto de Ingeniería de Software II
 
 ---
