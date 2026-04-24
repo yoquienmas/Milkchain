@@ -1,4 +1,24 @@
 /* Colores de MilkChain */
+.navbar-logo .logo-container {
+  display: flex;
+  align-items: center;
+  gap: 10px; 
+  text-decoration: none;
+}
+
+.navbar-brand-img {
+  height: 120px; 
+  width: auto;  
+  display: block;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+}
+
 :root {
   --verde-milkchain: #7dc47d;
   --gris-claro: #f4f4f4;
@@ -258,4 +278,16 @@ input {
   padding: 5px;
   border: 1px solid #ccc;
   background: #f9f9f9;
+}
+.cow-pattern-bg {
+  background-color: var(--gris-claro);
+  background-image: 
+    radial-gradient(circle at 20% 30%, #1a1a1a 8%, transparent 11%),
+    radial-gradient(circle at 75% 20%, #1a1a1a 12%, transparent 15%),
+    radial-gradient(circle at 40% 70%, #1a1a1a 15%, transparent 19%),
+    radial-gradient(circle at 10% 85%, #1a1a1a 9%, transparent 12%),
+    radial-gradient(circle at 85% 80%, #1a1a1a 10%, transparent 14%),
+    radial-gradient(circle at 55% 40%, #1a1a1a 6%, transparent 9%);
+  background-size: 400px 400px; /* Ajusta este tamaño para manchas más grandes o pequeñas */
+  background-attachment: fixed; /* Mantiene las manchas quietas al hacer scroll */
 }
