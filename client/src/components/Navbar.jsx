@@ -7,7 +7,13 @@ export default function Navbar() {
   return (
     <nav className="navbar">
       <div className="navbar-logo">
-        <Link to="/">MilkChain</Link>
+        <Link to="" className="logo-container">
+          <img 
+            src="/images/logo_MILKCHAIN.png" 
+            alt="MilkChain Logo" 
+            className="navbar-brand-img"
+          />
+        </Link>
       </div>
       <ul className="navbar-links">
         {isAuthenticated ? (
@@ -25,5 +31,3 @@ export default function Navbar() {
     </nav>
   );
 }
-
-
