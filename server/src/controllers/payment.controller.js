@@ -1,37 +1,53 @@
-// // Controladores simulados para la pasarela de pago
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+// auth.controller.js o pedidos.controller.js
+export const finalizarPedido = async (req, res) => {
+    const { idUsuario, idDireccion, idPago, total, detalles } = req.body;
 
-// export const createOrder = async (req, res) => {
-//     try {
-//         // aca va la lógica real con Stripe/MercadoPago
-//         // Ejemplo: const session = await stripe.checkout.sessions.create(...)
-        
-//         // Retornamos un mock (simulación) para que el frontend funcione
-//         console.log("Creando orden de pago para el usuario:", req.user.id);
-        
-//         res.status(200).json({
-//             message: "Sesión de pago creada exitosamente",
-//             orderId: "ord_mock_12345",
-//             url: "http://localhost:3000/api/payment/capture-order" // URL simulada para redirección automática
-//         });
-//     } catch (error) {
-//         return res.status(500).json({ message: error.message });
-//     }
-// };
+    try {
+        // 1. Crear el registro en la tabla 'pedido'
+        const [pedido] = await pool.query(
+            "INSERT INTO pedido (fecha, estado, total, idUsuario, idDireccion, idPago) VALUES (NOW(), 'En preparación', ?, ?, ?, ?)",
+            [total, idUsuario, idDireccion, idPago]
+        );
 
-// export const captureOrder = (req, res) => {
-//     // aca llega la notificación de que el pago fue exitoso
-//     console.log("Pago capturado exitosamente");
+        const pedidoId = pedido.insertId;
+
+        // 2. Mover los productos del carrito a 'pedidodetalles'
+        const detallesValues = detalles.map(d => [d.precio, d.cantidad, d.id_Producto, pedidoId]);
+        await pool.query(
+            "INSERT INTO pedidodetalles (p_Unitario, cantidad, id_Producto, id_Pedido) VALUES ?",
+            [detallesValues]
+        );
+
+        // 3. Limpiar el carrito del usuario
+        await pool.query("DELETE FROM carritodetalles WHERE id_Carrito = (SELECT id FROM carrito WHERE id_Usuario = ?)", [idUsuario]);
+
+        res.json({ message: "Pago exitoso", pedidoId });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+const descargarFactura = (pedido, detalles) => {
+    const doc = new jsPDF();
     
-//     // podes redirigir al frontend a una página de "Gracias por tu compra"
-//     // res.redirect("http://localhost:5173/success"); 
-//     res.send("Pago realizado con éxito (Simulación)");
-// };
-
-// export const cancelOrder = (req, res) => {
-//     // aca llega si el usuario cancela en la pasarela
-//     console.log("Pago cancelado por el usuario");
+    doc.setFontSize(18);
+    doc.text(`Factura N° ${pedido.id}`, 20, 20);
+    doc.setFontSize(12);
+    doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 20, 30);
     
-//     // podes redirigir al frontend a una página de error o al carrito
-//     // res.redirect("http://localhost:5173/cart");
-//     res.send("Pago cancelado (Simulación)");
-// };
+    // Datos del Cliente
+    doc.text("Datos del Cliente", 20, 50);
+    doc.text(`Nombre: ${user.nombre} ${user.apellido}`, 20, 60);
+
+    // Tabla de productos
+    doc.autoTable({
+        startY: 80,
+        head: [['Producto', 'Cantidad', 'Precio Unitario', 'Subtotal']],
+        body: detalles.map(d => [d.nombre, d.cantidad, `$${d.precio}`, `$${d.precio * d.cantidad}`]),
+    });
+
+    doc.text(`Total a Pagar: $${pedido.total}`, 140, doc.lastAutoTable.finalY + 10);
+    doc.save(`Factura_MilkChain_${pedido.id}.pdf`);
+};
