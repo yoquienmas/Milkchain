@@ -8,7 +8,9 @@ function HomePage() {
       </div>
 
       <div className="home-menu-grid">
-        <button className="btn-green">Ver pedidos</button>
+        <Link to="/mis-pedidos" className="btn-green" style={{textDecoration: 'none', display: 'inline-block', lineHeight: 'normal'}}>
+           Ver pedidos
+        </Link>
         <button className="btn-green">Ver envíos</button>
         <button className="btn-green">Devolver pedido</button>
         <button className="btn-green">Contactarse con vendedor</button>

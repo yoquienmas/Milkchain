@@ -27,10 +27,10 @@ export default function RegisterPage() {
         <h1>Crear Cuenta</h1>
         <input type="text" {...register("nombre")} placeholder="Nombre" required />
         <input type="text" {...register("apellido")} placeholder="Apellido" required />
-        <input type="number" {...register("dni")} placeholder="DNI" required />
-        <input type="number" {...register("telefono")} placeholder="Teléfono" required />
+        <input type="text" {...register("dni")} placeholder="DNI" required />        
+        <input type="text" {...register("telefono")} placeholder="Teléfono" required />
         <input type="email" {...register("email")} placeholder="Correo Electrónico" required />
-        <input type="password" {...register("password")} placeholder="Contraseña" required />
+        <input type="password" {...register("pass")} placeholder="Contraseña" required />
         <button type="submit" className="btn-green">Registrarse</button>
       </form>
     </div>

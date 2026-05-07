@@ -17,12 +17,12 @@ export default function LoginPage() {
     
     try {
       // 1. Llamada al backend para validar credenciales
-      const res = await axios.post("http://localhost:3000/api/login", {
+     const res = await axios.post("http://localhost:3000/api/login", {
         email,
-        pass
-      }, {
-        withCredentials: true // Permite el manejo de cookies si tu backend las usa
-      });
+         pass
+       }, {
+         withCredentials: true 
+       });
 
       console.log("Respuesta del servidor:", res.data);
 
@@ -42,7 +42,7 @@ export default function LoginPage() {
       }
 
     } catch (error) {
-      console.error("Error al loguear:", error.response?.data);
+      console.log("Mensaje de error:", error.response?.data[0]);
       // Muestra el mensaje de error específico del servidor o uno genérico
       alert(error.response?.data?.message || "Credenciales incorrectas");
     }

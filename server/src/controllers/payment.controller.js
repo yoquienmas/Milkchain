@@ -16,7 +16,7 @@ export const finalizarPedido = async (req, res) => {
         // 2. Mover los productos del carrito a 'pedidodetalles'
         const detallesValues = detalles.map(d => [d.precio, d.cantidad, d.id_Producto, pedidoId]);
         await pool.query(
-            "INSERT INTO pedidodetalles (p_Unitario, cantidad, id_Producto, id_Pedido) VALUES ?",
+            "INSERT INTO pedidodetalles (precio_unitario, cantidad, id_Producto, id_Pedido) VALUES ?",
             [detallesValues]
         );
 
