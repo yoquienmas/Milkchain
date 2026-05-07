@@ -1,125 +1,107 @@
-import User from "../models/user.model.js";
-import bcrypt from "bcryptjs";
+import { pool } from "../db.js";
+import bcrypt from "bcryptjs"; 
 import { createAccessToken } from "../libs/jwt.js";
-import jwt from "jsonwebtoken";
-import { TOKEN_SECRET } from "../config.js";
 
-export const register = async (req, res) => {
-  try {
-    const { username, email, password } = req.body;
-
-    // Verificar si el usuario ya existe
-    const userFound = await User.findOne({ email });
-    if (userFound)
-      return res.status(400).json({ message: "El email ya está en uso" });
-
-    // Hash de la contraseña
-    const passwordHash = await bcrypt.hash(password, 10);
-
-    // Crear nuevo usuario
-    const newUser = new User({
-      username,
-      email,
-      password: passwordHash,
-    });
-
-    // Guardar usuario
-    const userSaved = await newUser.save();
-
-    // Crear token
-    const token = await createAccessToken({ id: userSaved._id });
-
-    // Guardar token en cookie
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: false,
-      sameSite: "lax",
-      maxAge: 24 * 60 * 60 * 1000,
-    });
-
-    res.json({
-      id: userSaved._id,
-      username: userSaved.username,
-      email: userSaved.email,
-      createdAt: userSaved.createdAt,
-      updatedAt: userSaved.updatedAt,
-    });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
+// --- LOGIN ACTUALIZADO ---
 export const login = async (req, res) => {
-  try {
-    const { email, password } = req.body;
+    const { email, pass } = req.body;
 
-    // Buscar usuario
-    const userFound = await User.findOne({ email });
-    if (!userFound)
-      return res.status(400).json({ message: "Usuario no encontrado" });
+    try {
+        // Hacemos un JOIN para traer el nombre del rol directamente
+        const [rows] = await pool.query(
+            `SELECT u.*, r.nombre as rol 
+             FROM usuario u
+             LEFT JOIN rol_usuario ru ON u.id = ru.id_Usuario
+             LEFT JOIN rol r ON ru.id_Rol = r.id
+             WHERE u.email = ?`, 
+            [email]
+        );
+        
+        if (rows.length === 0) return res.status(400).json(["El correo no existe"]);
 
-    // Comparar contraseñas
-    const isMatch = await bcrypt.compare(password, userFound.password);
-    if (!isMatch)
-      return res.status(400).json({ message: "Contraseña incorrecta" });
+        const user = rows[0];
+        const isMatch = await bcrypt.compare(pass, user.pass);
+        if (!isMatch) return res.status(400).json(["Contraseña incorrecta"]);
 
-    // Crear token
-    const token = await createAccessToken({ id: userFound._id });
+        const token = await createAccessToken({ id: user.id, rol: user.rol }); // Agregamos rol al token
 
-    // Guardar token en cookie
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: false,
-      sameSite: "lax",
-      maxAge: 24 * 60 * 60 * 1000,
-    });
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: false,
+            sameSite: 'lax'
+        });
 
-    res.json({
-      id: userFound._id,
-      username: userFound.username,
-      email: userFound.email,
-      createdAt: userFound.createdAt,
-      updatedAt: userFound.updatedAt,
-    });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+        res.json({
+            id: user.id,
+            nombre: user.nombre,
+            email: user.email,
+            rol: user.rol || "Cliente" // Si no tiene rol, por defecto es Cliente
+        });
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 };
 
+// --- REGISTER ACTUALIZADO ---
+export const register = async (req, res) => {
+    const { nombre, apellido, dni, telefono, email, pass } = req.body;
+
+    try {
+        const passHash = await bcrypt.hash(pass, 10);
+        const [rows] = await pool.query(
+            "INSERT INTO usuario (nombre, apellido, dni, telefono, email, pass) VALUES (?, ?, ?, ?, ?, ?)",
+            [nombre, apellido, dni, telefono, email, passHash]
+        );
+
+        const userId = rows.insertId;
+
+        // ASIGNACIÓN AUTOMÁTICA DE ROL: Por defecto ID 2 (Cliente)
+        await pool.query(
+            "INSERT INTO rol_usuario (id_Usuario, id_Rol, activo) VALUES (?, ?, ?)",
+            [userId, 2, 1] 
+        );
+
+        const token = await createAccessToken({ id: userId, rol: "Cliente" });
+        res.cookie("token", token);
+
+        res.json({ id: userId, nombre, email, rol: "Cliente" });
+
+    } catch (error) {
+        if (error.code === 'ER_DUP_ENTRY') return res.status(400).json(["El correo ya está en uso"]);
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// --- LOGOUT ---
 export const logout = (req, res) => {
-  res.cookie("token", "", {
-    httpOnly: true,
-    expires: new Date(0),
-  });
-  res.json({ message: "Sesión cerrada exitosamente" });
-};
-
-// Asegúrate de que esta función esté exportada
-export const verifyToken = async (req, res) => {
-  try {
-    const userFound = await User.findById(req.user.id);
-    if (!userFound)
-      return res.status(401).json({ message: "Usuario no autorizado" });
-
-    res.json({
-      authenticated: true,
-      user: {
-        id: userFound._id,
-        username: userFound.username,
-        email: userFound.email,
-        createdAt: userFound.createdAt,
-        updatedAt: userFound.updatedAt,
-      },
+    // Limpiamos la cookie del token poniéndole una fecha de expiración antigua
+    res.cookie("token", "", {
+        expires: new Date(0),
     });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+    return res.sendStatus(200);
 };
 
-// Exporta todas las funciones necesarias
-export default {
-  register,
-  login,
-  logout,
-  verifyToken
+// --- VERIFY TOKEN ---
+// Esta sirve para que cuando el usuario recargue la página, 
+// el Frontend sepa que sigue logueado.
+export const verifyToken = async (req, res) => {
+    const { token } = req.cookies;
+
+    if (!token) return res.status(401).json({ message: "No autorizado" });
+
+    jwt.verify(token, TOKEN_SECRET, async (err, user) => {
+        if (err) return res.status(401).json({ message: "No autorizado" });
+
+        const [rows] = await pool.query("SELECT * FROM usuario WHERE id = ?", [user.id]);
+        if (rows.length === 0) return res.status(401).json({ message: "No autorizado" });
+
+        const userFound = rows[0];
+
+        return res.json({
+            id: userFound.id,
+            nombre: userFound.nombre,
+            email: userFound.email,
+        });
+    });
 };

@@ -3,7 +3,7 @@ import mysql from "mysql2/promise";
 export const pool = mysql.createPool({
     host: "localhost",
     user: "root",
-    password: "", // en XAMPP suele estar vacío
+    pass: "", // en XAMPP suele estar vacío
     database: "MilkChain",
     waitForConnections: true,
     connectionLimit: 10,

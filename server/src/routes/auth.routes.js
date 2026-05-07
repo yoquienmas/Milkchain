@@ -1,10 +1,5 @@
 import { Router } from "express";
-import { 
-  register, 
-  login, 
-  logout, 
-  verifyToken 
-} from "../controllers/auth.controller.js"; // Asegúrate de que la ruta sea correcta
+import { login, logout, register, verifyToken } from "../controllers/auth.controller.js";
 import { authRequired } from "../middlewares/validateToken.js";
 
 const router = Router();

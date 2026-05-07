@@ -1,101 +1,76 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../context/useAuth.jsx'; // Importa el hook personalizado
-import '../styles/Auth.css';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { useAuth } from "../context/AuthContext"; // Usamos el hook para acceder al contexto global
+import "../App.css";
 
-function LoginPage() {
-    // llamo al hook personalizado para poder acceder a la funcion login
-    const { login } = useAuth(); 
-    const [formData, setFormData] = useState({
-        email: '',
-        password: '',
-    });
-    const [error, setError] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const navigate = useNavigate();
+export default function LoginPage() {
+  const [email, setEmail] = useState("");
+  const [pass, setPass] = useState(""); 
+  const navigate = useNavigate();
+  
+  // Traemos la función signin del contexto global
+  const { signin } = useAuth();
 
-    const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    try {
+      // 1. Llamada al backend para validar credenciales
+      const res = await axios.post("http://localhost:3000/api/login", {
+        email,
+        pass
+      }, {
+        withCredentials: true // Permite el manejo de cookies si tu backend las usa
+      });
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError(null);
-        setLoading(true);
+      console.log("Respuesta del servidor:", res.data);
 
-        try {
-            //Llama a la funcion login del AuthContext
-            await login(formData); 
-            // Si se inicia sesión correctamente, se redirige a la página principal
-            navigate('/'); 
+      // 2. Verificamos si el login fue exitoso
+      if (res.status === 200) {
+        console.log("Login exitoso, llamando a signin del contexto");
+        
+        // !!! PARTE CRÍTICA !!!
+        // Enviamos los datos del usuario al contexto global.
+        // Esto cambia isAuthenticated a true y hace que el Navbar se actualice.
+        signin(res.data); 
+        
+        alert("¡Bienvenido a MilkChain!");
+        
+        // 3. Redirigimos al usuario al Home una vez autenticado
+        navigate("/home");
+      }
 
-        } catch (err) {
-            // El error es manejado por el login en AuthContext
-            const errorMessage = err.response?.data?.message || 'Error de red.';
-            setError(errorMessage);
-        } finally {
-            setLoading(false);
-        }
-    };
+    } catch (error) {
+      console.error("Error al loguear:", error.response?.data);
+      // Muestra el mensaje de error específico del servidor o uno genérico
+      alert(error.response?.data?.message || "Credenciales incorrectas");
+    }
+  };
 
-    return (
-        <div className="auth-container">
-            <div className="auth-card">                
-                <form onSubmit={handleSubmit}>
-                    {/* Mensaje de error */}
-                    {error && <div className="auth-error">{error}</div>}
-                    
-                    {/* Campo de email */}
-                    <div className="form-group">
-                        <label htmlFor="email">Correo electrónico</label>
-                        <input
-                            type="email"
-                            id="email"
-                            name="email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            required
-                            placeholder="tu@email.com"
-                        />
-                    </div>
-                    
-                    {/* Campo de contraseña */}
-                    <div className="form-group">
-                        <label htmlFor="password">Contraseña</label>
-                        <input
-                            type="password"
-                            id="password"
-                            name="password"
-                            value={formData.password}
-                            onChange={handleChange}
-                            required
-                            placeholder="••••••••"
-                        />
-                    </div>
-                    
-                    {/* Botón de inicio de sesión */}
-                    <button type="submit" className="auth-button" disabled={loading}>
-                        {loading ? 'INICIANDO SESIÓN...' : 'INGRESAR'}
-                    </button>
-                </form>
-                {/* Link para olvide mi contraseña */}
-                <div className='auth-links'>
-                    <a href="/forgot-password" className="auth-link-main">
-                        OLVIDE MI CONTRASEÑA
-                    </a>
-                </div>
-                {/* Link para ir a registro */}
-                <div className="auth-links">
-                    <div className="auth-divider">
-                    <span>o bien</span>
-                </div>
-                    <Link to="/register" className="auth-link-main">
-                        ¿No tienes cuenta? REGÍSTRATE AQUÍ
-                    </Link>
-                </div>
-            </div>
-        </div>
-    );
+  return (
+    <div className="container">
+      <h1 className="title">Inicio de Sesión</h1>
+
+      <form className="form" onSubmit={handleSubmit}>
+        <input
+          type="email"
+          placeholder="Correo"
+          value={email}
+          required
+          onChange={(e) => setEmail(e.target.value)}
+        />
+
+        <input
+          type="password"
+          placeholder="Contraseña"
+          value={pass}
+          required
+          onChange={(e) => setPass(e.target.value)}
+        />
+
+        <button type="submit">Ingresar</button>
+      </form>
+    </div>
+  );
 }
-
-export default LoginPage;
