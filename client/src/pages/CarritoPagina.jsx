@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useCart } from '../context/useCart.jsx'; 
+import { useCart } from '../context/UsarCarrito.jsx'; 
 import '../styles/CartPage.css';
 
 function CartPage() {

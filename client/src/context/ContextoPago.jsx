@@ -1,4 +1,4 @@
 import { createContext } from 'react';
 
 // Solo el contexto
-export const AuthContext = createContext();
+export const CarritoAutentificacion = createContext();

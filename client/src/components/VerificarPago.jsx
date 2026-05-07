@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useCart } from '../context/useCart.jsx';
-import { usePayment } from '../context/usePayment.jsx'; // ← Esta importación sigue igual
+import { useCart } from '../context/UsarCarrito.jsx';
+import { usePayment } from '../context/UsarPago.jsx'; // ← Esta importación sigue igual
 import { useNavigate } from 'react-router-dom';
 
 const Checkout = () => {
