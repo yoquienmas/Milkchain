@@ -126,7 +126,7 @@ Abrir: http://localhost:5173
 
 ## 👥 Equipo
 
-* Maria Daniela Fernandez Gotusso
-* Cristian Leandro Diaz
+* [@Maria Daniela, Fernandez Gotusso](https://github.com/yoquienmas)
+* [@Cristian Leandro Diaz](https://github.com/crisstih)
 
 ---
