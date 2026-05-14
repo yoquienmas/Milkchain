@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { useAuth } from "../context/AuthContext"; // Usamos el hook para acceder al contexto global
+import { useAuth } from "../context/ContextoAutenticacion.jsx"; // Usamos el hook para acceder al contexto global
 import "../App.css";
 
-export default function LoginPage() {
+export default function InicioSesionPagina() {
   const [email, setEmail] = useState("");
-  const [pass, setPass] = useState(""); 
+  const [password, setPass] = useState(""); 
   const navigate = useNavigate();
   
   // Traemos la función signin del contexto global
@@ -19,7 +19,7 @@ export default function LoginPage() {
       // 1. Llamada al backend para validar credenciales
      const res = await axios.post("http://localhost:3000/api/login", {
         email,
-         pass
+        password
        }, {
          withCredentials: true 
        });
@@ -41,11 +41,11 @@ export default function LoginPage() {
         navigate("/home");
       }
 
-    } catch (error) {
-      console.log("Mensaje de error:", error.response?.data[0]);
-      // Muestra el mensaje de error específico del servidor o uno genérico
-      alert(error.response?.data?.message || "Credenciales incorrectas");
-    }
+ } catch (error) {
+    // Si el backend envía { message: "..." }, accedemos así:
+    const msg = error.response?.data?.message || "Error al iniciar sesión";
+    alert(msg);
+}
   };
 
   return (
@@ -64,7 +64,7 @@ export default function LoginPage() {
         <input
           type="password"
           placeholder="Contraseña"
-          value={pass}
+          value={password}
           required
           onChange={(e) => setPass(e.target.value)}
         />

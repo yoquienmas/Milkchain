@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import ProductCard from "../components/ProductCard";
+import ProductCard from "../components/TarjetaProducto.jsx";
 import { useNavigate } from "react-router-dom";
-import { useCart } from "../context/CartContext"; // 1. Importamos el hook del carrito
+import { useCart } from "../context/ContextoCarrito.jsx";
 
-function CataloguePage() {
+function CatalogoPagina() {
   const [productos, setProductos] = useState([]);
   const [busqueda, setBusqueda] = useState("");
   const navigate = useNavigate();
@@ -51,8 +51,9 @@ function CataloguePage() {
 
       <div className="product-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 350px))", gap: "30px", padding: "20px", justifyContent: "center" }}>
         {productosFiltrados.map((prod) => (
-          <ProductCard key={prod.id} producto={prod} />
-        ))}
+  // Asegúrate de usar el nombre exacto de la columna de tu DB (id_producto)
+       <ProductCard key={prod.id_producto} producto={prod} />
+       ))}
       </div>
 
       <footer style={{ 
@@ -91,4 +92,4 @@ function CataloguePage() {
   );
 }
 
-export default CataloguePage;
+export default CatalogoPagina;

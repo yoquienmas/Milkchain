@@ -1,10 +1,10 @@
 import { createContext, useState, useContext, useEffect } from "react";
 
-export const AuthContext = createContext();
+export const ContextoAutenticacion = createContext();
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
-  const context = useContext(AuthContext);
+  const context = useContext(ContextoAutenticacion);
   if (!context) {
     throw new Error("useAuth debe usarse dentro de un AuthProvider");
   }
@@ -33,12 +33,12 @@ export const AuthProvider = ({ children }) => {
   }, [user]);
 
   const signin = (userData) => {
-    console.log("AuthProvider: Iniciando sesión...");
+    console.log("ProveedorAutenticacion: Iniciando sesión...");
     setUser(userData); // El useEffect se encarga de guardar en localStorage
   };
 
   const logout = () => {
-    console.log("AuthProvider: Cerrando sesión...");
+    console.log("ProveedorAutenticacion: Cerrando sesión...");
     setUser(null);
     // Limpiamos también el carrito al cerrar sesión para seguridad
     localStorage.removeItem("milkchain_cart");
@@ -46,8 +46,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, signin, logout }}>
+    <ContextoAutenticacion.Provider value={{ user, isAuthenticated, signin, logout }}>
       {children}
-    </AuthContext.Provider>
+    </ContextoAutenticacion.Provider>
   );
 };

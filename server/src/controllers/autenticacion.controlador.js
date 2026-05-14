@@ -5,7 +5,8 @@ import { createAccessToken } from "../libs/jwt.js";
 import { TOKEN_SECRET } from "../config.js"; // Asegúrate de tener tu secreto
 
 export const login = async (req, res) => {
-    const { email, pass } = req.body;
+    const { email, password } = req.body;
+    console.log("Datos recibidos del cliente:", { email, password});
     try {
         const [rows] = await pool.query(
             `SELECT u.*, r.nombre as rol 
@@ -14,16 +15,20 @@ export const login = async (req, res) => {
              WHERE u.email = ?`, 
             [email]
         );
-        
-        if (rows.length === 0) return res.status(400).json(["El correo no existe"]);
+        console.log("Usuario encontrado en DB:", rows[0]);
+
+        if (rows.length === 0) return res.status(400).json({ message: "El correo no existe" });
 
         const user = rows[0];
-        const isMatch = await bcrypt.compare(pass, user.pass);        
         
-        if (!isMatch) return res.status(400).json(["Contraseña incorrecta"]);
+        const isMatch = await bcrypt.compare(password, user.password);        
+        
+        if (!isMatch) return res.status(400).json({ message: "Contraseña incorrecta" });
 
-        const token = await createAccessToken({ id: user.id, rol: user.rol });
-
+        // ASEGURAMOS EL ID: Si tu DB usa id_usuario, usa user.id_usuario
+        const userId = user.id || user.id_usuario; 
+        
+        const token = await createAccessToken({ id: user.id_usuario, rol: user.rol });
         res.cookie("token", token, {
             httpOnly: true,
             secure: false,
@@ -31,24 +36,25 @@ export const login = async (req, res) => {
         });
 
         res.json({
-            id: user.id,
+            id: userId,
             nombre: user.nombre,
             email: user.email,
             rol: user.rol || "Cliente"
         });
     } catch (error) {
+        console.error("ERROR CRÍTICO EN LOGIN:", error); // <-- ESTO TE DARÁ EL ERROR REAL
         res.status(500).json({ message: error.message });
     }
 };
 
 export const register = async (req, res) => {
-    const { nombre, apellido, dni, telefono, email, pass } = req.body;
+    const { nombre, apellido, dni, telefono, email, password } = req.body;
     try {
-        const passHash = await bcrypt.hash(pass, 10);
+        const passHash = await bcrypt.hash(password, 10);
         const [rows] = await pool.query(
-            "INSERT INTO usuario (nombre, apellido, dni, telefono, email, pass, activo, f_creacion, id_rol) VALUES (?, ?, ?, ?, ?, ?, 1, NOW(), 2)",
-            [nombre, apellido, dni, telefono, email, passHash]
-        );
+    "INSERT INTO usuario (nombre, apellido, dni, email, password, activo, id_rol) VALUES (?, ?, ?, ?, ?, 1, 2)",
+    [nombre, apellido, dni, email, passHash]
+);
 
         return res.status(201).json({
             message: "Usuario registrado exitosamente",
@@ -85,8 +91,7 @@ export const verifyToken = async (req, res) => {
             rol: rows[0].rol || "Cliente"
         });
     });
-}; // <--- AQUÍ SE CIERRA verifyToken
-
+}; 
 export const logout = (req, res) => {
     res.cookie("token", "", {
         expires: new Date(0),

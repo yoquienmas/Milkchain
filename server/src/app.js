@@ -1,20 +1,21 @@
 import express from 'express';
 import morgan from "morgan";
+import path from 'path';
 import 'dotenv/config';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import productRoutes from './routes/product.routes.js';
-import authRoutes from './routes/auth.routes.js'; 
+import productRoutes from './routes/producto.rutas.js';
+import authRoutes from './routes/autenticacion.rutas.js'; 
 import { pool } from './db.js';
 
 const app = express();
-
+app.use(express.json());
 app.use(cors({
     origin: 'http://localhost:5173',
     credentials: true,
 }));
 app.use(morgan('dev'));
-app.use(express.json());
+app.use(express.static('public'));
 app.use(cookieParser());
 
 // Rutas de módulos existentes
@@ -58,113 +59,75 @@ app.get('/api/localidades/:id_provincia', async (req, res) => {
 
 // 4. Obtener direcciones
 // BUSCAR ESTA PARTE EN TU index.js Y REEMPLAZARLA:
-app.get('/api/direcciones', async (req, res) => {
+app.get('/api/direcciones/:id_usuario', async (req, res) => {
+    const { id_usuario } = req.params; // Captura el ID que viene de la URL
     try {
-        const id_usuario_actual = []; 
-
         const [rows] = await pool.query(
-            // Importante: id_usuario en minúscula según tu SQL
-            'SELECT * FROM direccion WHERE id_usuario = ? ORDER BY id_direccion DESC', 
-            [id_usuario_actual]
+            'SELECT * FROM direccion WHERE id_usuario = ?', 
+            [id_usuario]
         ); 
-        
-        res.json(rows);
+        res.json(rows); // Si no tiene, devolverá [] y aparecerá el formulario
     } catch (error) {
-        console.error("Error en /direcciones:", error);
         res.status(500).json({ error: "Error al obtener direcciones" });
     }
 });
-
-// 5. Guardar una nueva dirección (POST)
 app.get('/api/pagos', async (req, res) => {
     try {
-        const [rows] = await pool.query('SELECT id_pago AS id, nombre FROM pago WHERE activo = 1');
+        // Ajustamos la consulta al nombre real de la tabla y sus columnas
+        const [rows] = await pool.query('SELECT id_metodo_pago AS id, nombre FROM metodo_pago WHERE activo = 1');
         res.json(rows);
     } catch (error) {
-        res.status(500).json({ error: "Error al obtener métodos de pago" });
+        console.error("Error al obtener pagos:", error);
+        res.status(500).json({ error: "Error al consultar la base de datos" });
     }
 });
 
-// --- RUTA PARA FINALIZAR COMPRA CON DESCUENTO DE STOCK ---
-app.post('/api/pedidos', async (req, res) => {
-    const { id_usuario, id_direccion, id_pago, total, detalles } = req.body;
-    const connection = await pool.getConnection();
+// --- GUARDAR NUEVA DIRECCIÓN (POST) ---
+app.post('/api/direcciones', async (req, res) => {
+    // Asegúrate de que 'telefono' venga desde el frontend
+    const { calle, numero, telefono, id_localidad, id_usuario } = req.body;
 
     try {
-        await connection.beginTransaction();
-
-        // id_pago ahora referencia a id_pago en la tabla pago
-        const [pedidoRes] = await connection.query(
-            'INSERT INTO pedido (fecha, total, id_usuario, id_direccion, id_pago, estado) VALUES (NOW(), ?, ?, ?, ?, ?)',
-            [total, id_usuario, id_direccion, id_pago, 'Pendiente']
+        // CAMBIO AQUÍ: Usamos 'id_telefono' en lugar de 'n_contacto'
+        const [result] = await pool.query(
+            `INSERT INTO direccion (calle, numero, id_telefono, id_localidad, id_usuario, activo) 
+             VALUES (?, ?, ?, ?, ?, 1)`,
+            [calle, numero, telefono, id_localidad, id_usuario]
         );
-        const pedidoId = pedidoRes.insertId;
-
-        for (const item of detalles) {
-            await connection.query(
-                'INSERT INTO pedido_detalles (cantidad, precio_unitario, id_Producto, id_Pedido) VALUES (?, ?, ?, ?)',
-                [item.cantidad, item.precio, item.id_producto, pedidoId]
-            );
-
-            // id_producto en minúscula
-            const [updateRes] = await connection.query(
-                'UPDATE producto SET stock = stock - ? WHERE id_producto = ? AND stock >= ?',
-                [item.cantidad, item.id_producto, item.cantidad]
-            );
-
-            if (updateRes.affectedRows === 0) throw new Error(`Sin stock para el producto ${item.id_producto}`);
-        }
-
-        await connection.commit();
-        res.status(201).json({ idPedido: pedidoId });
+        
+        res.status(201).json({ id: result.insertId });
     } catch (error) {
-        await connection.rollback();
-        res.status(500).json({ error: error.message });
-    } finally {
-        connection.release();
+        console.error("Error al guardar dirección:", error);
+        res.status(500).json({ error: "Error al guardar en base de datos" });
     }
 });
-
 // --- RUTAS DE PEDIDOS PARA LA VISTA "MIS PEDIDOS" ---
-
-// 1. Obtener todos los pedidos de un usuario
-// Mis Pedidos (id_pedido e id_pago en minúsculas)
-app.get('/api/pedidos/:id_usuario', async (req, res) => {
-    const { id_usuario } = req.params;
-    try {
-        const [rows] = await pool.query(
-            `SELECT p.id_pedido, p.fecha, p.total, p.estado, pag.nombre as metodo_pago 
-             FROM pedido p 
-             JOIN pago pag ON p.id_pago = pag.id_pago 
-             WHERE p.id_usuario = ? 
-             ORDER BY p.id_pedido DESC`, 
-            [id_usuario]
-        );
-        res.json(rows);
-    } catch (error) {
-        res.status(500).json({ error: "Error al obtener pedidos" });
-    }
-});
-
-// 2. Obtener los detalles de un pedido específico
+// Obtener los detalles de un pedido específico
 app.get('/api/pedidos/detalle/:id_pedido', async (req, res) => {
     const { id_pedido } = req.params;
     try {
         const [rows] = await pool.query(
-            `SELECT pd.*, pr.nombre 
+            `SELECT 
+                pd.Precio_Unitario as precio_unitario, 
+                pd.Cantidad as cantidad, 
+                pr.nombre, 
+                p.fecha, 
+                p.Total as total_pedido, 
+                u.nombre as nombre_cliente
              FROM pedido_detalles pd 
-             JOIN producto pr ON pd.id_Producto = pr.id_producto 
-             WHERE pd.id_Pedido = ?`, // 'pedido_detalles' con _ y 'id_producto'
+             JOIN producto pr ON pd.id_producto = pr.id_producto 
+             JOIN pedido p ON pd.id_pedido = p.id_pedido
+             JOIN usuario u ON p.id_usuario = u.id_usuario
+             WHERE pd.id_pedido = ?`, 
             [id_pedido]
         );
         res.json(rows);
     } catch (error) {
-        console.error("Error al obtener detalle:", error);
-        res.status(500).json({ error: "Error al obtener el detalle del pedido" });
+        res.status(500).json({ error: "Error al obtener detalle" });
     }
 });
-// --- RUTAS DE ADMINISTRACIÓN DE PEDIDOS ---
 
+// --- RUTAS DE ADMINISTRACIÓN DE PEDIDOS ---
 // 1. Eliminar un pedido
 app.delete('/api/pedidos/:id', async (req, res) => {
     try {
@@ -181,11 +144,11 @@ app.delete('/api/pedidos/:id', async (req, res) => {
 // 2. Editar datos del pedido
 app.put('/api/pedidos/:id', async (req, res) => {
     const { id } = req.params;
-    const { fecha, total, idUsuario, estado } = req.body;
+    const { fecha, Total, idUsuario, estado } = req.body;
     try {
         await pool.query(
-            'UPDATE pedido SET fecha = ?, total = ?, idUsuario = ?, estado = ? WHERE id = ?',
-            [fecha, total, idUsuario, estado, id]
+            'UPDATE pedido SET fecha = ?, Total = ?, id_usuario = ?, estado = ? WHERE id_pedido = ?',
+            [fecha, Total, idUsuario, estado, id]
         );
         res.json({ message: "Pedido actualizado" });
     } catch (error) {
@@ -198,26 +161,103 @@ app.patch('/api/pedidos/estado/:id', async (req, res) => {
     const { id } = req.params;
     const { nuevoEstado } = req.body;
     try {
-        await pool.query('UPDATE pedido SET estado = ? WHERE id = ?', [nuevoEstado, id]);
+        // CAMBIO: id -> id_pedido
+        await pool.query('UPDATE pedido SET estado = ? WHERE id_pedido = ?', [nuevoEstado, id]);
         res.json({ message: "Estado actualizado", estado: nuevoEstado });
     } catch (error) {
+        console.error(error);
         res.status(500).json({ error: "Error al cambiar el estado" });
     }
 });
 
-// Agregá esto a index.js
+// 1. PRIMERO: La ruta específica para el administrador
 app.get('/api/pedidos/all', async (req, res) => {
     try {
+        console.log("Consultando todos los pedidos para el admin...");
+        const [rows] = await pool.query('SELECT * FROM pedido ORDER BY fecha DESC');
+        res.json(rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});app.get('/api/pedidos/all', async (req, res) => {
+    const { id_usuario } = req.params;
+    try {
         const [rows] = await pool.query(
-            `SELECT p.id_pedido, p.fecha, p.total, p.estado, pag.nombre as metodo_pago, u.nombre as nombre_usuario
+            // CAMBIO AQUÍ: Agregamos 'as total'
+            `SELECT p.id_pedido, p.fecha, p.Total as total, p.estado, mp.nombre as metodo_pago 
              FROM pedido p 
-             JOIN pago pag ON p.id_pago = pag.id_pago
-             JOIN usuario u ON p.id_usuario = u.id
-             ORDER BY p.fecha DESC`
-        );
+             JOIN metodo_pago mp ON p.id_metodo_pago = mp.id_metodo_pago  
+             WHERE p.id_usuario = ? 
+             ORDER BY p.id_pedido DESC`, 
+            [id_usuario]
+        ); 
         res.json(rows);
     } catch (error) {
         res.status(500).json({ error: "Error al obtener todos los pedidos" });
+    }
+});
+
+// 2. SEGUNDO: La ruta con parámetro (esta siempre va al final de su grupo)
+app.get('/api/pedidos/:id_usuario', async (req, res) => {
+    const { id_usuario } = req.params;
+    try {
+        const [rows] = await pool.query(
+            // CAMBIO AQUÍ: Agregamos 'as total'
+            `SELECT p.id_pedido, p.fecha, p.Total as total, p.estado, mp.nombre as metodo_pago 
+             FROM pedido p 
+             JOIN metodo_pago mp ON p.id_metodo_pago = mp.id_metodo_pago  
+             WHERE p.id_usuario = ? 
+             ORDER BY p.id_pedido DESC`, 
+            [id_usuario]
+        ); 
+        res.json(rows);
+    } catch (error) {
+        console.error("Error en la consulta de pedidos:", error);
+        res.status(500).json({ error: "Error al obtener pedidos" });
+    }
+});
+
+// --- RUTAS DE PEDIDOS ---
+
+// AGREGA ESTO SI NO LO TIENES
+app.post('/api/pedidos', async (req, res) => {
+    const { id_usuario, id_pago, Total, detalles } = req.body;
+    
+    // Iniciamos una transacción para asegurar que todo salga bien o nada
+    const connection = await pool.getConnection();
+    
+    try {
+        await connection.beginTransaction();
+
+        const [pedido] = await connection.query(
+            'INSERT INTO pedido (id_usuario, id_metodo_pago, Total, fecha, estado) VALUES (?, ?, ?, NOW(), "Pendiente")',
+            [id_usuario, id_pago, Total]
+        );
+
+        const id_pedido = pedido.insertId;
+
+        for (const item of detalles) {
+            // 1. Insertar detalle
+            await connection.query(
+                'INSERT INTO pedido_detalles (id_pedido, id_producto, Cantidad, Precio_Unitario) VALUES (?, ?, ?, ?)',
+                [id_pedido, item.id_producto, item.Cantidad, item.precio]
+            );
+
+            // 2. RESTAR STOCK (Aquí está la magia)
+            await connection.query(
+                'UPDATE producto SET stock = stock - ? WHERE id_producto = ?',
+                [item.Cantidad, item.id_producto]
+            );
+        }
+
+        await connection.commit();
+        res.status(201).json({ message: "Pedido registrado y stock actualizado", id: id_pedido });
+    } catch (error) {
+        await connection.rollback();
+        console.error("Error al registrar pedido:", error);
+        res.status(500).json({ error: "Error en la base de datos" });
+    } finally {
+        connection.release();
     }
 });
 export default app;

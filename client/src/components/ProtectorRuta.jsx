@@ -1,7 +1,7 @@
 import { Navigate, Outlet } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/ContextoAutenticacion.jsx";
 
-export const ProtectedRoute = () => {
+export const ProtectorRuta = () => {
   const { isAuthenticated} = useAuth();
 
   // Si no está autenticado, lo mandamos al login

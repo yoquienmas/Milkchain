@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { useCart } from "../context/CartContext";
+import { useCart } from "../context/ContextoCarrito.jsx";
 
-export default function ProductCard({ producto }) {
+export default function TarjetaProducto ({ producto }) {
+  const nombreImagen = producto.nombre.toLowerCase().replace(/\s+/g, '-');
+  const rutaPrueba = `/images/${nombreImagen}.jpg`;
   const { cart, agregarProducto, eliminar_producto_carrito } = useCart();
-  const productoEnCarrito = cart.find(item => item.id === producto.id);
+  const productoEnCarrito = cart.find(item => item.id_producto === producto.id_producto);
 
   const [cantidad, setCantidad] = useState(productoEnCarrito ? productoEnCarrito.cantidad : "");
   const [agregado, setAgregado] = useState(!!productoEnCarrito);
@@ -19,7 +21,11 @@ export default function ProductCard({ producto }) {
       return;
     }
 
-    agregarProducto({ ...producto, cantidad: parseInt(cantidad) });
+   // En TarjetaProducto.jsx, al llamar al agregar:
+agregarProducto({...producto, 
+precio: parseFloat(producto.precio), 
+  cantidad: parseInt(cantidad) 
+});
     setAgregado(true);
   };
 
@@ -29,21 +35,28 @@ export default function ProductCard({ producto }) {
         return;
     }
     
-    agregarProducto({ ...producto, cantidad: parseInt(cantidad) });
-    alert("Cantidad actualizada");
+agregarProducto({ 
+  ...producto, 
+  precio: parseFloat(producto.precio), // ¡IMPORTANTE!
+  cantidad: parseInt(cantidad) 
+});    alert("Cantidad actualizada");
     window.location.reload(); 
   };
 
   const handleEliminar = () => {
-    eliminar_producto_carrito(producto.id);
+    eliminar_producto_carrito(producto.id_producto);
     setCantidad(""); 
     setAgregado(false); 
   };
 
   return (
     <div className="product-card" style={{ border: '1px solid #ccc', padding: '15px', borderRadius: '2px', textAlign: 'left', backgroundColor: '#f9f9f9', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-      <img src={producto.imagen} alt={producto.nombre} style={{ width: '100%', height: '180px', objectFit: 'contain', backgroundColor: '#fff', marginBottom: '10px' }} />
-      
+<img 
+        src={producto.url_imagen || producto.ruta || rutaPrueba} 
+        alt={producto.nombre} 
+        style={{ width: '100%', height: '180px', objectFit: 'contain' }} />
+
+
       <h3 style={{ margin: '5px 0', fontSize: '1.1rem', borderTop: '1px solid #eee', paddingTop: '10px' }}>{producto.nombre}</h3>
       <p style={{ fontSize: '0.9rem', color: '#666', margin: '10px 0', minHeight: '40px', lineHeight: '1.4' }}>
         {producto.descripcion || "Sin descripción disponible"}

@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react'; // ← useEffect agregado
-import { useCart } from '../context/useCart.jsx';
-import { usePayment } from '../context/usePayment.jsx';
+import { useCart } from "../context/ContextoCarrito.jsx";
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios'; // ← Importante para la petición
 
-const Checkout = () => {
+const VerificarPago = () => {
   const { cart } = useCart();
   const { createOrder, loading } = usePayment();
   const navigate = useNavigate();
@@ -178,4 +177,4 @@ const Checkout = () => {
   );
 };
 
-export default Checkout;
+export default VerificarPago;

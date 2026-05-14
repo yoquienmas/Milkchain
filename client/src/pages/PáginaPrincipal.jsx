@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-function HomePage() {
+function PáginaPrincipal() {
   return (
     <div className="home-container">
       <div className="title-banner" style={{background: '#ddd', padding: '20px', textAlign: 'center', margin: '20px 0'}}>
@@ -22,4 +22,4 @@ function HomePage() {
   );
 }
 
-export default HomePage;
+export default PáginaPrincipal;

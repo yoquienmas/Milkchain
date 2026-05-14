@@ -1,37 +1,39 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import Navbar from "./components/Navbar";
-import Footer from "./components/Footer";
-import LoginPage from "./pages/LoginPage";
-import RegisterPage from "./pages/RegisterPage";
-import HomePage from "./pages/HomePage";
-import CataloguePage from "./pages/CataloguePage";
-import CartPage from "./pages/CartPage";
-import OrdersPage from "./pages/OrdersPage"; // 1. IMPORTA LA PÁGINA
-import { ProtectedRoute } from "./components/ProtectedRoute";
-import "./App.css";
+import BarraNavegacion from "./components/BarraNavegacion.jsx";
+import PiePagina from "./components/PiePagina.jsx";
+import InicioSesionPagina from "./pages/InicioSesionPagina.jsx";
+import RegistroPagina from "./pages/RegistroPagina.jsx";
+import PáginaPrincipal from "./pages/PáginaPrincipal.jsx";
+import CatalogoPagina from "./pages/CatalogoPagina.jsx";
+import CarritoPagina from "./pages/CarritoPagina.jsx";
+import PedidoPagina from "./pages/PedidoPagina.jsx"; 
+import { ProtectorRuta } from "./components/ProtectorRuta.jsx";
 
 function App() {
   return (
     <>
-      <Navbar />
+      {/* 1. Cambiado de <Navbar /> a <BarraNavegacion /> */}
+      <BarraNavegacion />
+      
       <main style={{ flex: 1 }}>
         <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-
-          <Route element={<ProtectedRoute />}>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/home" element={<HomePage />} />
-            <Route path="/ver_catalogo" element={<CataloguePage />} />
-            <Route path="/cart" element={<CartPage />} />
-            {/* 2. AGREGA LA RUTA AQUÍ */}
-            <Route path="/mis-pedidos" element={<OrdersPage />} /> 
+          <Route path="/login" element={<InicioSesionPagina />} />
+          <Route path="/register" element={<RegistroPagina />} />
+          
+          <Route element={<ProtectorRuta />}>
+            <Route path="/" element={<PáginaPrincipal />} />
+            <Route path="/home" element={<PáginaPrincipal />} />
+            <Route path="/ver_catalogo" element={<CatalogoPagina />} />
+            <Route path="/cart" element={<CarritoPagina />} />
+            <Route path="/mis-pedidos" element={<PedidoPagina />} /> 
           </Route>
 
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </main>
-      <Footer />
+
+      {/* 2. Cambiado de <Footer /> a <PiePagina /> */}
+      <PiePagina />
     </>
   );
 }
