@@ -3,10 +3,10 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 export default function RegistroPagina() {
-  const { register, handleSubmit } = useForm(); 
+  const { register, manejarSubmit } = useForm(); 
   const navigate = useNavigate();
 
-  const onSubmit = handleSubmit(async (values) => {
+  const onSubmit = manejarSubmit(async (values) => {
     try {
       const res = await axios.post("http://localhost:3000/api/register", values);
       console.log("Usuario registrado:", res.data);

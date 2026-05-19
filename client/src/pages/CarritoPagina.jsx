@@ -75,7 +75,7 @@ const { cart, eliminar_producto_carrito, actualizarCantidad, total, vaciarCarrit
   }, [user]);
 
   // HANDLERS PARA FORMULARIO
-  const handlePaisChange = async (e) => {
+  const manejarPaisCambio = async (e) => {
     const paisId = e.target.value;
     setFormData({ ...formData, id_pais: paisId, id_provincia: "", id_localidad: "" });
     if (paisId) {
@@ -86,7 +86,7 @@ const { cart, eliminar_producto_carrito, actualizarCantidad, total, vaciarCarrit
     }
   };
 
-  const handleProvinciaChange = async (e) => {
+  const manejarProvinciaCambio = async (e) => {
     const provId = e.target.value;
     setFormData({ ...formData, id_provincia: provId, id_localidad: "" });
     if (provId) {
@@ -97,7 +97,7 @@ const { cart, eliminar_producto_carrito, actualizarCantidad, total, vaciarCarrit
     }
   };
 
-  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+  const manejarChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const guardarNuevaDireccion = async (e) => {
     e.preventDefault();
@@ -253,21 +253,21 @@ const finalizarCompra = async () => {
                 <div style={{ maxWidth: '500px', margin: '0 auto' }}>
                   <h3>Datos de Envío</h3>
                   <form onSubmit={guardarNuevaDireccion}>
-                    <input name="calle" placeholder="Calle" style={inputStyle} onChange={handleChange} required />
-                    <input name="numero" type="number" placeholder="Número" style={inputStyle} onChange={handleChange} required />
-                    <input name="telefono" placeholder="Teléfono de contacto" style={inputStyle} onChange={handleChange} required />
+                    <input name="calle" placeholder="Calle" style={inputStyle} onChange={manejarChange} required />
+                    <input name="numero" type="number" placeholder="Número" style={inputStyle} onChange={manejarChange} required />
+                    <input name="telefono" placeholder="Teléfono de contacto" style={inputStyle} onChange={manejarChange} required />
                     
-                    <select name="id_pais" style={inputStyle} onChange={handlePaisChange} required value={formData.id_pais}>
+                    <select name="id_pais" style={inputStyle} onChange={manejarPaisCambio} required value={formData.id_pais}>
                       <option value="">Seleccione un País...</option>
                       {paises.map(p => <option key={p.id || p.ID} value={p.id || p.ID}>{p.nombre || p.Nombre}</option>)}
                     </select>
 
-                    <select name="id_provincia" style={inputStyle} onChange={handleProvinciaChange} required disabled={!formData.id_pais}>
+                    <select name="id_provincia" style={inputStyle} onChange={manejarProvinciaCambio} required disabled={!formData.id_pais}>
                       <option value="">Seleccione una Provincia...</option>
                       {provincias.map(prov => <option key={prov.id || prov.ID} value={prov.id || prov.ID}>{prov.nombre || prov.Nombre}</option>)}
                     </select>
 
-                    <select name="id_localidad" style={inputStyle} onChange={handleChange} required disabled={!formData.id_provincia}>
+                    <select name="id_localidad" style={inputStyle} onChange={manejarCambio} required disabled={!formData.id_provincia}>
                       <option value="">Seleccione una Localidad...</option>
                       {localidades.map(loc => <option key={loc.id || loc.ID} value={loc.id || loc.ID}>{loc.nombre || loc.Nombre}</option>)}
                     </select>

@@ -12,7 +12,7 @@ export default function InicioSesionPagina() {
   // Traemos la función signin del contexto global
   const { signin } = useAuth();
 
-  const handleSubmit = async (e) => {
+  const manejarSubmit = async (e) => {
     e.preventDefault();
     
     try {
@@ -52,7 +52,7 @@ export default function InicioSesionPagina() {
     <div className="container">
       <h1 className="title">Inicio de Sesión</h1>
 
-      <form className="form" onSubmit={handleSubmit}>
+      <form className="form" onSubmit={manejarSubmit}>
         <input
           type="email"
           placeholder="Correo"

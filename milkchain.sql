@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 14-05-2026 a las 20:58:50
+-- Tiempo de generación: 19-05-2026 a las 19:35:08
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -153,6 +153,18 @@ CREATE TABLE `estado` (
   `activo` tinyint(1) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Volcado de datos para la tabla `estado`
+--
+
+INSERT INTO `estado` (`id_estado`, `nombre`, `descripcion`, `activo`) VALUES
+(1, 'Pendiente', 'El pedido ha sido recibido pero aún no procesado', 1),
+(2, 'Preparación', 'El pedido está siendo armado en el depósito', 1),
+(3, 'Enviado', 'El pedido ha sido despachado del depósito', 1),
+(4, 'En camino', 'El repartidor está en ruta a la dirección de entrega', 1),
+(5, 'Entregado', 'El pedido fue recibido por el cliente', 1),
+(6, 'Cancelado', 'El pedido ha sido anulado', 1);
+
 -- --------------------------------------------------------
 
 --
@@ -277,14 +289,13 @@ INSERT INTO `pais` (`id_pais`, `nombre`, `activo`) VALUES
 --
 -- Estructura de tabla para la tabla `pedido`
 --
--- Creación: 13-05-2026 a las 19:36:08
--- Última actualización: 14-05-2026 a las 18:02:36
+-- Creación: 14-05-2026 a las 20:08:01
 --
 
 CREATE TABLE `pedido` (
   `id_pedido` int(11) NOT NULL,
   `fecha` datetime DEFAULT NULL,
-  `estado` varchar(50) DEFAULT 'Pendiente',
+  `id_estado` int(1) DEFAULT 1,
   `Total` decimal(10,2) NOT NULL DEFAULT 0.00,
   `id_encargado` int(11) DEFAULT NULL,
   `id_usuario` int(11) DEFAULT NULL,
@@ -296,11 +307,11 @@ CREATE TABLE `pedido` (
 -- Volcado de datos para la tabla `pedido`
 --
 
-INSERT INTO `pedido` (`id_pedido`, `fecha`, `estado`, `Total`, `id_encargado`, `id_usuario`, `id_metodo_pago`, `fecha_modificacion`) VALUES
-(12, '2026-05-13 16:58:33', 'Pendiente', 48402.55, NULL, 4, 1, NULL),
-(13, '2026-05-13 16:58:42', 'Enviado', 48402.55, NULL, 4, 1, NULL),
-(14, '2026-05-13 19:51:46', 'Pendiente', 48402.55, NULL, 4, 3, NULL),
-(15, '2026-05-13 19:54:59', 'Pendiente', 48402.55, NULL, 4, 3, NULL);
+INSERT INTO `pedido` (`id_pedido`, `fecha`, `id_estado`, `Total`, `id_encargado`, `id_usuario`, `id_metodo_pago`, `fecha_modificacion`) VALUES
+(12, '2026-05-13 16:58:33', 0, 48402.55, NULL, 4, 1, NULL),
+(13, '2026-05-13 16:58:42', 0, 48402.55, NULL, 4, 1, NULL),
+(14, '2026-05-13 19:51:46', 0, 48402.55, NULL, 4, 3, NULL),
+(15, '2026-05-13 19:54:59', 0, 48402.55, NULL, 4, 3, NULL);
 
 -- --------------------------------------------------------
 
@@ -308,7 +319,6 @@ INSERT INTO `pedido` (`id_pedido`, `fecha`, `estado`, `Total`, `id_encargado`, `
 -- Estructura de tabla para la tabla `pedido_detalles`
 --
 -- Creación: 08-05-2026 a las 22:29:58
--- Última actualización: 14-05-2026 a las 18:02:36
 --
 
 CREATE TABLE `pedido_detalles` (
@@ -463,7 +473,6 @@ INSERT INTO `telefono` (`id_telefono`, `numero`, `id_usuario`) VALUES
 -- Estructura de tabla para la tabla `usuario`
 --
 -- Creación: 13-05-2026 a las 19:03:23
--- Última actualización: 14-05-2026 a las 18:50:35
 --
 
 CREATE TABLE `usuario` (
@@ -669,7 +678,7 @@ ALTER TABLE `encargado`
 -- AUTO_INCREMENT de la tabla `estado`
 --
 ALTER TABLE `estado`
-  MODIFY `id_estado` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_estado` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT de la tabla `localidad`

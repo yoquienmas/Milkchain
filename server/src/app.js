@@ -101,149 +101,60 @@ app.post('/api/direcciones', async (req, res) => {
         res.status(500).json({ error: "Error al guardar en base de datos" });
     }
 });
-// --- RUTAS DE PEDIDOS PARA LA VISTA "MIS PEDIDOS" ---
-// Obtener los detalles de un pedido específico
-app.get('/api/pedidos/detalle/:id_pedido', async (req, res) => {
-    const { id_pedido } = req.params;
-    try {
-        const [rows] = await pool.query(
-            `SELECT 
-                pd.Precio_Unitario as precio_unitario, 
-                pd.Cantidad as cantidad, 
-                pr.nombre, 
-                p.fecha, 
-                p.Total as total_pedido, 
-                u.nombre as nombre_cliente
-             FROM pedido_detalles pd 
-             JOIN producto pr ON pd.id_producto = pr.id_producto 
-             JOIN pedido p ON pd.id_pedido = p.id_pedido
-             JOIN usuario u ON p.id_usuario = u.id_usuario
-             WHERE pd.id_pedido = ?`, 
-            [id_pedido]
-        );
-        res.json(rows);
-    } catch (error) {
-        res.status(500).json({ error: "Error al obtener detalle" });
-    }
-});
 
-// --- RUTAS DE ADMINISTRACIÓN DE PEDIDOS ---
-// 1. Eliminar un pedido
-app.delete('/api/pedidos/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        // Cambiar pedidodetalles por pedido_detalles
-        await pool.query('DELETE FROM pedido_detalles WHERE id_Pedido = ?', [id]);
-        await pool.query('DELETE FROM pedido WHERE id_pedido = ?', [id]); // id_pedido
-        res.json({ message: "Pedido eliminado correctamente" });
-    } catch (error) {
-        res.status(500).json({ error: "Error al eliminar el pedido" });
-    }
-});
 
-// 2. Editar datos del pedido
-app.put('/api/pedidos/:id', async (req, res) => {
-    const { id } = req.params;
-    const { fecha, Total, idUsuario, estado } = req.body;
-    try {
-        await pool.query(
-            'UPDATE pedido SET fecha = ?, Total = ?, id_usuario = ?, estado = ? WHERE id_pedido = ?',
-            [fecha, Total, idUsuario, estado, id]
-        );
-        res.json({ message: "Pedido actualizado" });
-    } catch (error) {
-        res.status(500).json({ error: "Error al actualizar" });
-    }
-});
+// ==========================================
+//    RUTAS DE ADMINISTRACIÓN DE PEDIDOS
+// ==========================================
 
-// 3. Cambiar estado automáticamente (Ciclo: Pendiente -> Enviado -> Entregado)
-app.patch('/api/pedidos/estado/:id', async (req, res) => {
-    const { id } = req.params;
-    const { nuevoEstado } = req.body;
-    try {
-        // CAMBIO: id -> id_pedido
-        await pool.query('UPDATE pedido SET estado = ? WHERE id_pedido = ?', [nuevoEstado, id]);
-        res.json({ message: "Estado actualizado", estado: nuevoEstado });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "Error al cambiar el estado" });
-    }
-});
-
-// 1. PRIMERO: La ruta específica para el administrador
+// 1. PRIMERO SIEMPRE LAS RUTAS FIJAS ESPECÍFICAS
+// Obtener TODOS los pedidos (Para el Administrador)
 app.get('/api/pedidos/all', async (req, res) => {
     try {
-        console.log("Consultando todos los pedidos para el admin...");
-        const [rows] = await pool.query('SELECT * FROM pedido ORDER BY fecha DESC');
+        console.log("Consultando todos los pedidos para el admin con DNI...");
+        const [rows] = await pool.query(`
+            SELECT 
+                p.id_pedido, 
+                p.fecha, 
+                p.Total, 
+                e.nombre as estado, 
+                u.nombre as nombre_usuario, 
+                u.apellido as apellido_usuario,
+                u.dni as dni_usuario
+            FROM pedido p
+            LEFT JOIN estado e ON p.id_estado = e.id_estado
+            LEFT JOIN usuario u ON p.id_usuario = u.id_usuario
+            ORDER BY p.fecha DESC
+        `);
         res.json(rows);
     } catch (error) {
+        console.error("Error en /api/pedidos/all:", error);
         res.status(500).json({ error: error.message });
     }
-});app.get('/api/pedidos/all', async (req, res) => {
-    const { id_usuario } = req.params;
-    try {
-        const [rows] = await pool.query(
-            // CAMBIO AQUÍ: Agregamos 'as total'
-            `SELECT p.id_pedido, p.fecha, p.Total as total, p.estado, mp.nombre as metodo_pago 
-             FROM pedido p 
-             JOIN metodo_pago mp ON p.id_metodo_pago = mp.id_metodo_pago  
-             WHERE p.id_usuario = ? 
-             ORDER BY p.id_pedido DESC`, 
-            [id_usuario]
-        ); 
-        res.json(rows);
-    } catch (error) {
-        res.status(500).json({ error: "Error al obtener todos los pedidos" });
-    }
 });
 
-// 2. SEGUNDO: La ruta con parámetro (esta siempre va al final de su grupo)
-app.get('/api/pedidos/:id_usuario', async (req, res) => {
-    const { id_usuario } = req.params;
-    try {
-        const [rows] = await pool.query(
-            // CAMBIO AQUÍ: Agregamos 'as total'
-            `SELECT p.id_pedido, p.fecha, p.Total as total, p.estado, mp.nombre as metodo_pago 
-             FROM pedido p 
-             JOIN metodo_pago mp ON p.id_metodo_pago = mp.id_metodo_pago  
-             WHERE p.id_usuario = ? 
-             ORDER BY p.id_pedido DESC`, 
-            [id_usuario]
-        ); 
-        res.json(rows);
-    } catch (error) {
-        console.error("Error en la consulta de pedidos:", error);
-        res.status(500).json({ error: "Error al obtener pedidos" });
-    }
-});
-
-// --- RUTAS DE PEDIDOS ---
-
-// AGREGA ESTO SI NO LO TIENES
+// 2. Ruta para GUARDAR un pedido (POST)
 app.post('/api/pedidos', async (req, res) => {
     const { id_usuario, id_pago, Total, detalles } = req.body;
-    
-    // Iniciamos una transacción para asegurar que todo salga bien o nada
     const connection = await pool.getConnection();
     
     try {
         await connection.beginTransaction();
 
+        // En la base de datos se usa id_estado (1 es Pendiente por defecto)
         const [pedido] = await connection.query(
-            'INSERT INTO pedido (id_usuario, id_metodo_pago, Total, fecha, estado) VALUES (?, ?, ?, NOW(), "Pendiente")',
+            'INSERT INTO pedido (id_usuario, id_metodo_pago, Total, fecha, id_estado) VALUES (?, ?, ?, NOW(), 1)',
             [id_usuario, id_pago, Total]
         );
 
         const id_pedido = pedido.insertId;
 
         for (const item of detalles) {
-            // 1. Insertar detalle
             await connection.query(
                 'INSERT INTO pedido_detalles (id_pedido, id_producto, Cantidad, Precio_Unitario) VALUES (?, ?, ?, ?)',
                 [id_pedido, item.id_producto, item.Cantidad, item.precio]
             );
 
-            // 2. RESTAR STOCK (Aquí está la magia)
             await connection.query(
                 'UPDATE producto SET stock = stock - ? WHERE id_producto = ?',
                 [item.Cantidad, item.id_producto]
@@ -260,4 +171,108 @@ app.post('/api/pedidos', async (req, res) => {
         connection.release();
     }
 });
+
+// 3. SEGUNDO LAS RUTAS CON PARÁMETROS DINÁMICOS (SIEMPRE AL FINAL)
+// Obtener los detalles de un pedido específico
+// Obtener los detalles de un pedido específico
+app.get('/api/pedidos/detalle/:id_pedido', async (req, res) => {
+    const { id_pedido } = req.params;
+    try {
+        const [rows] = await pool.query(
+            `SELECT 
+                pd.Precio_Unitario as precio_unitario, 
+                pd.Cantidad as cantidad, 
+                pr.nombre, 
+                p.fecha, 
+                p.Total as total_pedido, 
+                u.nombre as nombre_cliente,
+                u.apellido as apellido_cliente 
+             FROM pedido_detalles pd 
+             JOIN producto pr ON pd.id_producto = pr.id_producto 
+             JOIN pedido p ON pd.id_pedido = p.id_pedido
+             JOIN usuario u ON p.id_usuario = u.id_usuario
+             WHERE pd.id_pedido = ?`, 
+            [id_pedido]
+        );
+        res.json(rows);
+    } catch (error) {
+        // NOTA: Dejamos este console.error para que si vuelve a fallar veas el por qué real en la consola de la terminal
+        console.error("Error en /api/pedidos/detalle:", error);
+        res.status(500).json({ error: "Error al obtener detalle" });
+    }
+});
+
+// Eliminar un pedido
+app.delete('/api/pedidos/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        await pool.query('DELETE FROM pedido_detalles WHERE id_pedido = ?', [id]);
+        await pool.query('DELETE FROM pedido WHERE id_pedido = ?', [id]);
+        res.json({ message: "Pedido eliminado correctamente" });
+    } catch (error) {
+        res.status(500).json({ error: "Error al eliminar el pedido" });
+    }
+});
+
+// Editar datos del pedido
+app.put('/api/pedidos/:id', async (req, res) => {
+    const { id } = req.params;
+    const { Total, id_estado } = req.body; 
+    try {
+        await pool.query(
+            'UPDATE pedido SET Total = ?, id_estado = ?, fecha_modificacion = NOW() WHERE id_pedido = ?',
+            [Total, id_estado, id]
+        );
+        res.json({ message: "Pedido actualizado con éxito" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Error al actualizar el pedido" });
+    }
+});
+
+// Cambiar estado automáticamente
+app.patch('/api/pedidos/estado/:id', async (req, res) => {
+    const { id } = req.params;
+    const { nuevoEstadoId } = req.body;
+    try {
+        await pool.query('UPDATE pedido SET id_estado = ?, fecha_modificacion = NOW() WHERE id_pedido = ?', [nuevoEstadoId, id]);
+        res.json({ message: "Estado actualizado correctamente", id_estado: nuevoEstadoId });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Error al cambiar el estado" });
+    }
+});
+
+// Obtener pedidos de un usuario específico (ESTA VA ÚLTIMA DE TODO EL ARCHIVO)
+app.get('/api/pedidos/:id_usuario', async (req, res) => {
+    const { id_usuario } = req.params;
+    try {
+        const [rows] = await pool.query(
+            `SELECT p.id_pedido, p.fecha, p.Total, e.nombre as estado, mp.nombre as metodo_pago 
+             FROM pedido p 
+             LEFT JOIN estado e ON p.id_estado = e.id_estado
+             LEFT JOIN metodo_pago mp ON p.id_metodo_pago = mp.id_metodo_pago   
+             WHERE p.id_usuario = ? 
+             ORDER BY p.id_pedido DESC`, 
+            [id_usuario]
+        ); 
+        res.json(rows);
+    } catch (error) {
+        console.error("Error en la consulta de pedidos por usuario:", error);
+        res.status(500).json({ error: "Error al obtener pedidos" });
+    }
+});
+
+// Eliminar un pedido
+app.delete('/api/pedidos/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        await pool.query('DELETE FROM pedido_detalles WHERE id_pedido = ?', [id]);
+        await pool.query('DELETE FROM pedido WHERE id_pedido = ?', [id]);
+        res.json({ message: "Pedido eliminado correctamente" });
+    } catch (error) {
+        res.status(500).json({ error: "Error al eliminar el pedido" });
+    }
+});
+
 export default app;

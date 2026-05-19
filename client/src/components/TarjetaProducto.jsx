@@ -11,7 +11,7 @@ export default function TarjetaProducto ({ producto }) {
   const [agregado, setAgregado] = useState(!!productoEnCarrito);
 
   // Esta es la función que procesa la lógica antes de enviarla al carrito
-  const handleAgregarClick = () => {
+  const manejarAgregarClick = () => {
     if (cantidad === "" || cantidad <= 0) {
       alert("Por favor, rellena el campo con la cantidad del producto.");
       return;
@@ -29,7 +29,7 @@ precio: parseFloat(producto.precio),
     setAgregado(true);
   };
 
-  const handleActualizar = () => {
+  const manejarActualizar = () => {
     if (parseInt(cantidad) > producto.stock) {
         alert("No hay suficiente stock");
         return;
@@ -43,7 +43,7 @@ agregarProducto({
     window.location.reload(); 
   };
 
-  const handleEliminar = () => {
+  const manejarEliminar = () => {
     eliminar_producto_carrito(producto.id_producto);
     setCantidad(""); 
     setAgregado(false); 
@@ -74,7 +74,7 @@ agregarProducto({
             style={{ width: '70px', padding: '5px' }}
           />
           {/* CORRECCIÓN: Llamamos a la función local que valida el stock */}
-          <button onClick={handleAgregarClick} style={{ backgroundColor: '#81c784', color: 'white', border: 'none', padding: '8px 12px', cursor: 'pointer', borderRadius: '4px' }}>
+          <button onClick={manejarAgregarClick} style={{ backgroundColor: '#81c784', color: 'white', border: 'none', padding: '8px 12px', cursor: 'pointer', borderRadius: '4px' }}>
             Agregar al carrito
           </button>
         </div>
@@ -82,11 +82,11 @@ agregarProducto({
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <div style={{ display: 'flex', gap: '5px', justifyContent: 'center' }}>
             <input type="number" value={cantidad} onChange={(e) => setCantidad(e.target.value)} style={{ width: '70px', padding: '5px' }} />
-            <button onClick={handleActualizar} style={{ backgroundColor: '#ffb74d', color: 'white', border: 'none', padding: '8px 12px', cursor: 'pointer', borderRadius: '4px', flex: 1 }}>
+            <button onClick={manejarActualizar} style={{ backgroundColor: '#ffb74d', color: 'white', border: 'none', padding: '8px 12px', cursor: 'pointer', borderRadius: '4px', flex: 1 }}>
               Actualizar
             </button>
           </div>
-          <button onClick={handleEliminar} style={{ backgroundColor: '#e57373', color: 'white', border: 'none', padding: '8px 12px', cursor: 'pointer', borderRadius: '4px' }}>
+          <button onClick={manejarEliminar} style={{ backgroundColor: '#e57373', color: 'white', border: 'none', padding: '8px 12px', cursor: 'pointer', borderRadius: '4px' }}>
             Eliminar
           </button>
         </div>

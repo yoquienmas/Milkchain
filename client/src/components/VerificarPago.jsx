@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios'; // ← Importante para la petición
 
 const VerificarPago = () => {
-  const { cart } = useCart();
-  const { createOrder, loading } = usePayment();
+  const { carrito } = useCart();
+  const { crearPedido, loading } = usePayment();
   const navigate = useNavigate();
   
   // Estados originales
@@ -19,7 +19,7 @@ const VerificarPago = () => {
 
   // --- EFECTO PARA BUSCAR DIRECCIONES ---
   useEffect(() => {
-    const fetchDirecciones = async () => {
+    const busacarDirecciones = async () => {
       if (!user) return;
       try {
         const res = await axios.get(`/api/direcciones/${user.id || user._id}`);
@@ -34,10 +34,10 @@ const VerificarPago = () => {
         console.error("Error al obtener direcciones", err);
       }
     };
-    fetchDirecciones();
+    buscarDirecciones();
   }, [user]);
 
-  const handlePayment = async () => {
+  const manejarPayment = async () => {
     try {
       setError('');
       
@@ -55,7 +55,7 @@ const VerificarPago = () => {
       }
 
       // Crear la orden de pago (puedes pasar la dirección aquí si tu backend la requiere)
-      const orderData = await createOrder({
+      const orderData = await crearPedido({
         ...cart,
         shippingAddress: direccionSeleccionada
       });
@@ -164,7 +164,7 @@ const VerificarPago = () => {
 
               <button
                 className="btn btn-success w-100 mt-3"
-                onClick={handlePayment}
+                onClick={manejarPayment}
                 disabled={loading || (direcciones.length === 0 && !direccionSeleccionada)}
               >
                 {loading ? 'Procesando...' : 'Pagar Ahora'}
