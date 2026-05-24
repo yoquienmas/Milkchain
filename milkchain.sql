@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 16-04-2026 a las 19:02:59
+-- Tiempo de generación: 19-05-2026 a las 19:35:08
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -20,33 +20,39 @@ SET time_zone = "+00:00";
 --
 -- Base de datos: `milkchain`
 --
+CREATE DATABASE IF NOT EXISTS `milkchain` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+USE `milkchain`;
 
 -- --------------------------------------------------------
 
 --
 -- Estructura de tabla para la tabla `carrito`
 --
+-- Creación: 08-05-2026 a las 22:32:34
+--
 
 CREATE TABLE `carrito` (
-  `id` int(11) NOT NULL,
-  `f_Creacion` datetime DEFAULT NULL,
-  `f_Modif` datetime DEFAULT NULL,
-  `activo` tinyint(1) DEFAULT NULL,
-  `id_Usuario` int(11) DEFAULT NULL
+  `id_carrito` int(11) NOT NULL,
+  `fecha_creacion` datetime DEFAULT NULL,
+  `fecha_modificacion` datetime DEFAULT NULL,
+  `activo` tinyint(1) DEFAULT 1,
+  `id_usuario` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `carritodetalles`
+-- Estructura de tabla para la tabla `carrito_detalles`
+--
+-- Creación: 08-05-2026 a las 22:32:19
 --
 
-CREATE TABLE `carritodetalles` (
-  `id` int(11) NOT NULL,
-  `cantidad` int(11) DEFAULT NULL,
-  `precio` decimal(10,2) DEFAULT NULL,
-  `id_Carrito` int(11) DEFAULT NULL,
-  `id_Producto` int(11) DEFAULT NULL
+CREATE TABLE `carrito_detalles` (
+  `id_detalle` int(11) NOT NULL,
+  `Cantidad` int(11) NOT NULL,
+  `precio_unitario` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `id_carrito` int(11) DEFAULT NULL,
+  `id_producto` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -54,27 +60,40 @@ CREATE TABLE `carritodetalles` (
 --
 -- Estructura de tabla para la tabla `categoria`
 --
+-- Creación: 08-05-2026 a las 22:11:49
+--
 
 CREATE TABLE `categoria` (
-  `id` int(11) NOT NULL,
+  `id_categoria` int(11) NOT NULL,
   `nombre` varchar(100) DEFAULT NULL,
   `descripcion` varchar(255) DEFAULT NULL,
-  `activo` tinyint(1) DEFAULT NULL
+  `activo` tinyint(1) DEFAULT NULL,
+  `fecha_creacion` datetime DEFAULT current_timestamp(),
+  `fecha_modificacion` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `categoria`
+--
+
+INSERT INTO `categoria` (`id_categoria`, `nombre`, `descripcion`, `activo`, `fecha_creacion`, `fecha_modificacion`) VALUES
+(1, 'Quesos Duros', 'Quesos de pasta dura madurados', 1, '2026-05-08 18:47:02', NULL);
 
 -- --------------------------------------------------------
 
 --
 -- Estructura de tabla para la tabla `contacto`
 --
+-- Creación: 08-05-2026 a las 22:31:47
+--
 
 CREATE TABLE `contacto` (
-  `id` int(11) NOT NULL,
+  `id_contacto` int(11) NOT NULL,
   `mensaje` varchar(255) DEFAULT NULL,
-  `f_Creacion` datetime DEFAULT NULL,
-  `f_Modif` datetime DEFAULT NULL,
-  `id_Usuario` int(11) DEFAULT NULL,
-  `id_Estado` int(11) DEFAULT NULL
+  `fecha_creacion` datetime DEFAULT NULL,
+  `fecha_modificacion` datetime DEFAULT NULL,
+  `id_usuario` int(11) DEFAULT NULL,
+  `id_estado` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -82,244 +101,403 @@ CREATE TABLE `contacto` (
 --
 -- Estructura de tabla para la tabla `direccion`
 --
+-- Creación: 13-05-2026 a las 18:59:14
+--
 
 CREATE TABLE `direccion` (
-  `id` int(11) NOT NULL,
+  `id_direccion` int(11) NOT NULL,
   `calle` varchar(150) DEFAULT NULL,
   `numero` int(11) DEFAULT NULL,
-  `activo` tinyint(1) DEFAULT NULL,
-  `n_contacto` varchar(50) DEFAULT NULL,
-  `id_localidad` int(11) DEFAULT NULL,
-  `id_usuario` int(11) DEFAULT NULL
+  `activo` tinyint(1) DEFAULT 1,
+  `id_telefono` int(11) DEFAULT NULL,
+  `id_usuario` int(11) DEFAULT NULL,
+  `id_localidad` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `direccion`
+--
+
+INSERT INTO `direccion` (`id_direccion`, `calle`, `numero`, `activo`, `id_telefono`, `id_usuario`, `id_localidad`) VALUES
+(2, 'España', 800, NULL, 2147483647, 1, 0),
+(4, 'España', 600, 1, 2147483647, 4, 9);
 
 -- --------------------------------------------------------
 
 --
 -- Estructura de tabla para la tabla `encargado`
 --
+-- Creación: 08-05-2026 a las 21:55:44
+--
 
 CREATE TABLE `encargado` (
-  `id` int(11) NOT NULL,
+  `id_encargado` int(11) NOT NULL,
   `nombre` varchar(100) DEFAULT NULL,
   `telefono` varchar(50) DEFAULT NULL,
-  `activo` tinyint(1) DEFAULT NULL
+  `activo` tinyint(1) DEFAULT NULL,
+  `fecha_creacion` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `encargadopedido`
+-- Estructura de tabla para la tabla `estado`
+--
+-- Creación: 02-05-2026 a las 18:35:30
 --
 
-CREATE TABLE `encargadopedido` (
-  `id` int(11) NOT NULL,
-  `nombre` varchar(100) DEFAULT NULL,
-  `telefono` varchar(50) DEFAULT NULL,
-  `activo` tinyint(1) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `estadoform`
---
-
-CREATE TABLE `estadoform` (
-  `id` int(11) NOT NULL,
+CREATE TABLE `estado` (
+  `id_estado` int(11) NOT NULL,
   `nombre` varchar(100) DEFAULT NULL,
   `descripcion` varchar(255) DEFAULT NULL,
   `activo` tinyint(1) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `estado`
+--
+
+INSERT INTO `estado` (`id_estado`, `nombre`, `descripcion`, `activo`) VALUES
+(1, 'Pendiente', 'El pedido ha sido recibido pero aún no procesado', 1),
+(2, 'Preparación', 'El pedido está siendo armado en el depósito', 1),
+(3, 'Enviado', 'El pedido ha sido despachado del depósito', 1),
+(4, 'En camino', 'El repartidor está en ruta a la dirección de entrega', 1),
+(5, 'Entregado', 'El pedido fue recibido por el cliente', 1),
+(6, 'Cancelado', 'El pedido ha sido anulado', 1);
 
 -- --------------------------------------------------------
 
 --
 -- Estructura de tabla para la tabla `localidad`
 --
+-- Creación: 08-05-2026 a las 22:30:58
+--
 
 CREATE TABLE `localidad` (
-  `id` int(11) NOT NULL,
+  `id_localidad` int(11) NOT NULL,
   `nombre` varchar(100) DEFAULT NULL,
-  `activo` tinyint(1) DEFAULT NULL,
-  `cp` varchar(20) DEFAULT NULL,
-  `id_provincia` int(11) DEFAULT NULL
+  `activo` tinyint(1) DEFAULT 1,
+  `codigo_postal` varchar(20) DEFAULT NULL,
+  `id_provincia` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `localidad`
+--
+
+INSERT INTO `localidad` (`id_localidad`, `nombre`, `activo`, `codigo_postal`, `id_provincia`) VALUES
+(5, 'Posadas', 1, '3300', 1),
+(6, 'Puerto Iguazú', 1, '3370', 1),
+(7, 'Oberá', 1, '3360', 1),
+(8, 'Eldorado', 1, '3380', 1),
+(9, 'Corrientes', 1, '3400', 2),
+(10, 'Goya', 1, '3450', 2),
+(11, 'Paso de los Libres', 1, '3230', 2),
+(12, 'Empedrado', 1, '3418', 2),
+(13, 'Curuzú Cuatiá', 1, '3460', 2),
+(14, 'Paraná', 1, '3100', 3),
+(15, 'Concordia', 1, '3200', 3),
+(16, 'Gualeguaychú', 1, '2820', 3),
+(17, 'Concepción del Uruguay', 1, '3260', 3),
+(18, 'Resistencia', 1, '3500', 4),
+(19, 'Presidencia Roque Sáenz Peña', 1, '3700', 4),
+(20, 'Villa Ángela', 1, '3540', 4),
+(21, 'Barranqueras', 1, '3503', 4),
+(22, 'Formosa', 1, '3600', 5),
+(23, 'Clorinda', 1, '3610', 5),
+(24, 'Pirané', 1, '3606', 5),
+(25, 'El Colorado', 1, '3603', 5),
+(26, 'Santa Fe', 1, '3000', 6),
+(27, 'Rosario', 1, '2000', 6),
+(28, 'Rafaela', 1, '2300', 6),
+(29, 'Venado Tuerto', 1, '2600', 6),
+(30, 'Reconquista', 1, '3560', 6);
 
 -- --------------------------------------------------------
 
 --
 -- Estructura de tabla para la tabla `marca`
 --
+-- Creación: 08-05-2026 a las 22:07:30
+--
 
 CREATE TABLE `marca` (
-  `id` int(11) NOT NULL,
+  `id_marca` int(11) NOT NULL,
   `nombre` varchar(100) DEFAULT NULL,
   `descripcion` varchar(255) DEFAULT NULL,
-  `activo` tinyint(1) DEFAULT NULL
+  `activo` tinyint(1) DEFAULT NULL,
+  `fecha_creacion` datetime DEFAULT current_timestamp(),
+  `fecha_modificacion` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `marca`
+--
+
+INSERT INTO `marca` (`id_marca`, `nombre`, `descripcion`, `activo`, `fecha_creacion`, `fecha_modificacion`) VALUES
+(1, 'Quesería Artesanal', 'Quesería tradicional con productos artesanales', 1, '2026-05-08 18:47:02', NULL);
 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `pago`
+-- Estructura de tabla para la tabla `metodo_pago`
+--
+-- Creación: 08-05-2026 a las 22:25:44
 --
 
-CREATE TABLE `pago` (
-  `id` int(11) NOT NULL,
+CREATE TABLE `metodo_pago` (
+  `id_metodo_pago` int(11) NOT NULL,
   `nombre` varchar(100) DEFAULT NULL,
-  `activo` tinyint(1) DEFAULT NULL
+  `activo` tinyint(1) DEFAULT 1,
+  `fecha_creacion` datetime DEFAULT current_timestamp(),
+  `fecha_modificacion` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `metodo_pago`
+--
+
+INSERT INTO `metodo_pago` (`id_metodo_pago`, `nombre`, `activo`, `fecha_creacion`, `fecha_modificacion`) VALUES
+(1, 'Efectivo', 1, '2026-05-08 19:25:44', NULL),
+(2, 'Transferencia', 1, '2026-05-08 19:25:44', NULL),
+(3, 'Tarjeta de Credito', 1, '2026-05-08 19:25:44', NULL),
+(4, 'Tarjeta de Debito', 1, '2026-05-08 19:25:44', NULL);
 
 -- --------------------------------------------------------
 
 --
 -- Estructura de tabla para la tabla `pais`
 --
+-- Creación: 08-05-2026 a las 21:55:44
+--
 
 CREATE TABLE `pais` (
-  `id` int(11) NOT NULL,
+  `id_pais` int(11) NOT NULL,
   `nombre` varchar(100) DEFAULT NULL,
-  `activo` tinyint(1) DEFAULT NULL
+  `activo` tinyint(1) DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `pais`
+--
+
+INSERT INTO `pais` (`id_pais`, `nombre`, `activo`) VALUES
+(1, 'Argentina', 1);
 
 -- --------------------------------------------------------
 
 --
 -- Estructura de tabla para la tabla `pedido`
 --
+-- Creación: 14-05-2026 a las 20:08:01
+--
 
 CREATE TABLE `pedido` (
-  `id` int(11) NOT NULL,
+  `id_pedido` int(11) NOT NULL,
   `fecha` datetime DEFAULT NULL,
-  `estado` varchar(50) DEFAULT NULL,
-  `total` decimal(10,2) DEFAULT NULL,
-  `idEncargado` int(11) DEFAULT NULL,
-  `idUsuario` int(11) DEFAULT NULL,
-  `idDireccion` int(11) DEFAULT NULL,
-  `idPago` int(11) DEFAULT NULL
+  `id_estado` int(1) DEFAULT 1,
+  `Total` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `id_encargado` int(11) DEFAULT NULL,
+  `id_usuario` int(11) DEFAULT NULL,
+  `id_metodo_pago` int(11) DEFAULT NULL,
+  `fecha_modificacion` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `pedido`
+--
+
+INSERT INTO `pedido` (`id_pedido`, `fecha`, `id_estado`, `Total`, `id_encargado`, `id_usuario`, `id_metodo_pago`, `fecha_modificacion`) VALUES
+(12, '2026-05-13 16:58:33', 0, 48402.55, NULL, 4, 1, NULL),
+(13, '2026-05-13 16:58:42', 0, 48402.55, NULL, 4, 1, NULL),
+(14, '2026-05-13 19:51:46', 0, 48402.55, NULL, 4, 3, NULL),
+(15, '2026-05-13 19:54:59', 0, 48402.55, NULL, 4, 3, NULL);
 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `pedidodetalles`
+-- Estructura de tabla para la tabla `pedido_detalles`
+--
+-- Creación: 08-05-2026 a las 22:29:58
 --
 
-CREATE TABLE `pedidodetalles` (
-  `id` int(11) NOT NULL,
-  `p_Unitario` decimal(10,2) DEFAULT NULL,
-  `cantidad` int(11) DEFAULT NULL,
-  `id_Producto` int(11) DEFAULT NULL,
-  `id_Pedido` int(11) DEFAULT NULL
+CREATE TABLE `pedido_detalles` (
+  `id_detalle` int(11) NOT NULL,
+  `Precio_Unitario` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `Cantidad` int(11) NOT NULL,
+  `id_producto` int(11) DEFAULT NULL,
+  `id_pedido` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `pedido_detalles`
+--
+
+INSERT INTO `pedido_detalles` (`id_detalle`, `Precio_Unitario`, `Cantidad`, `id_producto`, `id_pedido`) VALUES
+(5, 26124.00, 1, 2, 12),
+(6, 22278.55, 1, 1, 12),
+(7, 26124.00, 1, 2, 13),
+(8, 22278.55, 1, 1, 13),
+(9, 26124.00, 1, 2, 14),
+(10, 22278.55, 1, 1, 14),
+(11, 26124.00, 1, 2, 15),
+(12, 22278.55, 1, 1, 15);
 
 -- --------------------------------------------------------
 
 --
 -- Estructura de tabla para la tabla `producto`
 --
+-- Creación: 13-05-2026 a las 19:36:54
+--
 
 CREATE TABLE `producto` (
-  `id` int(11) NOT NULL,
+  `id_producto` int(11) NOT NULL,
   `nombre` varchar(100) DEFAULT NULL,
   `descripcion` varchar(255) DEFAULT NULL,
-  `precio` decimal(10,2) DEFAULT NULL,
-  `stock` int(11) DEFAULT NULL,
-  `imagen` varchar(255) DEFAULT NULL,
+  `precio` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `stock` int(11) NOT NULL DEFAULT 0,
   `activo` tinyint(1) DEFAULT NULL,
-  `id_Categoria` int(11) DEFAULT NULL,
-  `id_Marca` int(11) DEFAULT NULL,
-  `f_Creacion` datetime DEFAULT current_timestamp()
+  `id_categoria` int(11) NOT NULL,
+  `id_marca` int(11) NOT NULL,
+  `f_Creacion` datetime DEFAULT current_timestamp(),
+  `vencimiento` datetime DEFAULT NULL,
+  `id_direccion` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `producto`
 --
 
-INSERT INTO `producto` (`id`, `nombre`, `descripcion`, `precio`, `stock`, `imagen`, `activo`, `id_Categoria`, `id_Marca`, `f_Creacion`) VALUES
-(1, 'Queso Manchego', 'Queso tradicional español de leche de oveja.', 15.99, 50, '/images/queso-manchego.jpg', NULL, NULL, NULL, '2026-04-15 21:18:47'),
-(2, 'Queso Parmesano', 'Queso italiano duro de leche de vaca, perfecto para pastas.', 18.75, 30, '/images/queso-parmesano.jpg', NULL, NULL, NULL, '2026-04-15 21:18:47');
+INSERT INTO `producto` (`id_producto`, `nombre`, `descripcion`, `precio`, `stock`, `activo`, `id_categoria`, `id_marca`, `f_Creacion`, `vencimiento`, `id_direccion`) VALUES
+(1, 'Queso Manchego', 'Queso tradicional español de leche de oveja.', 22278.55, 48, 1, 1, 1, '2026-05-11 21:42:30', '2026-07-30 23:59:59', NULL),
+(2, 'Queso Parmesano', 'Queso italiano duro de leche de vaca, perfecto para pastas.', 26124.00, 28, 1, 1, 1, '2026-05-11 21:42:30', '2026-07-30 23:59:59', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `producto_imagen`
+--
+-- Creación: 12-05-2026 a las 00:42:30
+--
+
+CREATE TABLE `producto_imagen` (
+  `id_imagen` int(11) NOT NULL,
+  `ruta` varchar(255) NOT NULL,
+  `id_producto` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `producto_imagen`
+--
+
+INSERT INTO `producto_imagen` (`id_imagen`, `ruta`, `id_producto`) VALUES
+(1, '/images/queso-manchego.jpg', 1),
+(2, '/images/queso-parmesano.jpg', 2);
 
 -- --------------------------------------------------------
 
 --
 -- Estructura de tabla para la tabla `provincia`
 --
+-- Creación: 08-05-2026 a las 21:55:44
+--
 
 CREATE TABLE `provincia` (
-  `id` int(11) NOT NULL,
+  `id_provincia` int(11) NOT NULL,
   `nombre` varchar(100) DEFAULT NULL,
-  `activo` tinyint(1) DEFAULT NULL,
+  `activo` tinyint(1) DEFAULT 1,
   `id_Pais` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `provincia`
+--
+
+INSERT INTO `provincia` (`id_provincia`, `nombre`, `activo`, `id_Pais`) VALUES
+(1, 'Misiones', 1, 1),
+(2, 'Corrientes', 1, 1),
+(3, 'Entre Ríos', 1, 1),
+(4, 'Chaco', 1, 1),
+(5, 'Formosa', 1, 1),
+(6, 'Santa Fe', 1, 1);
 
 -- --------------------------------------------------------
 
 --
 -- Estructura de tabla para la tabla `rol`
 --
+-- Creación: 08-05-2026 a las 21:53:17
+--
 
 CREATE TABLE `rol` (
-  `id` int(11) NOT NULL,
+  `id_rol` int(11) NOT NULL,
   `nombre` varchar(100) DEFAULT NULL,
   `descripcion` varchar(255) DEFAULT NULL,
-  `estado` tinyint(1) DEFAULT NULL
+  `activo` tinyint(1) DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `rol`
 --
 
-INSERT INTO `rol` (`id`, `nombre`, `descripcion`, `estado`) VALUES
+INSERT INTO `rol` (`id_rol`, `nombre`, `descripcion`, `activo`) VALUES
 (1, 'Administrador', 'Perfil con acceso total a la gestión de productos, pedidos y usuarios.', 1),
 (2, 'Cliente', 'Perfil para realizar compras y ver historial de pedidos.', 1);
 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `rol_usuario`
+-- Estructura de tabla para la tabla `telefono`
+--
+-- Creación: 08-05-2026 a las 22:01:17
 --
 
-CREATE TABLE `rol_usuario` (
-  `id` int(11) NOT NULL,
-  `activo` tinyint(1) DEFAULT NULL,
-  `id_Usuario` int(11) DEFAULT NULL,
-  `id_Rol` int(11) DEFAULT NULL
+CREATE TABLE `telefono` (
+  `id_telefono` int(11) NOT NULL,
+  `numero` varchar(50) NOT NULL,
+  `id_usuario` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Volcado de datos para la tabla `rol_usuario`
+-- Volcado de datos para la tabla `telefono`
 --
 
-INSERT INTO `rol_usuario` (`id`, `activo`, `id_Usuario`, `id_Rol`) VALUES
-(1, 1, 1, 1);
+INSERT INTO `telefono` (`id_telefono`, `numero`, `id_usuario`) VALUES
+(1, '1111111111', 1),
+(2, '3794034332', 4);
 
 -- --------------------------------------------------------
 
 --
 -- Estructura de tabla para la tabla `usuario`
 --
+-- Creación: 13-05-2026 a las 19:03:23
+--
 
 CREATE TABLE `usuario` (
-  `id` int(11) NOT NULL,
+  `id_usuario` int(11) NOT NULL,
   `email` varchar(150) DEFAULT NULL,
-  `pass` varchar(255) DEFAULT NULL,
+  `password` varchar(255) DEFAULT NULL,
   `dni` int(11) DEFAULT NULL,
   `nombre` varchar(100) DEFAULT NULL,
   `apellido` varchar(100) DEFAULT NULL,
   `activo` tinyint(1) DEFAULT NULL,
-  `telefono` int(11) DEFAULT NULL,
-  `f_Creacion` datetime DEFAULT NULL,
-  `f_Modif` datetime DEFAULT NULL
+  `id_telefono` int(11) DEFAULT NULL,
+  `fecha_creacion` datetime DEFAULT NULL,
+  `fecha_modificacion` datetime DEFAULT NULL,
+  `id_rol` int(11) DEFAULT NULL,
+  `id_direccion` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `usuario`
 --
 
-INSERT INTO `usuario` (`id`, `email`, `pass`, `dni`, `nombre`, `apellido`, `activo`, `telefono`, `f_Creacion`, `f_Modif`) VALUES
-(1, 'admin@gmail.com', '$2b$10$n0p/fmwIjb7caj2/s5fwfebETwR5gOwX7pFy8ww4mJ3vj/T6d55a.', 0, 'admin', 'principal', NULL, 0, NULL, NULL);
+INSERT INTO `usuario` (`id_usuario`, `email`, `password`, `dni`, `nombre`, `apellido`, `activo`, `id_telefono`, `fecha_creacion`, `fecha_modificacion`, `id_rol`, `id_direccion`) VALUES
+(1, 'admin@gmail.com', '$2b$10$n0p/fmwIjb7caj2/s5fwfebETwR5gOwX7pFy8ww4mJ3vj/T6d55a.', 0, 'admin', 'principal', NULL, 1, NULL, NULL, 1, NULL),
+(4, 'maria_dniel@yahoo.com.ar', '$2b$10$AWwa5JHrnpB4l/yV.CQmH.ulhJWtxk3b9tKlJHBzjnMe3ajCBop4O', 43822520, 'Maria Daniela', 'Fernandez Gotusso', 1, 2, '2026-05-04 13:10:34', NULL, 2, NULL),
+(5, 'yoquienmascorreo@gmail.com', '$2b$10$oKC7HkimBpzquvgo6r3PKuvuNat84yheFuV7sYX0WJkWzasK6WpSW', 44333222, 'Yoquien', 'Mas', 1, NULL, NULL, NULL, 2, NULL);
 
 --
 -- Índices para tablas volcadas
@@ -329,134 +507,132 @@ INSERT INTO `usuario` (`id`, `email`, `pass`, `dni`, `nombre`, `apellido`, `acti
 -- Indices de la tabla `carrito`
 --
 ALTER TABLE `carrito`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `id_Usuario` (`id_Usuario`);
+  ADD PRIMARY KEY (`id_carrito`),
+  ADD KEY `fk_carrito_usuario` (`id_usuario`);
 
 --
--- Indices de la tabla `carritodetalles`
+-- Indices de la tabla `carrito_detalles`
 --
-ALTER TABLE `carritodetalles`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `id_Carrito` (`id_Carrito`),
-  ADD KEY `id_Producto` (`id_Producto`);
+ALTER TABLE `carrito_detalles`
+  ADD PRIMARY KEY (`id_detalle`),
+  ADD KEY `id_Carrito` (`id_carrito`),
+  ADD KEY `fk_carrito_producto` (`id_producto`);
 
 --
 -- Indices de la tabla `categoria`
 --
 ALTER TABLE `categoria`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id_categoria`);
 
 --
 -- Indices de la tabla `contacto`
 --
 ALTER TABLE `contacto`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `id_Usuario` (`id_Usuario`),
-  ADD KEY `id_Estado` (`id_Estado`);
+  ADD PRIMARY KEY (`id_contacto`),
+  ADD KEY `id_Estado` (`id_estado`),
+  ADD KEY `fk_contacto_usuario` (`id_usuario`);
 
 --
 -- Indices de la tabla `direccion`
 --
 ALTER TABLE `direccion`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `id_localidad` (`id_localidad`),
-  ADD KEY `id_usuario` (`id_usuario`);
+  ADD PRIMARY KEY (`id_direccion`);
 
 --
 -- Indices de la tabla `encargado`
 --
 ALTER TABLE `encargado`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id_encargado`);
 
 --
--- Indices de la tabla `encargadopedido`
+-- Indices de la tabla `estado`
 --
-ALTER TABLE `encargadopedido`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indices de la tabla `estadoform`
---
-ALTER TABLE `estadoform`
-  ADD PRIMARY KEY (`id`);
+ALTER TABLE `estado`
+  ADD PRIMARY KEY (`id_estado`);
 
 --
 -- Indices de la tabla `localidad`
 --
 ALTER TABLE `localidad`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `id_provincia` (`id_provincia`);
+  ADD PRIMARY KEY (`id_localidad`),
+  ADD KEY `fk_localidad_provincia` (`id_provincia`);
 
 --
 -- Indices de la tabla `marca`
 --
 ALTER TABLE `marca`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id_marca`);
 
 --
--- Indices de la tabla `pago`
+-- Indices de la tabla `metodo_pago`
 --
-ALTER TABLE `pago`
-  ADD PRIMARY KEY (`id`);
+ALTER TABLE `metodo_pago`
+  ADD PRIMARY KEY (`id_metodo_pago`);
 
 --
 -- Indices de la tabla `pais`
 --
 ALTER TABLE `pais`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id_pais`);
 
 --
 -- Indices de la tabla `pedido`
 --
 ALTER TABLE `pedido`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idEncargado` (`idEncargado`),
-  ADD KEY `idUsuario` (`idUsuario`),
-  ADD KEY `idDireccion` (`idDireccion`),
-  ADD KEY `idPago` (`idPago`);
+  ADD PRIMARY KEY (`id_pedido`),
+  ADD KEY `fk_pedido_metodo_pago` (`id_metodo_pago`),
+  ADD KEY `fk_pedido_usuario` (`id_usuario`),
+  ADD KEY `fk_pedido_encargado` (`id_encargado`);
 
 --
--- Indices de la tabla `pedidodetalles`
+-- Indices de la tabla `pedido_detalles`
 --
-ALTER TABLE `pedidodetalles`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `id_Producto` (`id_Producto`),
-  ADD KEY `id_Pedido` (`id_Pedido`);
+ALTER TABLE `pedido_detalles`
+  ADD PRIMARY KEY (`id_detalle`),
+  ADD KEY `id_Producto` (`id_producto`),
+  ADD KEY `id_Pedido` (`id_pedido`);
 
 --
 -- Indices de la tabla `producto`
 --
 ALTER TABLE `producto`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `id_Categoria` (`id_Categoria`),
-  ADD KEY `id_Marca` (`id_Marca`);
+  ADD PRIMARY KEY (`id_producto`),
+  ADD KEY `fk_producto_categoria` (`id_categoria`),
+  ADD KEY `fk_producto_marca` (`id_marca`);
+
+--
+-- Indices de la tabla `producto_imagen`
+--
+ALTER TABLE `producto_imagen`
+  ADD PRIMARY KEY (`id_imagen`);
 
 --
 -- Indices de la tabla `provincia`
 --
 ALTER TABLE `provincia`
-  ADD PRIMARY KEY (`id`),
+  ADD PRIMARY KEY (`id_provincia`),
   ADD KEY `id_Pais` (`id_Pais`);
 
 --
 -- Indices de la tabla `rol`
 --
 ALTER TABLE `rol`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id_rol`);
 
 --
--- Indices de la tabla `rol_usuario`
+-- Indices de la tabla `telefono`
 --
-ALTER TABLE `rol_usuario`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `id_Usuario` (`id_Usuario`),
-  ADD KEY `id_Rol` (`id_Rol`);
+ALTER TABLE `telefono`
+  ADD PRIMARY KEY (`id_telefono`),
+  ADD KEY `id_usuario` (`id_usuario`);
 
 --
 -- Indices de la tabla `usuario`
 --
 ALTER TABLE `usuario`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id_usuario`),
+  ADD UNIQUE KEY `email` (`email`),
+  ADD UNIQUE KEY `dni` (`dni`);
 
 --
 -- AUTO_INCREMENT de las tablas volcadas
@@ -466,115 +642,115 @@ ALTER TABLE `usuario`
 -- AUTO_INCREMENT de la tabla `carrito`
 --
 ALTER TABLE `carrito`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_carrito` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT de la tabla `carritodetalles`
+-- AUTO_INCREMENT de la tabla `carrito_detalles`
 --
-ALTER TABLE `carritodetalles`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `carrito_detalles`
+  MODIFY `id_detalle` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `categoria`
 --
 ALTER TABLE `categoria`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_categoria` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `contacto`
 --
 ALTER TABLE `contacto`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_contacto` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `direccion`
 --
 ALTER TABLE `direccion`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_direccion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de la tabla `encargado`
 --
 ALTER TABLE `encargado`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_encargado` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT de la tabla `encargadopedido`
+-- AUTO_INCREMENT de la tabla `estado`
 --
-ALTER TABLE `encargadopedido`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT de la tabla `estadoform`
---
-ALTER TABLE `estadoform`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `estado`
+  MODIFY `id_estado` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT de la tabla `localidad`
 --
 ALTER TABLE `localidad`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_localidad` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
 -- AUTO_INCREMENT de la tabla `marca`
 --
 ALTER TABLE `marca`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_marca` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
--- AUTO_INCREMENT de la tabla `pago`
+-- AUTO_INCREMENT de la tabla `metodo_pago`
 --
-ALTER TABLE `pago`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `metodo_pago`
+  MODIFY `id_metodo_pago` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de la tabla `pais`
 --
 ALTER TABLE `pais`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_pais` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `pedido`
 --
 ALTER TABLE `pedido`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_pedido` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
--- AUTO_INCREMENT de la tabla `pedidodetalles`
+-- AUTO_INCREMENT de la tabla `pedido_detalles`
 --
-ALTER TABLE `pedidodetalles`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `pedido_detalles`
+  MODIFY `id_detalle` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT de la tabla `producto`
 --
 ALTER TABLE `producto`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id_producto` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT de la tabla `producto_imagen`
+--
+ALTER TABLE `producto_imagen`
+  MODIFY `id_imagen` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de la tabla `provincia`
 --
 ALTER TABLE `provincia`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_provincia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT de la tabla `rol`
 --
 ALTER TABLE `rol`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id_rol` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
--- AUTO_INCREMENT de la tabla `rol_usuario`
+-- AUTO_INCREMENT de la tabla `telefono`
 --
-ALTER TABLE `rol_usuario`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+ALTER TABLE `telefono`
+  MODIFY `id_telefono` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de la tabla `usuario`
 --
 ALTER TABLE `usuario`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- Restricciones para tablas volcadas
@@ -584,70 +760,80 @@ ALTER TABLE `usuario`
 -- Filtros para la tabla `carrito`
 --
 ALTER TABLE `carrito`
-  ADD CONSTRAINT `carrito_ibfk_1` FOREIGN KEY (`id_Usuario`) REFERENCES `usuario` (`id`);
+  ADD CONSTRAINT `fk_carrito_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`);
 
 --
--- Filtros para la tabla `carritodetalles`
+-- Filtros para la tabla `carrito_detalles`
 --
-ALTER TABLE `carritodetalles`
-  ADD CONSTRAINT `carritodetalles_ibfk_1` FOREIGN KEY (`id_Carrito`) REFERENCES `carrito` (`id`),
-  ADD CONSTRAINT `carritodetalles_ibfk_2` FOREIGN KEY (`id_Producto`) REFERENCES `producto` (`id`);
+ALTER TABLE `carrito_detalles`
+  ADD CONSTRAINT `carrito_detalles_ibfk_1` FOREIGN KEY (`id_carrito`) REFERENCES `carrito` (`id_carrito`),
+  ADD CONSTRAINT `fk_carrito_producto` FOREIGN KEY (`id_producto`) REFERENCES `producto` (`id_producto`);
 
 --
 -- Filtros para la tabla `contacto`
 --
 ALTER TABLE `contacto`
-  ADD CONSTRAINT `contacto_ibfk_1` FOREIGN KEY (`id_Usuario`) REFERENCES `usuario` (`id`),
-  ADD CONSTRAINT `contacto_ibfk_2` FOREIGN KEY (`id_Estado`) REFERENCES `estadoform` (`id`);
+  ADD CONSTRAINT `contacto_ibfk_2` FOREIGN KEY (`id_estado`) REFERENCES `estado` (`id_estado`),
+  ADD CONSTRAINT `fk_contacto_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`);
 
 --
 -- Filtros para la tabla `direccion`
 --
 ALTER TABLE `direccion`
-  ADD CONSTRAINT `direccion_ibfk_1` FOREIGN KEY (`id_localidad`) REFERENCES `localidad` (`id`),
-  ADD CONSTRAINT `direccion_ibfk_2` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id`);
+  ADD CONSTRAINT `direccion_ibfk_2` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`),
+  ADD CONSTRAINT `fk_direccion_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`);
 
 --
 -- Filtros para la tabla `localidad`
 --
 ALTER TABLE `localidad`
-  ADD CONSTRAINT `localidad_ibfk_1` FOREIGN KEY (`id_provincia`) REFERENCES `provincia` (`id`);
+  ADD CONSTRAINT `fk_localidad_provincia` FOREIGN KEY (`id_provincia`) REFERENCES `provincia` (`id_provincia`);
 
 --
 -- Filtros para la tabla `pedido`
 --
 ALTER TABLE `pedido`
-  ADD CONSTRAINT `pedido_ibfk_1` FOREIGN KEY (`idEncargado`) REFERENCES `encargado` (`id`),
-  ADD CONSTRAINT `pedido_ibfk_2` FOREIGN KEY (`idUsuario`) REFERENCES `usuario` (`id`),
-  ADD CONSTRAINT `pedido_ibfk_3` FOREIGN KEY (`idDireccion`) REFERENCES `direccion` (`id`),
-  ADD CONSTRAINT `pedido_ibfk_4` FOREIGN KEY (`idPago`) REFERENCES `pago` (`id`);
+  ADD CONSTRAINT `fk_pedido_encargado` FOREIGN KEY (`id_encargado`) REFERENCES `encargado` (`id_encargado`),
+  ADD CONSTRAINT `fk_pedido_metodo_pago` FOREIGN KEY (`id_metodo_pago`) REFERENCES `metodo_pago` (`id_metodo_pago`),
+  ADD CONSTRAINT `fk_pedido_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`);
 
 --
--- Filtros para la tabla `pedidodetalles`
+-- Filtros para la tabla `pedido_detalles`
 --
-ALTER TABLE `pedidodetalles`
-  ADD CONSTRAINT `pedidodetalles_ibfk_1` FOREIGN KEY (`id_Producto`) REFERENCES `producto` (`id`),
-  ADD CONSTRAINT `pedidodetalles_ibfk_2` FOREIGN KEY (`id_Pedido`) REFERENCES `pedido` (`id`);
+ALTER TABLE `pedido_detalles`
+  ADD CONSTRAINT `pedido_detalles_ibfk_1` FOREIGN KEY (`id_producto`) REFERENCES `producto` (`id_producto`),
+  ADD CONSTRAINT `pedido_detalles_ibfk_2` FOREIGN KEY (`id_pedido`) REFERENCES `pedido` (`id_pedido`);
 
 --
 -- Filtros para la tabla `producto`
 --
 ALTER TABLE `producto`
-  ADD CONSTRAINT `producto_ibfk_1` FOREIGN KEY (`id_Categoria`) REFERENCES `categoria` (`id`),
-  ADD CONSTRAINT `producto_ibfk_2` FOREIGN KEY (`id_Marca`) REFERENCES `marca` (`id`);
+  ADD CONSTRAINT `fk_producto_categoria` FOREIGN KEY (`id_categoria`) REFERENCES `categoria` (`id_categoria`),
+  ADD CONSTRAINT `fk_producto_marca` FOREIGN KEY (`id_marca`) REFERENCES `marca` (`id_marca`);
+
+--
+-- Filtros para la tabla `producto_imagen`
+--
+ALTER TABLE `producto_imagen`
+  ADD CONSTRAINT `producto_imagen_ibfk_1` FOREIGN KEY (`id_producto`) REFERENCES `producto` (`id_producto`) ON DELETE CASCADE;
 
 --
 -- Filtros para la tabla `provincia`
 --
 ALTER TABLE `provincia`
-  ADD CONSTRAINT `provincia_ibfk_1` FOREIGN KEY (`id_Pais`) REFERENCES `pais` (`id`);
+  ADD CONSTRAINT `provincia_ibfk_1` FOREIGN KEY (`id_Pais`) REFERENCES `pais` (`id_pais`);
 
 --
--- Filtros para la tabla `rol_usuario`
+-- Filtros para la tabla `telefono`
 --
-ALTER TABLE `rol_usuario`
-  ADD CONSTRAINT `rol_usuario_ibfk_1` FOREIGN KEY (`id_Usuario`) REFERENCES `usuario` (`id`),
-  ADD CONSTRAINT `rol_usuario_ibfk_2` FOREIGN KEY (`id_Rol`) REFERENCES `rol` (`id`);
+ALTER TABLE `telefono`
+  ADD CONSTRAINT `fk_telefono_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`);
+
+--
+-- Filtros para la tabla `usuario`
+--
+ALTER TABLE `usuario`
+  ADD CONSTRAINT `fk_usuario_direccion` FOREIGN KEY (`id_direccion`) REFERENCES `direccion` (`id_direccion`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
