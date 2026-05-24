@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 // 1. Creamos el contexto
@@ -90,4 +91,98 @@ const total = cart.reduce((acc, item) => {
       {children}
     </ContextoCarrito.Provider>
   );
+=======
+import React, { createContext, useContext, useState, useEffect } from 'react';
+
+// 1. Creamos el contexto
+const ContextoCarrito = createContext();
+
+// 2. Hook personalizado para usar el carrito fácilmente
+export const useCart = () => {
+  const context = useContext(ContextoCarrito);
+  if (!context) {
+    throw new Error("useCart debe usarse dentro de CartProvider");
+  }
+  return context;
+};
+
+// 3. Definimos el Provider
+export const CartProvider = ({ children }) => {
+  // Inicializamos el carrito desde localStorage
+  const [cart, setCart] = useState(() => {
+    const savedCart = localStorage.getItem("milkchain_cart");
+    return savedCart ? JSON.parse(savedCart) : [];
+  });
+
+  const vaciarCarrito = () => {
+    setCart([]); 
+    localStorage.removeItem("milkchain_cart"); 
+};
+
+// No olvides incluirla en el value del Provider:
+// value={{ cart, agregarProducto, ..., vaciarCarrito }}
+  // Persistencia: Guardar en localStorage cada vez que el carrito cambie
+  useEffect(() => {
+    localStorage.setItem("milkchain_cart", JSON.stringify(cart));
+  }, [cart]);
+
+  // Función para agregar productos (Maneja incremento si ya existe)
+const agregarProducto = (product) => {
+  const idABuscar = product.id_producto || product.id; 
+
+  const precioNumerico = parseFloat(product.precio) || 0;
+  const cantidadNumerica = parseInt(product.cantidad) || 1;
+  setCart((prev) => {
+    const exists = prev.find(item => (item.id_producto || item.id) === idABuscar);
+    if (exists) {
+      return prev.map(item =>
+        (item.id_producto || item.id) === idABuscar 
+          ? { ...item, cantidad: item.cantidad + (product.cantidad || 1) } 
+          : item
+      );
+    }
+    return [...prev, { ...product, precio: precioNumerico, cantidad: cantidadNumerica }];
+  });
+  <style>{`
+  @media print {
+    .no-print { display: none !important; }
+    .print-container { padding: 20px; border: 1px solid #ccc; }
+    body { background: white; }
+  }
+`}</style>
+};
+
+  const actualizarCantidad = (id, nuevaCantidad) => {
+  if (nuevaCantidad < 1) return; 
+  setCart((prev) =>
+    prev.map((item) =>
+      (item.id_producto || item.id) === id ? { ...item, cantidad: nuevaCantidad } : item
+    )
+  );
+};
+
+  const eliminar_producto_carrito = (id) => {
+  setCart((prev) => prev.filter(item => (item.id_producto || item.id) !== id));
+};
+
+  // Cálculo del total
+const total = cart.reduce((acc, item) => {
+  const precio = parseFloat(item.precio) || 0;
+  const cantidad = parseInt(item.cantidad) || 0;
+  return acc + (precio * cantidad);
+}, 0);
+
+  return (
+    <ContextoCarrito.Provider value={{ 
+      cart, 
+      agregarProducto, 
+      actualizarCantidad, 
+      eliminar_producto_carrito, 
+      total,
+      vaciarCarrito
+    }}>
+      {children}
+    </ContextoCarrito.Provider>
+  );
+>>>>>>> Rama_Front
 };
