@@ -1,8 +1,8 @@
 import { pool } from "../db.js";
 
-export const getProducts = async (req, res) => {
+// RENOMBRADO: De getProducts a listarProductos para coincidir con la conversación
+export const listarProductos = async (req, res) => {
     try {
-        // Esta consulta busca el producto Y su primera imagen asociada
         const [rows] = await pool.query(`
             SELECT 
                 p.*, 
@@ -13,7 +13,6 @@ export const getProducts = async (req, res) => {
             WHERE p.activo = 1
         `);
         
-        // Verificación de seguridad: si no hay imagen, le ponemos null explícitamente
         const productosConImagen = rows.map(prod => ({
             ...prod,
             url_imagen: prod.url_imagen || null

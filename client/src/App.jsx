@@ -3,7 +3,7 @@ import BarraNavegacion from "./components/BarraNavegacion.jsx";
 import PiePagina from "./components/PiePagina.jsx";
 import InicioSesionPagina from "./pages/InicioSesionPagina.jsx";
 import RegistroPagina from "./pages/RegistroPagina.jsx";
-import PáginaPrincipal from "./pages/PáginaPrincipal.jsx";
+import PáginaPrincipal from "./pages/PaginaPrincipal.jsx";
 import CatalogoPagina from "./pages/CatalogoPagina.jsx";
 import CarritoPagina from "./pages/CarritoPagina.jsx";
 import PedidoPagina from "./pages/PedidoPagina.jsx"; 

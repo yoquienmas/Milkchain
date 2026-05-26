@@ -1,10 +1,3 @@
-<<<<<<< HEAD
-import { Link } from "react-router-dom";
-import { useAuth } from "../context/ContextoAutenticacion.jsx";
-
-export default function BarraNavegacion() {
-  const { isAuthenticated, logout, user } = useAuth();
-=======
 import { useState, useEffect } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { useAuth } from "../context/ContextoAutenticacion.jsx";
@@ -33,33 +26,10 @@ export default function BarraNavegacion() {
   }, [darkMode]);
 
   const totalItems = cart.reduce((acc, item) => acc + (parseInt(item.cantidad) || 0), 0);
->>>>>>> Rama_Front
 
   return (
     <nav className="navbar">
       <div className="navbar-logo">
-<<<<<<< HEAD
-        <Link to="" className="logo-container">
-          <img 
-            src="/images/logo_MILKCHAIN.png" 
-            alt="MilkChain Logo" 
-            className="navbar-brand-img"
-          />
-        </Link>
-      </div>
-      <ul className="navbar-links">
-        {isAuthenticated ? (
-          <>
-            <li><span>Hola, {user?.nombre}</span></li>
-            <li><button onClick={logout} className="btn-logout">Salir</button></li>
-          </>
-        ) : (
-          <>
-            <li><Link to="/login">Login</Link></li>
-            <li><Link to="/register">Registro</Link></li>
-          </>
-        )}
-=======
         <Link to={isAuthenticated ? "/home" : "/login"} className="logo-container">
           <img 
             src="/images/logo_MILKCHAIN.png" 
@@ -173,7 +143,6 @@ export default function BarraNavegacion() {
             {darkMode ? <FiSun /> : <FiMoon />}
           </button>
         </li>
->>>>>>> Rama_Front
       </ul>
     </nav>
   );

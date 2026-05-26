@@ -3,112 +3,37 @@ import axios from "axios";
 import ProductCard from "../components/TarjetaProducto.jsx";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/ContextoCarrito.jsx";
-<<<<<<< HEAD
-=======
 import { FiSearch, FiArrowLeft, FiShoppingCart } from "react-icons/fi";
 import "../App.css";
->>>>>>> Rama_Front
 
 function CatalogoPagina() {
   const [productos, setProductos] = useState([]);
   const [busqueda, setBusqueda] = useState("");
-<<<<<<< HEAD
-  const navigate = useNavigate();
-  
-  // 2. Extraemos el arreglo 'cart' del contexto
-  const { cart } = useCart();
-
-  // Acción: ver_catalogo()
-  useEffect(() => {
-    const ver_catalogo = async () => {
-      try {
-=======
   const [cargando, setCargando] = useState(true);
   const navigate = useNavigate();
   
   const { cart } = useCart();
 
   useEffect(() => {
-    const ver_catalogo = async () => {
+    // MODIFICADO: Renombrado ver_catalogo por listarProductos
+    const listarProductos = async () => {
       try {
         setCargando(true);
->>>>>>> Rama_Front
         const res = await axios.get("http://localhost:3000/api/productos");
         setProductos(res.data);
       } catch (error) {
         console.error("Error al cargar productos", error);
-<<<<<<< HEAD
-=======
       } finally {
         setCargando(false);
->>>>>>> Rama_Front
       }
     };
-    ver_catalogo();
+    listarProductos();
   }, []);
 
   const productosFiltrados = productos.filter((p) =>
     p.nombre.toLowerCase().includes(busqueda.toLowerCase())
   );
 
-<<<<<<< HEAD
-  return (
-    <div className="catalogue-container" style={{ backgroundColor: "#fff", minHeight: "100vh" }}>
-      
-      <header style={{ backgroundColor: "#ddd", padding: "20px", textAlign: "center" }}>
-        <h1 style={{ margin: 0, fontSize: "1.8rem", color: "#333" }}>
-          Agregar/buscar <br /> producto
-        </h1>
-      </header>
-
-      <div style={{ display: "flex", justifyContent: "center", padding: "20px", gap: "10px" }}>
-        <input
-          type="text"
-          placeholder="Buscar producto"
-          value={busqueda}
-          onChange={(e) => setBusqueda(e.target.value)}
-          style={{ padding: "10px", width: "300px", border: "1px solid #ccc", borderRadius: "4px" }}
-        />
-        <button className="btn-green" style={{ padding: "10px 20px" }}>Buscar</button>
-      </div>
-
-      <div className="product-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 350px))", gap: "30px", padding: "20px", justifyContent: "center" }}>
-        {productosFiltrados.map((prod) => (
-  // Asegúrate de usar el nombre exacto de la columna de tu DB (id_producto)
-       <ProductCard key={prod.id_producto} producto={prod} />
-       ))}
-      </div>
-
-      <footer style={{ 
-        display: "flex", 
-        justifyContent: "space-between", 
-        padding: "40px 20px",
-        marginTop: "20px" 
-      }}>
-        <button 
-          onClick={() => navigate("/home")}
-          style={{ backgroundColor: "#81c784", color: "white", border: "none", padding: "10px 20px", borderRadius: "4px", cursor: "pointer" }}
-        >
-          Volver al inicio
-        </button>
-        
-        {/* 3. LÓGICA CONDICIONAL: Solo muestra el botón si el carrito tiene productos */}
-        {cart.length > 0 && (
-          <button 
-            onClick={() => navigate("/cart")}
-            style={{ 
-              backgroundColor: "#2e7d32", // Un verde un poco más oscuro para que resalte
-              color: "white", 
-              border: "none", 
-              padding: "10px 30px", 
-              borderRadius: "4px",
-              cursor: "pointer",
-              fontWeight: "bold",
-              boxShadow: "0 4px 6px rgba(0,0,0,0.1)"
-            }}
-          >
-            Comprar
-=======
   const totalItems = cart.reduce((acc, item) => acc + (parseInt(item.cantidad) || 0), 0);
 
   return (
@@ -227,7 +152,6 @@ function CatalogoPagina() {
             }}
           >
             <FiShoppingCart /> Confirmar y Comprar ({totalItems})
->>>>>>> Rama_Front
           </button>
         )}
       </footer>

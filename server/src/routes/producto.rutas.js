@@ -1,15 +1,10 @@
 import { Router } from "express";
-import { pool } from "../db.js"; // Tu conexión a MySQL
+// Importamos el método unificado con la conversación UML
+import { listarProductos } from "../controllers/producto.controlador.js"; 
 
 const router = Router();
 
-router.get("/productos", async (req, res) => {
-  try {
-    const [rows] = await pool.query("SELECT * FROM producto");
-    res.json(rows);
-  } catch (error) {
-    return res.status(500).json({ message: error.message });
-  }
-});
+// PASO 1.1: Al impactar la ruta del catálogo, se delega al método experto
+router.get("/productos", listarProductos);
 
 export default router;

@@ -1,11 +1,3 @@
-<<<<<<< HEAD
-export default function PiePagina() {
-  return (
-    <footer className="footer">
-      <div className="footer-content">
-        <p>&copy; 2026 MilkChain - Todos los derechos reservados.</p>
-        <p>Contacto: info@milkchain.com.ar</p>
-=======
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/ContextoAutenticacion.jsx";
 import { FiInstagram, FiFacebook, FiMail, FiPhone, FiMapPin, FiTruck } from "react-icons/fi";
@@ -71,7 +63,6 @@ export default function PiePagina() {
 
       <div className="footer-bottom">
         <p>&copy; {new Date().getFullYear()} MilkChain. Todos los derechos reservados. Clásico Sabor Argentino.</p>
->>>>>>> Rama_Front
       </div>
     </footer>
   );
