@@ -9,6 +9,270 @@ import {
 } from "react-icons/fi";
 import "../App.css";
 
+// =============================
+// PATRÓN Estado
+// =============================
+
+// Clase abstracta Estado
+class Estado {
+  constructor(contexto) {
+    this.contexto = contexto;
+  }
+
+  obtenerNombre() {
+    throw new Error("Debe implementar obtenerNombre()");
+  }
+
+  obtenerId() {
+    throw new Error("Debe implementar obtenerId()");
+  }
+
+  obtenerEstilo() {
+    throw new Error("Debe implementar obtenerEstilo()");
+  }
+
+  obtenerEstadosPermitidos() {
+    throw new Error("Debe implementar obtenerEstadosPermitidos()");
+  }
+
+  async cambiarEstado(idPedido, nuevoEstadoId) {
+    throw new Error("Debe implementar cambiarEstado()");
+  }
+}
+
+// =============================
+// ESTADO PENDIENTE
+// =============================
+
+class PendienteEstado extends Estado {
+
+  obtenerNombre() {
+    return "Pendiente";
+  }
+
+  obtenerId() {
+    return 1;
+  }
+
+  obtenerEstilo() {
+    return {
+      bg: "#FFF4E5",
+      color: "#B76E00",
+      border: "#FFE0B2"
+    };
+  }
+
+  obtenerEstadosPermitidos() {
+    return [2, 6]; // Preparación o Cancelado
+  }
+
+  async cambiarEstado(idPedido, nuevoEstadoId) {
+    return await axios.patch(
+      `http://localhost:3000/api/pedidos/estado/${idPedido}`,
+      { nuevoEstadoId }
+    );
+  }
+}
+
+// =============================
+// ESTADO PREPARACIÓN
+// =============================
+
+class PreparacionEstado extends Estado{
+
+  obtenerNombre() {
+    return "Preparación";
+  }
+
+  obtenerId() {
+    return 2;
+  }
+
+  obtenerEstilo() {
+    return {
+      bg: "#EEF0FC",
+      color: "#3F51B5",
+      border: "#C5CAE9"
+    };
+  }
+
+  obtenerEstadosPermitidos() {
+    return [3, 6];
+  }
+
+  async cambiarEstado(idPedido, nuevoEstadoId) {
+    return await axios.patch(
+      `http://localhost:3000/api/pedidos/estado/${idPedido}`,
+      { nuevoEstadoId }
+    );
+  }
+}
+
+// =============================
+// ESTADO ENVIADO
+// =============================
+
+class EnviadoEstado extends Estado {
+
+  obtenerNombre() {
+    return "Enviado";
+  }
+
+  obtenerId() {
+    return 3;
+  }
+
+  obtenerEstilo() {
+    return {
+      bg: "#E1F5FE",
+      color: "#0288D1",
+      border: "#B3E5FC"
+    };
+  }
+
+  obtenerEstadosPermitidos() {
+    return [4, 6];
+  }
+
+  async cambiarEstado(idPedido, nuevoEstadoId) {
+    return await axios.patch(
+      `http://localhost:3000/api/pedidos/estado/${idPedido}`,
+      { nuevoEstadoId }
+    );
+  }
+}
+
+// =============================
+// ESTADO EN CAMINO
+// =============================
+
+class EnCaminoEstado extends Estado {
+
+  obtenerNombre() {
+    return "En camino";
+  }
+
+  obtenerId() {
+    return 4;
+  }
+
+  obtenerEstilo() {
+    return {
+      bg: "#E0F2F1",
+      color: "#00796B",
+      border: "#B2DFDB"
+    };
+  }
+
+  obtenerEstadosPermitidos() {
+    return [5, 6];
+  }
+
+  async cambiarEstado(idPedido, nuevoEstadoId) {
+    return await axios.patch(
+      `http://localhost:3000/api/pedidos/estado/${idPedido}`,
+      { nuevoEstadoId }
+    );
+  }
+}
+
+// =============================
+// ESTADO ENTREGADO
+// =============================
+
+class EntregadoEstado extends Estado {
+
+  obtenerNombre() {
+    return "Entregado";
+  }
+
+  obtenerId() {
+    return 5;
+  }
+
+  obtenerEstilo() {
+    return {
+      bg: "#E8F5E9",
+      color: "#2E7D32",
+      border: "#C8E6C9"
+    };
+  }
+
+  obtenerEstadosPermitidos() {
+    return [];
+  }
+
+  async cambiarEstado() {
+    throw new Error("No se puede modificar un pedido entregado");
+  }
+}
+
+// =============================
+// ESTADO CANCELADO
+// =============================
+
+class CanceladoEstado extends Estado {
+
+  obtenerNombre() {
+    return "Cancelado";
+  }
+
+  obtenerId() {
+    return 6;
+  }
+
+  obtenerEstilo() {
+    return {
+      bg: "#FFEBEE",
+      color: "#C62828",
+      border: "#FFCDD2"
+    };
+  }
+
+  obtenerEstadosPermitidos() {
+    return [];
+  }
+
+  async cambiarEstado() {
+    throw new Error("No se puede modificar un pedido cancelado");
+  }
+}
+
+// =============================
+// CONTEXT (STATE MANAGER)
+// =============================
+
+class PedidoEstadoManager {
+
+  constructor() {
+    this.estados = {
+      1: new PendienteEstado(this),
+      2: new PreparacionEstado(this),
+      3: new EnviadoEstado(this),
+      4: new EnCaminoEstado(this),
+      5: new EntregadoEstado(this),
+      6: new CanceladoEstado(this)
+    };
+  }
+
+  obtenerEstadoPorId(id) {
+    return this.estados[id];
+  }
+
+  obtenerEstadoPorNombre(nombre) {
+
+    const estado = Object.values(this.estados).find(
+      e => e.obtenerNombre() === nombre
+    );
+
+    return estado || this.estados[1];
+  }
+
+  obtenerTodosLosEstados() {
+    return Object.values(this.estados);
+  }
+}
+
 function PedidoPagina() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -19,14 +283,7 @@ function PedidoPagina() {
   const [pedidoAEditar, setPedidoAEditar] = useState(null);
   const [detalleSeleccionado, setDetalleSeleccionado] = useState(null);
 
-  const mapaEstados = {
-    "Pendiente": 1,
-    "Preparación": 2,
-    "Enviado": 3,
-    "En camino": 4,
-    "Entregado": 5,
-    "Cancelado": 6
-  };
+const gestorEstados = new PedidoEstadoManager();
 
   const formatearPrecio = (valor) => {
     const numero = parseFloat(valor) || 0;
@@ -87,9 +344,10 @@ function PedidoPagina() {
   };
 
   // PASO 2.1: Interfaz con opciones de estado
-  const buscar_estados = () => {
-    return Object.keys(mapaEstados);
-  };
+ // PASO 2.1
+const buscar_estados = () => {
+  return gestorEstados.obtenerTodosLosEstados();
+};
 
   // PASO 3.1: Captura el identificador localmente
   const procesarSeleccionEstado = (e) => {
@@ -97,32 +355,62 @@ function PedidoPagina() {
   };
 
   // PASO 4.1: Persiste el cambio y gestiona flujo alternativo
-  const ejecutarCambioEstado = async (e, Pedido, Estado) => {
-    e.preventDefault();
-    try {
-      await axios.patch(`http://localhost:3000/api/pedidos/estado/${Pedido}`, { nuevoEstadoId: Estado });
-      setPedidoAEditar(null);
-      obtenerTodosLosPedidos();
-      // PASO 4.2: Confirmación
-      mostrarToast("Estado actualizado correctamente", "success");
-    } catch (err) { 
-      // PASO 4.1.2: Error de conexión
-      mostrarToast("No se pudo actualizar el estado", "error"); 
-    }
-  };
+ // PASO 4.1
+const ejecutarCambioEstado = async (e, Pedido, Estado) => {
 
-  const obtenerEstiloEstado = (estado) => {
-    const defaultStyle = { bg: "#EADFD3", color: "var(--text-muted)", border: "var(--border-color)" };
-    const estadosMapping = {
-      "Pendiente": { bg: "#FFF4E5", color: "#B76E00", border: "#FFE0B2" },
-      "Preparación": { bg: "#EEF0FC", color: "#3F51B5", border: "#C5CAE9" },
-      "Enviado": { bg: "#E1F5FE", color: "#0288D1", border: "#B3E5FC" },
-      "En camino": { bg: "#E0F2F1", color: "#00796B", border: "#B2DFDB" },
-      "Entregado": { bg: "#E8F5E9", color: "#2E7D32", border: "#C8E6C9" },
-      "Cancelado": { bg: "#FFEBEE", color: "#C62828", border: "#FFCDD2" }
-    };
-    return estadosMapping[estado] || defaultStyle;
-  };
+  e.preventDefault();
+
+  try {
+
+    // Obtiene el estado actual
+    const pedidoActual = pedidos.find(p => p.id_pedido === Pedido);
+
+    const estadoActual = gestorEstados.obtenerEstadoPorNombre(
+      pedidoActual.estado
+    );
+
+    // Verifica transición válida
+    const permitidos = estadoActual.obtenerEstadosPermitidos();
+
+    if (!permitidos.includes(Estado)) {
+
+      mostrarToast(
+        "No se puede realizar esa transición de estado",
+        "error"
+      );
+
+      return;
+    }
+
+    // Delegación al patrón State
+    await estadoActual.cambiarEstado(Pedido, Estado);
+
+    setPedidoAEditar(null);
+
+    obtenerTodosLosPedidos();
+
+    // PASO 4.2
+    mostrarToast(
+      "Estado actualizado correctamente",
+      "success"
+    );
+
+  } catch (err) {
+
+    // PASO 4.1.2
+    mostrarToast(
+      err.message || "No se pudo actualizar el estado",
+      "error"
+    );
+  }
+};
+
+  const obtenerEstiloEstado = (estadoNombre) => {
+
+  const estado = gestorEstados.obtenerEstadoPorNombre(estadoNombre);
+
+  return estado.obtenerEstilo();
+};
 
   const pedidosFiltrados = pedidos.filter(p => {
     const termino = busqueda.toLowerCase().trim();
@@ -302,14 +590,16 @@ function PedidoPagina() {
                           <>
                             {/* PASO 2: Botón Cambiar Estado */}
                             <button 
-                              onClick={() => setPedidoAEditar({ ...p, id_estado: mapaEstados[p.estado] || 1 })} 
-                              className="btn-green"
-                              style={{ 
-                                padding: "8px 14px", 
-                                fontSize: "0.85rem", 
-                                backgroundColor: "#3498DB", 
-                                boxShadow: "none" 
-                              }}
+              onClick={() => {
+
+  const estadoActual =
+    gestorEstados.obtenerEstadoPorNombre(p.estado);
+
+  setPedidoAEditar({
+    ...p,
+    id_estado: estadoActual.obtenerId()
+  });
+}}
                             >
                               <FiTrendingUp /> Cambiar estado
                             </button>
@@ -474,11 +764,14 @@ function PedidoPagina() {
                     value={pedidoAEditar.id_estado} 
                     onChange={procesarSeleccionEstado}
                   >
-                    {buscar_estados().map(nombreEstado => (
-                      <option key={mapaEstados[nombreEstado]} value={mapaEstados[nombreEstado]}>
-                        {nombreEstado}
-                      </option>
-                    ))}
+                   {buscar_estados().map(estado => (
+  <option
+    key={estado.obtenerId()}
+    value={estado.obtenerId()}
+  >
+    {estado.obtenerNombre()}
+  </option>
+))}
                   </select>
                 </div>
               </div>
