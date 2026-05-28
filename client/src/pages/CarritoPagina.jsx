@@ -19,6 +19,8 @@ function CarritoPagina() {
   const { mostrarToast } = useToast();
   const [paso, setPaso] = useState(1);
   const [compraExitosa, setCompraExitosa] = useState(false);
+  const [itemsComprados, setItemsComprados] = useState([]);
+  const [totalComprado, setTotalComprado] = useState(0);
   const [direccionGuardada, setDireccionGuardada] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -150,6 +152,8 @@ function CarritoPagina() {
       
       if (res.data.success || res.status === 201) {
         mostrarToast("¡Pedido confirmado con éxito! Gracias por tu compra.", "success");
+        setItemsComprados([...cart]);
+        setTotalComprado(calcularMontoTotal ? calcularMontoTotal() : total);
         setCompraExitosa(true);
         vaciarCarrito(); // Paso 5.3: Limpia el estado de la aplicación
       }
@@ -171,11 +175,11 @@ function CarritoPagina() {
       fecha: new Date(),
       calle: direccionGuardada?.calle || "",
       numero: direccionGuardada?.numero || "",
-      Total: calcularMontoTotal ? calcularMontoTotal() : total
+      Total: totalComprado
     };
     
-    // Delegamos la impresión en el adaptador desacoplado
-    impresor.imprimir(pedidoMock, user, cart);
+    // Delegamos la impresión en el adaptador desacoplado pasándole las copias guardadas
+    impresor.imprimir(pedidoMock, user, itemsComprados);
   };
 
   if (loading) return <div style={{ textAlign: 'center', padding: '100px 20px', fontFamily: 'var(--font-sans)', color: 'var(--text-dark)', fontWeight: '600' }}>Cargando MilkChain...</div>;
