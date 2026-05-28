@@ -8,22 +8,15 @@ import {
   FiUser, FiCalendar, FiFileText, FiX, FiAward, FiTag, FiDollarSign 
 } from "react-icons/fi";
 import "../App.css";
+import { AdaptadorWindowPrint } from "../services/AdaptadorFactura.js"; // Importación del Adaptador GoF para Impresión Nativa
 
 function PedidoPagina() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { mostrarToast } = useToast();
   const [pedidos, setPedidos] = useState([]);
-
-  const formatearPrecio = (valor) => {
-    const numero = parseFloat(valor) || 0;
-    const partes = numero.toFixed(2).split('.');
-    partes[0] = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-    return partes.join(',');
-  };
   const [loading, setLoading] = useState(true);
   const [busqueda, setBusqueda] = useState("");
-  
   const [pedidoAEditar, setPedidoAEditar] = useState(null);
   const [detalleSeleccionado, setDetalleSeleccionado] = useState(null);
 
@@ -36,9 +29,22 @@ function PedidoPagina() {
     "Cancelado": 6
   };
 
-  const esAdmin = user?.id_rol === 1 || user?.idRol === 1 || user?.rol === 1 || user?.nombre?.toLowerCase() === 'admin';
+  const formatearPrecio = (valor) => {
+    const numero = parseFloat(valor) || 0;
+    const partes = numero.toFixed(2).split('.');
+    partes[0] = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    return partes.join(',');
+  };
 
-  const buscarPedidos = async () => {
+  // PASO 1.1: Método de validación de rol
+  const validarAdministrador = (rol) => {
+    return rol === 1 || user?.idRol === 1 || user?.nombre?.toLowerCase() === 'admin';
+  };
+  
+  const esAdmin = validarAdministrador(user?.id_rol);
+
+  // PASO 1.1 y 1.1.2: Obtener pedidos o vista de cliente
+  const obtenerTodosLosPedidos = async () => {
     try {
       setLoading(true);
       const url = esAdmin 
@@ -56,7 +62,7 @@ function PedidoPagina() {
 
   useEffect(() => {
     if (user) { 
-      buscarPedidos();
+      obtenerTodosLosPedidos();
     }
   }, [user]);
 
@@ -73,7 +79,7 @@ function PedidoPagina() {
     if (window.confirm(`¿Estás seguro de eliminar permanentemente el pedido #${id}?`)) {
       try {
         await axios.delete(`http://localhost:3000/api/pedidos/${id}`);
-        buscarPedidos();
+        obtenerTodosLosPedidos();
         mostrarToast(`Pedido #${id} eliminado con éxito.`, "info");
       } catch (err) { 
         mostrarToast("Error al eliminar el pedido.", "error"); 
@@ -81,33 +87,28 @@ function PedidoPagina() {
     }
   };
 
-  const cambiarEstado = async (id, estadoNombreActual) => {
-    const ordenEstados = ["Pendiente", "Preparación", "Enviado", "En camino", "Entregado", "Cancelado"];
-    let siguienteIndex = (ordenEstados.indexOf(estadoNombreActual) + 1) % ordenEstados.length;
-    let siguienteNombre = ordenEstados[siguienteIndex];
-    let siguienteId = mapaEstados[siguienteNombre];
-    
-    try {
-      await axios.patch(`http://localhost:3000/api/pedidos/estado/${id}`, { nuevoEstadoId: siguienteId });
-      buscarPedidos();
-      mostrarToast(`Estado del pedido #${id} actualizado a ${siguienteNombre}.`, "success");
-    } catch (err) { 
-      mostrarToast("Error al cambiar el estado del pedido.", "error"); 
-    }
+  // PASO 2.1: Interfaz con opciones de estado
+  const buscar_estados = () => {
+    return Object.keys(mapaEstados);
   };
 
-  const guardarEdicion = async (e) => {
+  // PASO 3.1: Captura el identificador localmente
+  const procesarSeleccionEstado = (e) => {
+    setPedidoAEditar({ ...pedidoAEditar, id_estado: Number(e.target.value) });
+  };
+
+  // PASO 4.1: Persiste el cambio y gestiona flujo alternativo
+  const actualizarEstado = async (e, Pedido, Estado) => {
     e.preventDefault();
     try {
-      await axios.put(`http://localhost:3000/api/pedidos/${pedidoAEditar.id_pedido}`, {
-        Total: pedidoAEditar.Total || pedidoAEditar.total,
-        id_estado: pedidoAEditar.id_estado
-      });
+      await axios.patch(`http://localhost:3000/api/pedidos/estado/${Pedido}`, { nuevoEstadoId: Estado });
       setPedidoAEditar(null);
-      buscarPedidos();
-      mostrarToast(`Pedido #${pedidoAEditar.id_pedido} editado con éxito.`, "success");
+      obtenerTodosLosPedidos();
+      // PASO 4.2: Confirmación
+      mostrarToast("Estado actualizado correctamente", "success");
     } catch (err) { 
-      mostrarToast("Error al editar el pedido.", "error"); 
+      // PASO 4.1.2: Error de conexión
+      mostrarToast("No se pudo actualizar el estado", "error"); 
     }
   };
 
@@ -300,20 +301,9 @@ function PedidoPagina() {
  
                         {esAdmin && (
                           <>
+                            {/* PASO 2: Botón Cambiar Estado */}
                             <button 
                               onClick={() => setPedidoAEditar({ ...p, id_estado: mapaEstados[p.estado] || 1 })} 
-                              className="btn-green"
-                              style={{ 
-                                padding: "8px 14px", 
-                                fontSize: "0.85rem", 
-                                backgroundColor: "#F39C12", 
-                                boxShadow: "none" 
-                              }}
-                            >
-                              <FiEdit2 /> Editar
-                            </button>
-                            <button 
-                              onClick={() => cambiarEstado(p.id_pedido, p.estado)} 
                               className="btn-green"
                               style={{ 
                                 padding: "8px 14px", 
@@ -322,7 +312,7 @@ function PedidoPagina() {
                                 boxShadow: "none" 
                               }}
                             >
-                              <FiTrendingUp /> Estado
+                              <FiTrendingUp /> Cambiar estado
                             </button>
                             <button 
                               onClick={() => eliminarPedido(p.id_pedido)} 
@@ -436,7 +426,13 @@ function PedidoPagina() {
 
             <div style={{ marginTop: "35px" }} className="no-print">
               <button 
-                onClick={imprimirFactura} 
+                onClick={() => {
+                  // Instanciamos el adaptador concreto de impresión nativa
+                  const impresor = new AdaptadorWindowPrint();
+                  
+                  // Delegamos la impresión de forma desacoplada
+                  impresor.imprimir(detalleSeleccionado, user, detalleSeleccionado.productos);
+                }} 
                 className="btn-green"
                 style={{ width: "100%", padding: "12px", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "8px" }}
               >
@@ -447,13 +443,14 @@ function PedidoPagina() {
         </div>
       )}
 
-      {/* MODAL EDITAR (Solo Admin) */}
+      {/* MODAL CAMBIAR ESTADO (Solo Admin) */}
       {pedidoAEditar && (
         <div style={modalOverlayStyle}>
-          <form onSubmit={guardarEdicion} style={modalContentStyle}>
+          {/* PASO 4: Presiona botón Guardar Cambios */}
+          <form onSubmit={(e) => actualizarEstado(e, pedidoAEditar.id_pedido, pedidoAEditar.id_estado)} style={modalContentStyle}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "25px" }}>
               <h3 style={{ fontFamily: "var(--font-serif)", fontSize: "1.5rem", color: "var(--text-dark)", margin: 0 }}>
-                Editar Pedido #{pedidoAEditar.id_pedido}
+                Cambiar Estado #{pedidoAEditar.id_pedido}
               </h3>
               <button 
                 type="button"
@@ -467,24 +464,7 @@ function PedidoPagina() {
             <div style={{ display: "flex", flexDirection: "column", gap: "18px", textAlign: "left" }}>
               <div>
                 <label style={{ fontWeight: "700", fontSize: "0.9rem", color: "var(--text-dark)", display: "block", marginBottom: "6px" }}>
-                  Monto Total ($):
-                </label>
-                <div style={{ position: "relative" }}>
-                  <FiDollarSign style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)" }} />
-                  <input 
-                    style={{ paddingLeft: "34px", width: "100%" }} 
-                    type="number" 
-                    step="0.01" 
-                    value={pedidoAEditar.total || ''} 
-                    onChange={e => setPedidoAEditar({...pedidoAEditar, total: e.target.value})} 
-                    required
-                  />
-                </div>
-              </div>
-              
-              <div>
-                <label style={{ fontWeight: "700", fontSize: "0.9rem", color: "var(--text-dark)", display: "block", marginBottom: "6px" }}>
-                  Estado del Pedido:
+                  Estado logístico del Pedido:
                 </label>
                 <div style={{ position: "relative" }}>
                   <FiTag style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)" }} />
@@ -499,14 +479,13 @@ function PedidoPagina() {
                       outline: "none" 
                     }} 
                     value={pedidoAEditar.id_estado} 
-                    onChange={e => setPedidoAEditar({...pedidoAEditar, id_estado: Number(e.target.value)})}
+                    onChange={procesarSeleccionEstado}
                   >
-                    <option value={1}>Pendiente</option>
-                    <option value={2}>Preparación</option>
-                    <option value={3}>Enviado</option>
-                    <option value={4}>En camino</option>
-                    <option value={5}>Entregado</option>
-                    <option value={6}>Cancelado</option>
+                    {buscar_estados().map(nombreEstado => (
+                      <option key={mapaEstados[nombreEstado]} value={mapaEstados[nombreEstado]}>
+                        {nombreEstado}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
@@ -514,7 +493,7 @@ function PedidoPagina() {
 
             <div style={{ display: "flex", gap: "10px", marginTop: "35px" }}>
               <button type="submit" className="btn-green" style={{ flex: 1, padding: "12px" }}>
-                Guardar
+                Guardar Cambios
               </button>
               <button 
                 type="button" 

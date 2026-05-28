@@ -135,29 +135,34 @@ app.get('/api/pedidos/all', async (req, res) => {
 
 // 2. Ruta para GUARDAR un pedido (POST)
 app.post('/api/pedidos', async (req, res) => {
-    const { id_usuario, id_pago, Total, detalles } = req.body;
+    const { id_usuario, id_pago, id_metodo_pago, Total, detalles } = req.body;
     const connection = await pool.getConnection();
     
     try {
         await connection.beginTransaction();
 
         // En la base de datos se usa id_estado (1 es Pendiente por defecto)
+        const metodoPago = id_metodo_pago || id_pago;
         const [pedido] = await connection.query(
             'INSERT INTO pedido (id_usuario, id_metodo_pago, Total, fecha, id_estado) VALUES (?, ?, ?, NOW(), 1)',
-            [id_usuario, id_pago, Total]
+            [id_usuario, metodoPago, Total]
         );
 
         const id_pedido = pedido.insertId;
 
         for (const item of detalles) {
+            const idProducto = item.id_producto || item.id;
+            const cantidad = item.Cantidad || item.cantidad;
+            const precioUnitario = item.Precio_Unitario || item.precio_unitario || item.precio;
+
             await connection.query(
                 'INSERT INTO pedido_detalles (id_pedido, id_producto, Cantidad, Precio_Unitario) VALUES (?, ?, ?, ?)',
-                [id_pedido, item.id_producto, item.Cantidad, item.precio]
+                [id_pedido, idProducto, cantidad, precioUnitario]
             );
 
             await connection.query(
                 'UPDATE producto SET stock = stock - ? WHERE id_producto = ?',
-                [item.Cantidad, item.id_producto]
+                [cantidad, idProducto]
             );
         }
 

@@ -21,17 +21,28 @@ export default function TarjetaProducto({ producto }) {
     return partes.join(',');
   };
 
+  // PASO 2.1.1 de la conversación UML: validarStock(cantidad) == false
+  const validarStock = (cant) => {
+    return parseInt(cant) <= producto.stock;
+  };
+
+  // Orquestador del evento del botón (Paso 2)
   const manejarAgregarClick = () => {
     const cantVal = parseInt(cantidad);
+
     if (isNaN(cantVal) || cantVal <= 0) {
       mostrarToast("Por favor, selecciona una cantidad válida.", "error");
       return;
     }
-    if (cantVal > producto.stock) {
-      mostrarToast("No hay suficiente stock disponible.", "error");
+
+    // PASO 2.1.1: Invocación idéntica a la conversación UML
+    if (validarStock(cantVal) === false) {
+      // PASO 2.1.2: Mensaje alternativo
+      mostrarToast("No hay suficiente stock", "error");
       return;
     }
 
+    // PASO 2.1: Añade el producto mutando el estado global
     agregarProducto({
       ...producto, 
       precio: parseFloat(producto.precio), 
@@ -41,23 +52,27 @@ export default function TarjetaProducto({ producto }) {
     mostrarToast(`¡${producto.nombre} agregado al carrito!`, "success");
   };
 
+  // Manejador para actualizar cantidades desde el catálogo
   const manejarActualizar = () => {
     const cantVal = parseInt(cantidad);
+
     if (isNaN(cantVal) || cantVal <= 0) {
       mostrarToast("Por favor, selecciona una cantidad válida.", "error");
       return;
     }
-    if (cantVal > producto.stock) {
-      mostrarToast("No hay suficiente stock disponible.", "error");
+
+    // Volvemos a evaluar las reglas de stock del flujo para la actualización
+    if (validarStock(cantVal) === false) {
+      mostrarToast("No hay suficiente stock", "error");
       return;
     }
-    
-    agregarProducto({ 
-      ...producto, 
-      precio: parseFloat(producto.precio), 
-      cantidad: cantVal 
+
+    agregarProducto({
+      ...producto,
+      precio: parseFloat(producto.precio),
+      cantidad: cantVal
     });
-    mostrarToast("Cantidad de producto actualizada", "success");
+    mostrarToast(`¡Cantidad de ${producto.nombre} actualizada!`, "success");
   };
 
   const manejarEliminar = () => {

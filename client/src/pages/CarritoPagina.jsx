@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/ContextoAutenticacion.jsx";
 import { useToast } from "../context/ContextoToast.jsx";
 import axios from "axios";
+import { AdaptadorJsPDF } from "../services/AdaptadorFactura.js"; // Importación del Adaptador de Facturas GoF
+
 import { 
   FiShoppingCart, FiMapPin, FiCreditCard, FiTrash2, FiPrinter, 
   FiCheckCircle, FiPlus, FiMinus, FiArrowLeft, FiArrowRight, FiInfo, FiTruck
@@ -13,18 +15,11 @@ import "../App.css";
 function CarritoPagina() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { cart, eliminar_producto_carrito, actualizarCantidad, total, vaciarCarrito } = useCart();  
+  const { cart, eliminar_producto_carrito, actualizarCantidad, total, vaciarCarrito, calcularMontoTotal } = useCart();  
   const { mostrarToast } = useToast();
   const [paso, setPaso] = useState(1);
   const [compraExitosa, setCompraExitosa] = useState(false);
   const [direccionGuardada, setDireccionGuardada] = useState(null);
-
-  const formatearPrecio = (valor) => {
-    const numero = parseFloat(valor) || 0;
-    const partes = numero.toFixed(2).split('.');
-    partes[0] = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-    return partes.join(',');
-  };
   const [loading, setLoading] = useState(true);
 
   // ESTADOS PARA DATOS DESDE LA API
@@ -37,6 +32,13 @@ function CarritoPagina() {
   const [formData, setFormData] = useState({
     calle: "", numero: "", telefono: "", id_pais: "", id_provincia: "", id_localidad: ""
   });
+
+  const formatearPrecio = (valor) => {
+    const numero = parseFloat(valor) || 0;
+    const partes = numero.toFixed(2).split('.');
+    partes[0] = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    return partes.join(',');
+  };
 
   // CARGA INICIAL DE DATOS
   useEffect(() => {
@@ -128,33 +130,52 @@ function CarritoPagina() {
     }
   };
 
+  // Función finalizarCompra unificada (Paso 5 de la Conversación UML)
   const finalizarCompra = async () => {
     if (!pagoSeleccionado) return mostrarToast("Por favor, selecciona un medio de pago", "info");
     if (!user) return mostrarToast("Debes iniciar sesión para comprar", "info");
-    
+    if (!direccionGuardada) return mostrarToast("Por favor, registra una dirección de envío", "info");
+
     try {
       setLoading(true);
-      const pedidoData = {
-        id_usuario: user.id, 
+      const datosPedido = {
+        id_usuario: user.id,
         id_direccion: direccionGuardada.id,
-        id_pago: pagoSeleccionado,
-        total: total,
+        id_metodo_pago: pagoSeleccionado,
+        Total: calcularMontoTotal ? calcularMontoTotal() : total, 
         detalles: cart
       };
 
-      const response = await axios.post("http://localhost:3000/api/pedidos", pedidoData);
+      const res = await axios.post("http://localhost:3000/api/pedidos", datosPedido);
       
-      if (response.status === 201) {
-        vaciarCarrito(); 
+      if (res.data.success || res.status === 201) {
+        mostrarToast("¡Pedido confirmado con éxito! Gracias por tu compra.", "success");
         setCompraExitosa(true);
-        mostrarToast("¡Pedido registrado con éxito! Gracias por tu compra.", "success");
+        vaciarCarrito(); // Paso 5.3: Limpia el estado de la aplicación
       }
     } catch (error) {
       console.error("Error al finalizar pedido:", error);
-      mostrarToast("Hubo un error al registrar tu pedido: " + (error.response?.data?.error || error.message), "error");
+      mostrarToast("Error al procesar la compra: " + (error.response?.data?.error || error.message), "error");
     } finally { 
       setLoading(false); 
     }
+  };
+
+  // Método unificado de frontend adaptado con el Patrón de Diseño Adaptador (GoF)
+  const imprimirFactura = () => {
+    // Instanciamos el adaptador de jsPDF para generar el PDF descargable
+    const impresor = new AdaptadorJsPDF();
+    
+    // Armamos un objeto de pedido temporal con los datos de checkout
+    const pedidoMock = {
+      fecha: new Date(),
+      calle: direccionGuardada?.calle || "",
+      numero: direccionGuardada?.numero || "",
+      Total: calcularMontoTotal ? calcularMontoTotal() : total
+    };
+    
+    // Delegamos la impresión en el adaptador desacoplado
+    impresor.imprimir(pedidoMock, user, cart);
   };
 
   if (loading) return <div style={{ textAlign: 'center', padding: '100px 20px', fontFamily: 'var(--font-sans)', color: 'var(--text-dark)', fontWeight: '600' }}>Cargando MilkChain...</div>;
@@ -435,8 +456,9 @@ function CarritoPagina() {
                         Ver mis pedidos
                       </button>
 
+                      {/* Botón que ejecuta la función de impresión nativa en React */}
                       <button 
-                        onClick={() => window.print()} 
+                        onClick={imprimirFactura} 
                         className="btn-logout"
                         style={{ padding: '12px 28px', fontWeight: "600" }}
                       >
