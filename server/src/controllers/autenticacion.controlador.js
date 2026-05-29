@@ -39,6 +39,7 @@ export const login = async (req, res) => {
             id: userId,
             nombre: user.nombre,
             email: user.email,
+            id_rol: user.id_rol,
             rol: user.rol || "Cliente"
         });
     } catch (error) {
@@ -74,29 +75,28 @@ export const verifyToken = async (req, res) => {
     jwt.verify(token, TOKEN_SECRET, async (err, decoded) => {
         if (err) return res.status(401).json({ message: "No autorizado" });
 
-        const [rows] = await pool.query(
-<<<<<<< HEAD
-            `SELECT u.id, u.nombre, u.email, r.nombre as rol 
-             FROM usuario u
-             LEFT JOIN rol r ON u.id_rol = r.id_rol
-             WHERE u.id = ?`, 
-=======
-            `SELECT u.id_usuario AS id, u.nombre, u.email, r.nombre as rol 
-             FROM usuario u
-             LEFT JOIN rol r ON u.id_rol = r.id_rol
-             WHERE u.id_usuario = ?`, 
->>>>>>> b5ab6f709b118a2f316c3b9784cabbfd3fb20bcc
-            [decoded.id]
-        );
+        try {
+            const [rows] = await pool.query(
+                `SELECT u.id_usuario AS id, u.nombre, u.email, r.nombre as rol, u.id_rol 
+                 FROM usuario u
+                 LEFT JOIN rol r ON u.id_rol = r.id_rol
+                 WHERE u.id_usuario = ?`, 
+                [decoded.id]
+            );
 
-        if (rows.length === 0) return res.status(401).json({ message: "No autorizado" });
+            if (rows.length === 0) return res.status(401).json({ message: "No autorizado" });
 
-        res.json({
-            id: rows[0].id,
-            nombre: rows[0].nombre,
-            email: rows[0].email,
-            rol: rows[0].rol || "Cliente"
-        });
+            res.json({
+                id: rows[0].id,
+                nombre: rows[0].nombre,
+                email: rows[0].email,
+                id_rol: rows[0].id_rol,
+                rol: rows[0].rol || "Cliente"
+            });
+        } catch (dbErr) {
+            console.error("Error en verifyToken DB query:", dbErr);
+            return res.status(500).json({ message: "Error de servidor al verificar token" });
+        }
     });
 }; 
 export const logout = (req, res) => {

@@ -8,7 +8,7 @@ import {
   FiUser, FiCalendar, FiFileText, FiX, FiAward, FiTag, FiDollarSign 
 } from "react-icons/fi";
 import "../App.css";
-import { AdaptadorWindowPrint } from "../services/AdaptadorFactura.js"; // Importación del Adaptador GoF para Impresión Nativa
+import { AdaptadorWindowPrint, SistemaImpresionNativa } from "../services/AdaptadorFactura.jsx";// Importación del Adaptador GoF para Impresión Nativa
 
 function PedidoPagina() {
   const { user } = useAuth();
@@ -38,10 +38,14 @@ function PedidoPagina() {
 
   // PASO 1.1: Método de validación de rol
   const validarAdministrador = (rol) => {
-    return rol === 1 || user?.idRol === 1 || user?.nombre?.toLowerCase() === 'admin';
+    return rol === 1 || 
+           user?.idRol === 1 || 
+           user?.id_rol === 1 || 
+           user?.nombre?.toLowerCase() === 'admin' ||
+           user?.rol?.toLowerCase() === 'administrador';
   };
   
-  const esAdmin = validarAdministrador(user?.id_rol);
+  const esAdmin = validarAdministrador(user?.id_rol || user?.idRol);
 
   // PASO 1.1 y 1.1.2: Obtener pedidos o vista de cliente
   const obtenerTodosLosPedidos = async () => {
@@ -109,6 +113,23 @@ function PedidoPagina() {
     } catch (err) { 
       // PASO 4.1.2: Error de conexión
       mostrarToast("No se pudo actualizar el estado", "error"); 
+    }
+  };
+
+  // Método de impresión nativa adaptada (Paso 6.1 / Caso de uso 2)
+  const manejarImpresionNativa = () => {
+    try {
+      // 1. Instanciamos el Adaptee (sistema incompatible externo)
+      const sistemaNativo = new SistemaImpresionNativa();
+      
+      // 2. Instanciamos el Adaptador pasándole el Adaptee por composición
+      const adaptador = new AdaptadorWindowPrint(sistemaNativo);
+      
+      // 3. Ejecutamos de forma uniforme el método del Target
+      adaptador.imprimir();
+    } catch (err) {
+      console.error("Error en Adaptador nativo, usando fallback directo:", err);
+      window.print();
     }
   };
 
@@ -426,17 +447,7 @@ function PedidoPagina() {
 
             <div style={{ marginTop: "35px" }} className="no-print">
               <button 
-<<<<<<< HEAD
-                onClick={() => window.print()} 
-=======
-                onClick={() => {
-                  // Instanciamos el adaptador concreto de impresión nativa
-                  const impresor = new AdaptadorWindowPrint();
-                  
-                  // Delegamos la impresión de forma desacoplada
-                  impresor.imprimir(detalleSeleccionado, user, detalleSeleccionado.productos);
-                }} 
->>>>>>> b5ab6f709b118a2f316c3b9784cabbfd3fb20bcc
+                onClick={manejarImpresionNativa} 
                 className="btn-green"
                 style={{ width: "100%", padding: "12px", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "8px" }}
               >

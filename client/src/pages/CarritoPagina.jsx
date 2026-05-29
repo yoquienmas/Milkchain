@@ -4,7 +4,13 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/ContextoAutenticacion.jsx";
 import { useToast } from "../context/ContextoToast.jsx";
 import axios from "axios";
-import jsPDF from "jspdf"; // Importado directamente en el frontend
+// Importación del Adaptador de Objetos GoF para Impresión
+import { 
+  AdaptadorJsPDF, 
+  AdaptadorWindowPrint, 
+  SistemaPdfExterno, 
+  SistemaImpresionNativa 
+} from "../services/AdaptadorFactura.jsx";
 
 import { 
   FiShoppingCart, FiMapPin, FiCreditCard, FiTrash2, FiPrinter, 
@@ -42,6 +48,17 @@ function CarritoPagina() {
     return partes.join(',');
   };
 
+  // PASO 4.1 de la conversación UML: buscarDirecciones()
+  const buscarDirecciones = async (userId) => {
+    try {
+      const res = await axios.get(`http://localhost:3000/api/direcciones/${userId}`);
+      return res.data;
+    } catch (err) {
+      console.error("Error al buscar direcciones:", err);
+      return [];
+    }
+  };
+
   // CARGA INICIAL DE DATOS
   useEffect(() => {
     const cargarDatosIniciales = async () => {
@@ -49,9 +66,8 @@ function CarritoPagina() {
 
       try {
         setLoading(true);
-        const [resPaises, resDir, resPagos] = await Promise.allSettled([
+        const [resPaises, resPagos] = await Promise.allSettled([
           axios.get("http://localhost:3000/api/paises"),
-          axios.get(`http://localhost:3000/api/direcciones/${user.id}`), 
           axios.get("http://localhost:3000/api/pagos") 
         ]);
         
@@ -65,20 +81,19 @@ function CarritoPagina() {
           if (resPagos.value.data.length > 0) setPagoSeleccionado(resPagos.value.data[0].id);
         }
 
-        if (resDir.status === "fulfilled") {
-          const data = resDir.value.data;
-          if (Array.isArray(data) && data.length > 0) {
-            const dir = data[0];
-            setDireccionGuardada({
-              id: dir.id_direccion,
-              calle: dir.calle,
-              numero: dir.numero,
-              telefono: dir.n_contacto || dir.id_telefono,
-              nombre_localidad: "Dirección principal"
-            });
-          } else {
-            setDireccionGuardada(null);
-          }
+        // Invocación idéntica al diagrama UML
+        const data = await buscarDirecciones(user.id);
+        if (Array.isArray(data) && data.length > 0) {
+          const dir = data[0];
+          setDireccionGuardada({
+            id: dir.id_direccion,
+            calle: dir.calle,
+            numero: dir.numero,
+            telefono: dir.n_contacto || dir.id_telefono,
+            nombre_localidad: "Dirección principal"
+          });
+        } else {
+          setDireccionGuardada(null);
         }
       } catch (error) {
         console.error("Error en carga inicial:", error);
@@ -114,7 +129,8 @@ function CarritoPagina() {
 
   const manejarChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  const guardarNuevaDireccion = async (e) => {
+  // PASO 4.1.2 de la conversación UML: guardarDireccion()
+  const guardarDireccion = async (e) => {
     e.preventDefault();
     try {
       const datosAEnviar = { ...formData, id_usuario: user.id }; 
@@ -163,36 +179,37 @@ function CarritoPagina() {
     }
   };
 
-  // Método unificado de frontend para crear PDF (Paso 6.1)
+  // Método unificado de frontend que utiliza el Adaptador de Objetos (Paso 6.1)
   const imprimirFactura = () => {
     try {
-      const doc = new jsPDF();
-      doc.setFontSize(18);
-      doc.text("Factura de Compra - MilkChain", 20, 20);
+      console.log("CarritoPagina: Iniciando impresión usando AdaptadorJsPDF...");
       
-      doc.setFontSize(12);
-      doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 20, 30);
-      doc.text(`Cliente: ${user?.nombre} ${user?.apellido || ""}`, 20, 40);
-      doc.text(`Dirección: ${direccionGuardada?.calle} ${direccionGuardada?.numero}`, 20, 50);
+      // 1. Instanciamos el Adaptee (sistema incompatible externo)
+      const sistemaPdf = new SistemaPdfExterno();
       
-      doc.text("Detalle de la compra:", 20, 70);
+      // 2. Instanciamos el Adaptador pasándole el Adaptee por composición
+      const adaptador = new AdaptadorJsPDF(sistemaPdf);
       
-      let y = 80;
-      cart.forEach((item) => {
-        const subtotal = (item.precio * item.cantidad).toFixed(2);
-        doc.text(`${item.cantidad}x ${item.nombre} - $${subtotal}`, 20, y);
-        y += 10;
-      });
-
+      // 3. Generamos los datos formateados para la factura
       const montoFinal = calcularMontoTotal ? calcularMontoTotal() : total;
-      doc.setFontSize(14);
-      doc.text(`Total Abonado: $${formatearPrecio(montoFinal)}`, 20, y + 10);
+      const pedidoParaComprobante = {
+        id_pedido: "reciente",
+        fecha: new Date(),
+        Total: montoFinal,
+        calle: direccionGuardada?.calle,
+        numero: direccionGuardada?.numero
+      };
       
-      doc.save(`Factura_MilkChain.pdf`);
+      // 4. El cliente llama de forma uniforme al método del Target
+      adaptador.imprimir(pedidoParaComprobante, user, cart);
+      mostrarToast("¡Factura descargada con éxito!", "success");
     } catch (error) {
-      console.error("Error generando PDF", error);
-      // Si por alguna razón jsPDF falla, usa la impresión nativa del navegador como respaldo
-      window.print();
+      console.error("Error al generar PDF con adaptador, aplicando fallback de impresión nativa:", error);
+      
+      // Fallback usando el adaptador de impresión nativo del navegador
+      const sistemaNativo = new SistemaImpresionNativa();
+      const adaptadorFallback = new AdaptadorWindowPrint(sistemaNativo);
+      adaptadorFallback.imprimir();
     }
   };
 
@@ -357,7 +374,7 @@ function CarritoPagina() {
                     <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.6rem', marginBottom: '8px' }}>Datos de Envío</h3>
                     <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '25px' }}>Ingresa los detalles donde quieres recibir tu pedido lácteo.</p>
                     
-                    <form onSubmit={guardarNuevaDireccion}>
+                    <form onSubmit={guardarDireccion}>
                       <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "12px" }}>
                         <input name="calle" placeholder="Calle" onChange={manejarChange} required style={{ marginBottom: "15px" }} />
                         <input name="numero" type="number" placeholder="Altura" onChange={manejarChange} required style={{ marginBottom: "15px" }} />

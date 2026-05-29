@@ -1,11 +1,10 @@
-<<<<<<< HEAD
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-import { pool } from './db.js'; // Ajustar ruta según tu estructura
+import { pool } from '../db.js'; // MODIFICADO: Ajustada la ruta correcta a la DB
 
 // 1. Método del Paso 5.1
-const crearPedido = async (Total, id_usuario, id_metodo_pago) => {
-    const [pedido] = await pool.query(
+const crearPedido = async (connection, Total, id_usuario, id_metodo_pago) => {
+    const [pedido] = await connection.query(
         "INSERT INTO pedido (fecha, id_estado, Total, id_usuario, id_metodo_pago) VALUES (NOW(), 1, ?, ?, ?)",
         [Total, id_usuario, id_metodo_pago]
     );
@@ -13,20 +12,27 @@ const crearPedido = async (Total, id_usuario, id_metodo_pago) => {
 };
 
 // 2. Método del Paso 5.2
-const registrarDetalles = async (pedidoId, detalles) => {
-    const detallesValues = detalles.map(d => [d.Precio_Unitario || d.precio, d.Cantidad || d.cantidad, d.id_producto || d.id, pedidoId]);
-    await pool.query(
+const registrarDetalles = async (connection, pedidoId, detalles) => {
+    // Generar la lista de tuplas para inserción masiva (bulk insert)
+    const detallesValues = detalles.map(d => [
+        parseFloat(d.Precio_Unitario || d.precio || 0), 
+        parseInt(d.Cantidad || d.cantidad || 1), 
+        parseInt(d.id_producto || d.id), 
+        pedidoId
+    ]);
+    
+    await connection.query(
         "INSERT INTO pedido_detalles (Precio_Unitario, Cantidad, id_producto, id_pedido) VALUES ?",
         [detallesValues]
     );
 };
 
 // 3. Método del Paso 5.3
-const descontarStock = async (detalles) => {
+const descontarStock = async (connection, detalles) => {
     for (const item of detalles) {
-        const cantidad = item.Cantidad || item.cantidad;
-        const id_producto = item.id_producto || item.id;
-        await pool.query(
+        const cantidad = parseInt(item.Cantidad || item.cantidad || 1);
+        const id_producto = parseInt(item.id_producto || item.id);
+        await connection.query(
             "UPDATE producto SET stock = stock - ? WHERE id_producto = ?",
             [cantidad, id_producto]
         );
@@ -36,19 +42,35 @@ const descontarStock = async (detalles) => {
 // Orquestador de la ruta del API que manda a llamar a las sub-operaciones orientadas a objetos
 export const finalizarPedido = async (req, res) => {
     const { id_usuario, id_metodo_pago, Total, detalles } = req.body;
+    
+    // Soporte tolerante a id_pago o id_metodo_pago para mayor flexibilidad
+    const metodoPagoId = id_metodo_pago || req.body.id_pago;
+
+    if (!id_usuario || !metodoPagoId || !detalles || !detalles.length) {
+        return res.status(400).json({ message: "Faltan datos requeridos para procesar el pedido" });
+    }
+
+    const connection = await pool.getConnection();
     try {
+        await connection.beginTransaction();
+
         // Paso 5.1
-        const pedidoId = await crearPedido(Total, id_usuario, id_metodo_pago);
+        const pedidoId = await crearPedido(connection, Total, id_usuario, metodoPagoId);
         
         // Paso 5.2
-        await registrarDetalles(pedidoId, detalles);
+        await registrarDetalles(connection, pedidoId, detalles);
         
         // Paso 5.3
-        await descontarStock(detalles);
+        await descontarStock(connection, detalles);
 
-        res.json({ success: true, message: "Pedido procesado correctamente", pedidoId });
+        await connection.commit();
+        res.status(201).json({ success: true, message: "Pedido registrado y stock actualizado con éxito", id: pedidoId });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        await connection.rollback();
+        console.error("Error en finalizarPedido:", error);
+        res.status(500).json({ message: "Error en el servidor al registrar el pedido: " + error.message });
+    } finally {
+        connection.release();
     }
 };
 
@@ -66,49 +88,4 @@ export const imprimirFactura = (pedido, detalles, user) => {
 
     // Lógica interna para rellenar la tabla del pdf...
     doc.save(`factura_${pedido.id_pedido || 'pedido'}.pdf`);
-=======
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
-
-export const finalizarPedido = async (req, res) => {
-    const { id_usuario, id_metodo_pago, Total, detalles } = req.body;
-    try {
-        const [pedido] = await pool.query(
-            "INSERT INTO pedido (fecha, estado, Total, id_usuario, id_metodo_pago) VALUES (NOW(), 'En preparación', ?, ?, ?)",
-            [Total, id_usuario, id_metodo_pago]
-        );
-        const pedidoId = pedido.insertId;
-
-        const detallesValues = detalles.map(d => [d.Precio_Unitario, d.Cantidad, d.id_producto, pedidoId]);
-        await pool.query(
-            "INSERT INTO pedido_detalles (Precio_Unitario, Cantidad, id_producto, id_pedido) VALUES ?",
-            [detallesValues]
-        );
-        } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
-
-const descargarFactura = (pedido, detalles) => {
-    const doc = new jsPDF();
-    
-    doc.setFontSize(18);
-    doc.text(`Factura N° ${pedido.id}`, 20, 20);
-    doc.setFontSize(12);
-    doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 20, 30);
-    
-    // Datos del Cliente
-    doc.text("Datos del Cliente", 20, 50);
-    doc.text(`Nombre: ${user.nombre} ${user.apellido}`, 20, 60);
-
-    // Tabla de productos
-    doc.autoTable({
-        startY: 80,
-        head: [['Producto', 'Cantidad', 'Precio Unitario', 'Subtotal']],
-        body: detalles.map(d => [d.nombre, d.Cantidad, `$${d.precio}`, `$${d.precio * d.Cantidad}`]),
-    });
-
-    doc.text(`Total a Pagar: $${pedido.Total}`, 140, doc.lastAutoTable.finalY + 10);
-    doc.save(`Factura_MilkChain_${pedido.id}.pdf`);
->>>>>>> b5ab6f709b118a2f316c3b9784cabbfd3fb20bcc
 };
