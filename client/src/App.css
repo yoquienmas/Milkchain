@@ -155,14 +155,13 @@ input:focus, textarea:focus {
   justify-content: space-between;
   align-items: center;
   padding: 12px 6%;
-  background-color: var(--bg-white);
+  background-color: #F5EFE6; /* Muted, matte eye-friendly cream color */
   border-bottom: 1px solid var(--border-color);
   box-shadow: var(--shadow-sm);
   position: sticky;
   top: 0;
   z-index: 100;
   backdrop-filter: blur(10px);
-  background-color: rgba(255, 255, 255, 0.92);
 }
 
 .navbar-logo .logo-container {
@@ -354,7 +353,7 @@ body.dark-mode .logo-themed {
 .split-form-card {
   width: 100%;
   max-width: 440px;
-  background-color: var(--bg-white);
+  background-color: #F5EFE6; /* Muted, matte eye-friendly cream color */
   padding: 45px;
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
@@ -888,9 +887,9 @@ body.dark-mode {
 }
 
 body.dark-mode .navbar {
-  background-color: rgba(28, 17, 12, 0.92);
-  border-bottom-color: var(--border-color);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  background-color: rgba(28, 17, 12, 0.95) !important;
+  border-bottom-color: var(--border-color) !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
 }
 
 body.dark-mode .navbar-links a {
@@ -925,9 +924,14 @@ body.dark-mode select:focus {
   box-shadow: 0 0 0 4px rgba(176, 101, 47, 0.25);
 }
 
+body.dark-mode select option {
+  background-color: #1C110C !important; /* Rich dark chocolate background */
+  color: var(--text-dark) !important; /* Clear cream/white text */
+}
+
 body.dark-mode .split-form-card {
-  background-color: var(--bg-white);
-  border-color: var(--border-color);
+  background-color: var(--bg-white) !important;
+  border-color: var(--border-color) !important;
 }
 
 body.dark-mode .action-card {
@@ -1318,3 +1322,4 @@ body.dark-mode .toast-close:hover {
     overflow: visible !important;
   }
 }
+

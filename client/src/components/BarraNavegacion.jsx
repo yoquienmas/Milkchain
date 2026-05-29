@@ -113,7 +113,7 @@ export default function BarraNavegacion() {
           <>
             <li>
               <Link to="/login" style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                <FiLogIn /> <span>Login</span>
+                <FiLogIn /> <span>Iniciar sesión</span>
               </Link>
             </li>
             <li>

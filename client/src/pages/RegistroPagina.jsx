@@ -29,17 +29,10 @@ export default function RegistroPagina() {
         <div style={{ textAlign: "center", marginBottom: "20px" }}>
           <div style={{
             height: "90px", 
-            width: "90px", 
-            borderRadius: "50%",
-            border: "2.5px solid var(--border-color)",
-            backgroundColor: "var(--bg-white)",
-            padding: "6px",
             margin: "0 auto 15px auto",
-            boxShadow: "var(--shadow-sm)",
             display: "flex",
             alignItems: "center",
-            justifyContent: "center",
-            overflow: "hidden"
+            justifyContent: "center"
           }}>
             <img 
               src="/images/logo_MILKCHAIN.png" 
@@ -47,7 +40,6 @@ export default function RegistroPagina() {
               className="logo-themed"
               style={{ 
                 height: "100%", 
-                width: "100%", 
                 objectFit: "contain",
                 display: "block"
               }} 
@@ -56,9 +48,6 @@ export default function RegistroPagina() {
           <h1 style={{ fontFamily: "var(--font-serif)", color: "var(--text-dark)", fontSize: "1.7rem" }}>
             Crear Cuenta
           </h1>
-          <p className="subtitle" style={{ margin: "4px 0 0 0" }}>
-            Únete a la familia láctea MilkChain
-          </p>
         </div>
         
         <form onSubmit={onSubmit}>
@@ -94,7 +83,7 @@ export default function RegistroPagina() {
             <input type="password" {...register("password")} placeholder="Contraseña" required />
           </div>
           
-          <button type="submit" style={{ width: "100%", marginTop: "10px", padding: "14px" }}>
+          <button type="submit" style={{ width: "100%", marginTop: "20px", padding: "14px" }}>
             <FiUserPlus /> Registrarse
           </button>
         </form>
