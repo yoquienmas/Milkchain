@@ -169,21 +169,19 @@ input:focus, textarea:focus {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 64px;
-  width: 64px;
-  border-radius: 50%;
-  border: 2px solid var(--border-color);
-  background-color: var(--bg-white);
-  padding: 4px;
+  height: 80px;
+  width: 80px;
+  background: none !important;
+  border: none !important;
+  padding: 0;
   transition: all 0.3s ease;
-  overflow: hidden;
-  box-shadow: var(--shadow-sm);
+  overflow: visible;
+  box-shadow: none !important;
   text-decoration: none;
 }
 
 .navbar-logo .logo-container:hover {
   transform: scale(1.05);
-  border-color: var(--color-caramel);
 }
 
 .navbar-brand-img {
