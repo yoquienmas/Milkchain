@@ -75,10 +75,17 @@ export const verifyToken = async (req, res) => {
         if (err) return res.status(401).json({ message: "No autorizado" });
 
         const [rows] = await pool.query(
+<<<<<<< HEAD
             `SELECT u.id, u.nombre, u.email, r.nombre as rol 
              FROM usuario u
              LEFT JOIN rol r ON u.id_rol = r.id_rol
              WHERE u.id = ?`, 
+=======
+            `SELECT u.id_usuario AS id, u.nombre, u.email, r.nombre as rol 
+             FROM usuario u
+             LEFT JOIN rol r ON u.id_rol = r.id_rol
+             WHERE u.id_usuario = ?`, 
+>>>>>>> b5ab6f709b118a2f316c3b9784cabbfd3fb20bcc
             [decoded.id]
         );
 

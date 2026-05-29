@@ -135,29 +135,54 @@ app.get('/api/pedidos/all', async (req, res) => {
 
 // 2. Ruta para GUARDAR un pedido (POST)
 app.post('/api/pedidos', async (req, res) => {
+<<<<<<< HEAD
     const { id_usuario, id_pago, Total, detalles } = req.body;
+=======
+    const { id_usuario, id_pago, id_metodo_pago, Total, detalles } = req.body;
+>>>>>>> b5ab6f709b118a2f316c3b9784cabbfd3fb20bcc
     const connection = await pool.getConnection();
     
     try {
         await connection.beginTransaction();
 
         // En la base de datos se usa id_estado (1 es Pendiente por defecto)
+<<<<<<< HEAD
         const [pedido] = await connection.query(
             'INSERT INTO pedido (id_usuario, id_metodo_pago, Total, fecha, id_estado) VALUES (?, ?, ?, NOW(), 1)',
             [id_usuario, id_pago, Total]
+=======
+        const metodoPago = id_metodo_pago || id_pago;
+        const [pedido] = await connection.query(
+            'INSERT INTO pedido (id_usuario, id_metodo_pago, Total, fecha, id_estado) VALUES (?, ?, ?, NOW(), 1)',
+            [id_usuario, metodoPago, Total]
+>>>>>>> b5ab6f709b118a2f316c3b9784cabbfd3fb20bcc
         );
 
         const id_pedido = pedido.insertId;
 
         for (const item of detalles) {
+<<<<<<< HEAD
             await connection.query(
                 'INSERT INTO pedido_detalles (id_pedido, id_producto, Cantidad, Precio_Unitario) VALUES (?, ?, ?, ?)',
                 [id_pedido, item.id_producto, item.Cantidad, item.precio]
+=======
+            const idProducto = item.id_producto || item.id;
+            const cantidad = item.Cantidad || item.cantidad;
+            const precioUnitario = item.Precio_Unitario || item.precio_unitario || item.precio;
+
+            await connection.query(
+                'INSERT INTO pedido_detalles (id_pedido, id_producto, Cantidad, Precio_Unitario) VALUES (?, ?, ?, ?)',
+                [id_pedido, idProducto, cantidad, precioUnitario]
+>>>>>>> b5ab6f709b118a2f316c3b9784cabbfd3fb20bcc
             );
 
             await connection.query(
                 'UPDATE producto SET stock = stock - ? WHERE id_producto = ?',
+<<<<<<< HEAD
                 [item.Cantidad, item.id_producto]
+=======
+                [cantidad, idProducto]
+>>>>>>> b5ab6f709b118a2f316c3b9784cabbfd3fb20bcc
             );
         }
 

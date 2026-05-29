@@ -8,6 +8,7 @@ import {
   FiUser, FiCalendar, FiFileText, FiX, FiAward, FiTag, FiDollarSign 
 } from "react-icons/fi";
 import "../App.css";
+import { AdaptadorWindowPrint } from "../services/AdaptadorFactura.js"; // Importación del Adaptador GoF para Impresión Nativa
 
 function PedidoPagina() {
   const { user } = useAuth();
@@ -425,7 +426,17 @@ function PedidoPagina() {
 
             <div style={{ marginTop: "35px" }} className="no-print">
               <button 
+<<<<<<< HEAD
                 onClick={() => window.print()} 
+=======
+                onClick={() => {
+                  // Instanciamos el adaptador concreto de impresión nativa
+                  const impresor = new AdaptadorWindowPrint();
+                  
+                  // Delegamos la impresión de forma desacoplada
+                  impresor.imprimir(detalleSeleccionado, user, detalleSeleccionado.productos);
+                }} 
+>>>>>>> b5ab6f709b118a2f316c3b9784cabbfd3fb20bcc
                 className="btn-green"
                 style={{ width: "100%", padding: "12px", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "8px" }}
               >

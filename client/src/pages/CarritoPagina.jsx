@@ -19,6 +19,8 @@ function CarritoPagina() {
   const { mostrarToast } = useToast();
   const [paso, setPaso] = useState(1);
   const [compraExitosa, setCompraExitosa] = useState(false);
+  const [itemsComprados, setItemsComprados] = useState([]);
+  const [totalComprado, setTotalComprado] = useState(0);
   const [direccionGuardada, setDireccionGuardada] = useState(null);
   const [loading, setLoading] = useState(true);
 

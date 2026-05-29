@@ -155,35 +155,32 @@ input:focus, textarea:focus {
   justify-content: space-between;
   align-items: center;
   padding: 12px 6%;
-  background-color: var(--bg-white);
+  background-color: #F5EFE6; /* Muted, matte eye-friendly cream color */
   border-bottom: 1px solid var(--border-color);
   box-shadow: var(--shadow-sm);
   position: sticky;
   top: 0;
   z-index: 100;
   backdrop-filter: blur(10px);
-  background-color: rgba(255, 255, 255, 0.92);
 }
 
 .navbar-logo .logo-container {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 64px;
-  width: 64px;
-  border-radius: 50%;
-  border: 2px solid var(--border-color);
-  background-color: var(--bg-white);
-  padding: 4px;
+  height: 80px;
+  width: 80px;
+  background: none !important;
+  border: none !important;
+  padding: 0;
   transition: all 0.3s ease;
-  overflow: hidden;
-  box-shadow: var(--shadow-sm);
+  overflow: visible;
+  box-shadow: none !important;
   text-decoration: none;
 }
 
 .navbar-logo .logo-container:hover {
   transform: scale(1.05);
-  border-color: var(--color-caramel);
 }
 
 .navbar-brand-img {
@@ -196,12 +193,12 @@ input:focus, textarea:focus {
 
 /* Filtros de color dinámicos para tematizar el logotipo verde/azul a chocolate/crema */
 .logo-themed {
-  filter: grayscale(1) sepia(1) saturate(5) hue-rotate(340deg) brightness(0.2) contrast(1.5);
+  filter: none !important;
   transition: all 0.3s ease;
 }
 
 body.dark-mode .logo-themed {
-  filter: brightness(0) invert(1) opacity(0.85);
+  filter: none !important;
 }
 
 
@@ -356,7 +353,7 @@ body.dark-mode .logo-themed {
 .split-form-card {
   width: 100%;
   max-width: 440px;
-  background-color: var(--bg-white);
+  background-color: #F5EFE6; /* Muted, matte eye-friendly cream color */
   padding: 45px;
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
@@ -890,9 +887,9 @@ body.dark-mode {
 }
 
 body.dark-mode .navbar {
-  background-color: rgba(28, 17, 12, 0.92);
-  border-bottom-color: var(--border-color);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  background-color: rgba(28, 17, 12, 0.95) !important;
+  border-bottom-color: var(--border-color) !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
 }
 
 body.dark-mode .navbar-links a {
@@ -927,9 +924,14 @@ body.dark-mode select:focus {
   box-shadow: 0 0 0 4px rgba(176, 101, 47, 0.25);
 }
 
+body.dark-mode select option {
+  background-color: #1C110C !important; /* Rich dark chocolate background */
+  color: var(--text-dark) !important; /* Clear cream/white text */
+}
+
 body.dark-mode .split-form-card {
-  background-color: var(--bg-white);
-  border-color: var(--border-color);
+  background-color: var(--bg-white) !important;
+  border-color: var(--border-color) !important;
 }
 
 body.dark-mode .action-card {
@@ -1276,3 +1278,48 @@ body.dark-mode .toast-close:hover {
     opacity: 1;
   }
 }
+
+/* --- PRINT MEDIA STYLES (PATRÓN ADAPTADOR DE IMPRESIÓN) --- */
+@media print {
+  /* Ocultamos absolutamente todo en la página web */
+  body * {
+    visibility: hidden !important;
+  }
+  
+  /* Hacemos visible únicamente la factura (print-container) y sus hijos */
+  .print-container, 
+  .print-container * {
+    visibility: visible !important;
+  }
+  
+  /* Quitamos efectos visuales molestos, sombras y márgenes, y forzamos a una sola página */
+  .print-container {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: white !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Ocultamos elementos marcados con .no-print (como botones o cruz de cerrar) */
+  .no-print, 
+  .no-print * {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  /* Limpiamos el html y body para evitar que el navegador cree páginas extra en blanco */
+  html, body {
+    background: white !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+}
+
