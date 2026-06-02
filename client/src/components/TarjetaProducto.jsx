@@ -21,7 +21,7 @@ export default function TarjetaProducto({ producto }) {
     return partes.join(',');
   };
 
-  // PASO 2.1.1 de la conversación UML: validarStock(cantidad) == false
+  // PASO 2.1 y 2.1.1 de la conversación UML: validarStock(cantidad) == false
   const validarStock = (cant) => {
     return parseInt(cant) <= producto.stock;
   };

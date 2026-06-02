@@ -39,6 +39,23 @@ const descontarStock = async (connection, detalles) => {
     }
 };
 
+// 5.0 Validar que haya stock suficiente antes de crear el pedido
+const validarStockDisponibilidad = async (connection, detalles) => {
+  for (const item of detalles) {
+    const cantidad = parseInt(item.Cantidad || item.cantidad || 1);
+    const id_producto = parseInt(item.id_producto || item.id);
+    const [[row]] = await connection.query(
+      `SELECT stock FROM producto WHERE id_producto = ?`,
+      [id_producto]
+    );
+    const stockActual = row?.stock ?? 0;
+    if (stockActual < cantidad) {
+      throw new Error(`Stock insuficiente para el producto ID ${id_producto}. Disponible: ${stockActual}, solicitado: ${cantidad}`);
+    }
+  }
+};
+
+
 // Orquestador de la ruta del API que manda a llamar a las sub-operaciones orientadas a objetos
 export const finalizarPedido = async (req, res) => {
     const { id_usuario, id_metodo_pago, Total, detalles } = req.body;
@@ -61,7 +78,8 @@ export const finalizarPedido = async (req, res) => {
         await registrarDetalles(connection, pedidoId, detalles);
         
         // Paso 5.3
-        await descontarStock(connection, detalles);
+        await validarStockDisponibilidad(connection, detalles);
+await descontarStock(connection, detalles);
 
         await connection.commit();
         res.status(201).json({ success: true, message: "Pedido registrado y stock actualizado con éxito", id: pedidoId });

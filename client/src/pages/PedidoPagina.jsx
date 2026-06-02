@@ -65,7 +65,7 @@ function PedidoPagina() {
   };
 
   useEffect(() => {
-    if (user) { 
+    if (user) {
       obtenerTodosLosPedidos();
     }
   }, [user]);
