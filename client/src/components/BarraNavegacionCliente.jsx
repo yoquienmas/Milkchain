@@ -2,10 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { useAuth } from "../context/ContextoAutenticacion.jsx";
 import { useCart } from "../context/ContextoCarrito.jsx";
-import { 
-  FiHome, FiBookOpen, FiPackage, FiShoppingCart, FiUser, 
-  FiLogOut, FiLogIn, FiUserPlus, FiSun, FiMoon 
-} from "react-icons/fi";
+import { FiHome, FiBookOpen, FiPackage, FiShoppingCart, FiUser, FiLogOut, FiLogIn, FiUserPlus, FiSun, FiMoon } from "react-icons/fi";
 
 export default function BarraNavegacion() {
   const { isAuthenticated, logout, user } = useAuth();
