@@ -19,7 +19,7 @@ const VerificarPago = () => {
 
   // --- EFECTO PARA BUSCAR DIRECCIONES ---
   useEffect(() => {
-    const busacarDirecciones = async () => {
+    const busacares = async () => {
       if (!user) return;
       try {
         const res = await axios.get(`/api/direcciones/${user.id || user._id}`);
