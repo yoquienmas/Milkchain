@@ -7,6 +7,7 @@ import { FiHome, FiBookOpen, FiPackage, FiShoppingCart, FiUser, FiLogOut, FiLogI
 export default function BarraNavegacion() {
   const { isAuthenticated, logout, user } = useAuth();
   const { cart } = useCart();
+  const [menuAbierto, setMenuAbierto] = useState(false);
 
   const [darkMode, setDarkMode] = useState(() => {
     return localStorage.getItem('milkchain_theme') === 'dark';
@@ -27,7 +28,7 @@ export default function BarraNavegacion() {
   return (
     <nav className="navbar">
       <div className="navbar-logo">
-        <Link to={isAuthenticated ? "/home" : "/login"} className="logo-container">
+        <Link to={isAuthenticated ? "/home" : "/login"} className="logo-container" onClick={() => setMenuAbierto(false)}>
           <img 
             src="/images/logo_MILKCHAIN.png" 
             alt="MilkChain Logo" 
@@ -35,8 +36,25 @@ export default function BarraNavegacion() {
           />
         </Link>
       </div>
+
+      {/* Botón hamburguesa para móviles */}
+      <button 
+        className="navbar-toggle" 
+        onClick={() => setMenuAbierto(!menuAbierto)}
+        aria-label="Menú de navegación"
+        style={{
+          background: "none",
+          border: "none",
+          cursor: "pointer",
+          fontSize: "1.6rem",
+          color: "var(--color-caramel)",
+          padding: "6px"
+        }}
+      >
+        {menuAbierto ? <FiX /> : <FiMenu />}
+      </button>
       
-      <ul className="navbar-links">
+      <ul className={`navbar-links ${menuAbierto ? "open" : ""}`} onClick={() => setMenuAbierto(false)}>
         {isAuthenticated ? (
           <>
             <li>
@@ -48,15 +66,18 @@ export default function BarraNavegacion() {
                 <FiHome /> <span>Inicio</span>
               </NavLink>
             </li>
-            <li>
-              <NavLink 
-                to="/ver_catalogo"
-                className={({ isActive }) => isActive ? "active-link" : ""}
-                style={{ display: "flex", alignItems: "center", gap: "6px" }}
-              >
-                <FiBookOpen /> <span>Catálogo</span>
-              </NavLink>
-            </li>
+            {/* Catálogo accesible solo por clientes */}
+            {(user?.id_rol !== 1 && user?.idRol !== 1) && (
+              <li>
+                <NavLink 
+                  to="/ver_catalogo"
+                  className={({ isActive }) => isActive ? "active-link" : ""}
+                  style={{ display: "flex", alignItems: "center", gap: "6px" }}
+                >
+                  <FiBookOpen /> <span>Catálogo</span>
+                </NavLink>
+              </li>
+            )}
             <li>
               <NavLink 
                 to="/mis-pedidos"
@@ -66,36 +87,39 @@ export default function BarraNavegacion() {
                 <FiPackage /> <span>Pedidos</span>
               </NavLink>
             </li>
-            <li>
-              <NavLink 
-                to="/cart"
-                className={({ isActive }) => isActive ? "active-link" : ""}
-                style={{ display: "flex", alignItems: "center", gap: "6px", position: "relative" }}
-              >
-                <FiShoppingCart /> 
-                <span>Carrito</span>
-                {totalItems > 0 && (
-                  <span style={{
-                    position: "absolute",
-                    top: "-8px",
-                    right: "-12px",
-                    backgroundColor: "var(--color-caramel)",
-                    color: "white",
-                    fontSize: "0.7rem",
-                    fontWeight: "bold",
-                    borderRadius: "50%",
-                    width: "18px",
-                    height: "18px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    boxShadow: "0 2px 5px rgba(0,0,0,0.2)"
-                  }}>
-                    {totalItems}
-                  </span>
-                )}
-              </NavLink>
-            </li>
+            {/* Carrito accesible solo por clientes */}
+            {(user?.id_rol !== 1 && user?.idRol !== 1) && (
+              <li>
+                <NavLink 
+                  to="/cart"
+                  className={({ isActive }) => isActive ? "active-link" : ""}
+                  style={{ display: "flex", alignItems: "center", gap: "6px", position: "relative" }}
+                >
+                  <FiShoppingCart /> 
+                  <span>Carrito</span>
+                  {totalItems > 0 && (
+                    <span style={{
+                      position: "absolute",
+                      top: "-8px",
+                      right: "-12px",
+                      backgroundColor: "var(--color-caramel)",
+                      color: "white",
+                      fontSize: "0.7rem",
+                      fontWeight: "bold",
+                      borderRadius: "50%",
+                      width: "18px",
+                      height: "18px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      boxShadow: "0 2px 5px rgba(0,0,0,0.2)"
+                    }}>
+                      {totalItems}
+                    </span>
+                  )}
+                </NavLink>
+              </li>
+            )}
             <li className="navbar-user-info" style={{ marginLeft: "15px" }}>
               <FiUser style={{ color: "var(--color-caramel)", fontSize: "1.1rem" }} />
               <span style={{ fontWeight: 600 }}>{user?.nombre || "Usuario"}</span>

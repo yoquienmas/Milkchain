@@ -204,8 +204,53 @@ function PedidoPagina() {
 
   if (loading) {
     return (
-      <div style={{ textAlign: 'center', padding: '100px 20px', fontFamily: 'var(--font-sans)', color: 'var(--text-dark)', fontWeight: '600' }}>
-        Cargando información de MilkChain...
+      <div style={{ padding: "40px 6%", maxWidth: "1200px", margin: "0 auto", minHeight: "85vh" }}>
+        {/* Skeleton Cabecera del Panel */}
+        <div className="skeleton-card" style={{
+          backgroundColor: "var(--bg-white)",
+          border: "1px solid var(--border-color)",
+          borderRadius: "var(--radius-md)",
+          padding: "35px",
+          marginBottom: "35px"
+        }}>
+          <div className="skeleton-title" style={{ width: "180px", height: "20px", marginBottom: "15px" }}></div>
+          <div className="skeleton-title" style={{ width: "350px", height: "35px", marginBottom: "15px" }}></div>
+          <div className="skeleton-desc" style={{ width: "250px", height: "18px" }}></div>
+        </div>
+
+        {/* Skeleton Buscador */}
+        <div style={{ 
+          display: "flex", 
+          justifyContent: "center", 
+          marginBottom: "35px", 
+          gap: "12px",
+          maxWidth: "600px",
+          margin: "0 auto 35px auto"
+        }}>
+          <div className="skeleton-btn" style={{ width: "100%", height: "45px", borderRadius: "var(--radius-sm)" }}></div>
+        </div>
+
+        {/* Skeleton Tabla de Pedidos */}
+        <div className="cart-table-card skeleton-card" style={{ padding: "30px", backgroundColor: "var(--bg-white)", border: "1px solid var(--border-color)", borderRadius: "var(--radius-md)" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "22px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "2px solid var(--border-color)", paddingBottom: "12px" }}>
+              {[...Array(esAdmin ? 7 : 5)].map((_, idx) => (
+                <div key={idx} className="skeleton-title" style={{ width: "80px", height: "20px", marginBottom: 0 }}></div>
+              ))}
+            </div>
+            {[...Array(4)].map((_, i) => (
+              <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--border-color)", paddingBottom: "15px" }}>
+                <div className="skeleton-title" style={{ width: "60px", height: "20px", marginBottom: 0 }}></div>
+                <div className="skeleton-title" style={{ width: "100px", height: "20px", marginBottom: 0 }}></div>
+                {esAdmin && <div className="skeleton-title" style={{ width: "80px", height: "20px", marginBottom: 0 }}></div>}
+                {esAdmin && <div className="skeleton-title" style={{ width: "120px", height: "20px", marginBottom: 0 }}></div>}
+                <div className="skeleton-title" style={{ width: "80px", height: "20px", marginBottom: 0 }}></div>
+                <div className="skeleton-title" style={{ width: "90px", height: "25px", borderRadius: "20px", marginBottom: 0 }}></div>
+                <div className="skeleton-btn" style={{ width: "100px", height: "32px", marginBottom: 0 }}></div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
@@ -396,7 +441,7 @@ function PedidoPagina() {
       {/* MODAL DE DETALLE / FACTURA COMPROBANTE */}
       {detalleSeleccionado && (
         <div style={modalOverlayStyle}>
-          <div style={{...modalContentStyle, width: "600px"}} className="print-container">
+          <div style={{...modalContentStyle, width: "90%", maxWidth: "600px"}} className="print-container">
             <div className="no-print" style={{ display: "flex", justifyContent: "flex-end", marginBottom: "10px" }}>
               <button 
                 style={{ 
@@ -666,9 +711,10 @@ const modalOverlayStyle = {
 
 const modalContentStyle = { 
   background: "var(--bg-white)", 
-  padding: "40px", 
+  padding: "min(40px, 6vw)", 
   borderRadius: "var(--radius-md)", 
-  width: "480px", 
+  width: "90%", 
+  maxWidth: "480px", 
   boxShadow: "var(--shadow-lg)",
   border: "1px solid var(--border-color)",
   maxHeight: "90vh",

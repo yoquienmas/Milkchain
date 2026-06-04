@@ -209,8 +209,60 @@ function CarritoPagina() {
   }
 };
    
-    
-  if (loading) return <div style={{ textAlign: 'center', padding: '100px 20px', fontFamily: 'var(--font-sans)', color: 'var(--text-dark)', fontWeight: '600' }}>Cargando MilkChain...</div>;
+   if (loading) {
+    return (
+      <div className="cow-pattern-bg" style={{ minHeight: "90vh", padding: "40px 6%" }}>
+        <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
+          
+          {/* Skeleton checkout steps */}
+          <div className="checkout-steps" style={{ opacity: 0.6 }}>
+            <div className="checkout-step active" style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <div className="skeleton-btn" style={{ width: "100%", height: "20px" }}></div>
+            </div>
+            <div className="checkout-step" style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <div className="skeleton-btn" style={{ width: "100%", height: "20px" }}></div>
+            </div>
+            <div className="checkout-step" style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <div className="skeleton-btn" style={{ width: "100%", height: "20px" }}></div>
+            </div>
+          </div>
+          
+          {/* Skeleton Cart Table Card */}
+          <div className="cart-table-card skeleton-card" style={{ padding: "30px", marginBottom: "30px", backgroundColor: "var(--bg-white)", border: "1px solid var(--border-color)", borderRadius: "var(--radius-md)" }}>
+            <div className="skeleton-title" style={{ width: "250px", height: "30px", marginBottom: "25px" }}></div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+              {[...Array(3)].map((_, i) => (
+                <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--border-color)", paddingBottom: "15px" }}>
+                  <div className="skeleton-title" style={{ width: "200px", height: "20px", marginBottom: 0 }}></div>
+                  <div className="skeleton-title" style={{ width: "80px", height: "20px", marginBottom: 0 }}></div>
+                  <div className="skeleton-title" style={{ width: "60px", height: "25px", marginBottom: 0 }}></div>
+                  <div className="skeleton-title" style={{ width: "80px", height: "20px", marginBottom: 0 }}></div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Skeleton Summary Block */}
+          <div style={{ 
+            backgroundColor: "var(--bg-white)", 
+            padding: "30px", 
+            borderRadius: "var(--radius-md)",
+            border: "1px solid var(--border-color)",
+            boxShadow: "var(--shadow-sm)"
+          }}>
+            <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "25px" }}>
+              <div className="skeleton-price" style={{ width: "180px", height: "35px" }}></div>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <div className="skeleton-btn" style={{ width: "160px", height: "40px" }}></div>
+              <div className="skeleton-btn" style={{ width: "180px", height: "45px" }}></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="cow-pattern-bg" style={{ minHeight: "90vh", padding: "40px 6%" }}>
