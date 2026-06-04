@@ -7,7 +7,7 @@ import PáginaPrincipal from "./pages/PaginaPrincipal.jsx";
 import CatalogoPagina from "./pages/CatalogoPagina.jsx";
 import CarritoPagina from "./pages/CarritoPagina.jsx";
 import PedidoPagina from "./pages/PedidoPagina.jsx"; 
-import { ProtectorRuta } from "./components/ProtectorRuta.jsx";
+import { ProtectorRuta, ProtectorCliente } from "./components/ProtectorRuta.jsx";
 
 function App() {
   return (
@@ -23,9 +23,13 @@ function App() {
           <Route element={<ProtectorRuta />}>
             <Route path="/" element={<PáginaPrincipal />} />
             <Route path="/home" element={<PáginaPrincipal />} />
-            <Route path="/ver_catalogo" element={<CatalogoPagina />} />
-            <Route path="/cart" element={<CarritoPagina />} />
             <Route path="/mis-pedidos" element={<PedidoPagina />} /> 
+
+            {/* Rutas accesibles únicamente por clientes */}
+            <Route element={<ProtectorCliente />}>
+              <Route path="/ver_catalogo" element={<CatalogoPagina />} />
+              <Route path="/cart" element={<CarritoPagina />} />
+            </Route>
           </Route>
 
           <Route path="*" element={<Navigate to="/" />} />

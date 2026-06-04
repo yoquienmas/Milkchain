@@ -3,7 +3,7 @@ import { useAuth } from "../context/ContextoAutenticacion.jsx";
 import { FiInstagram, FiFacebook, FiMail, FiPhone, FiMapPin, FiTruck } from "react-icons/fi";
 
 export default function PiePagina() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
 
   return (
     <footer className="footer">
@@ -29,9 +29,13 @@ export default function PiePagina() {
             {isAuthenticated ? (
               <>
                 <li><Link to="/home">Inicio</Link></li>
-                <li><Link to="/ver_catalogo">Catálogo</Link></li>
+                {(user?.id_rol !== 1 && user?.idRol !== 1) && (
+                  <li><Link to="/ver_catalogo">Catálogo</Link></li>
+                )}
                 <li><Link to="/mis-pedidos">Mis Pedidos</Link></li>
-                <li><Link to="/cart">Mi Carrito</Link></li>
+                {(user?.id_rol !== 1 && user?.idRol !== 1) && (
+                  <li><Link to="/cart">Mi Carrito</Link></li>
+                )}
               </>
             ) : (
               <>

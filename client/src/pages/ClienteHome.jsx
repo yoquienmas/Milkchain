@@ -22,14 +22,58 @@ function ClienteHome() {
 
   return (
     <div className="home-container">
-      {/* Hero Banner de Bienvenida */}
-      <div className="home-hero">
-        <h1 style={{ fontFamily: "var(--font-serif)" }}>
-          ¡Hola, {user?.nombre || "Cliente"}!
-        </h1>
-        <p style={{ maxWidth: "800px", margin: "0 auto", lineHeight: "1.6" }}>
-          Conectamos a productores locales de **Corrientes** con PyMEs del Litoral, garantizando la distribución eficiente de lácteos y alimentos perecederos en tiempo y forma, sin mínimos de compra desmedidos.
-        </p>
+      {/* Hero Banner de Bienvenida con Imagen Temática */}
+      <div className="home-hero-split" style={{
+        display: "flex",
+        flexWrap: "wrap",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: "30px",
+        backgroundColor: "var(--bg-white)",
+        padding: "40px",
+        borderRadius: "var(--radius-md)",
+        boxShadow: "var(--shadow-sm)",
+        border: "1px solid var(--border-color)",
+        marginBottom: "40px",
+        position: "relative",
+        overflow: "hidden"
+      }}>
+        {/* Patrón decorativo de fondo */}
+        <div style={{
+          position: "absolute",
+          top: 0, right: 0,
+          width: "150px", height: "100%",
+          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cpath d='M80,30 C90,20 95,35 90,45 C85,55 75,45 80,30 Z' fill='%2320140F' fill-opacity='0.01'/%3E%3Cpath d='M50,75 C60,68 68,85 58,92 C48,99 40,85 50,75 Z' fill='%2320140F' fill-opacity='0.01'/%3E%3C/svg%3E")`,
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "right center",
+          pointerEvents: "none"
+        }} />
+
+        <div style={{ flex: "1 1 450px", zIndex: 2 }}>
+          <h1 style={{ fontFamily: "var(--font-serif)", marginBottom: "15px", fontSize: "2.4rem", color: "var(--text-dark)" }}>
+            ¡Hola, {user?.nombre || "Cliente"}!
+          </h1>
+          <p style={{ lineHeight: "1.7", fontSize: "1.1rem", color: "var(--text-muted)", margin: 0 }}>
+            Conectamos a productores locales de <strong style={{ color: "var(--color-caramel)" }}>Corrientes</strong> con PyMEs del Litoral, garantizando la distribución eficiente de lácteos y alimentos perecederos en tiempo y forma, sin mínimos de compra desmedidos.
+          </p>
+        </div>
+        
+        <div style={{
+          flex: "1 1 280px",
+          maxWidth: "320px",
+          height: "190px",
+          borderRadius: "var(--radius-md)",
+          overflow: "hidden",
+          border: "2px solid var(--border-color)",
+          boxShadow: "var(--shadow-md)",
+          zIndex: 2
+        }}>
+          <img 
+            src="/images/milk_farm_banner.png" 
+            alt="Distribución de Lácteos MilkChain" 
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
+        </div>
       </div>
 
       <h2 style={{ fontFamily: "var(--font-serif)", fontSize: "1.6rem", marginBottom: "25px", color: "var(--text-dark)", borderBottom: "2px solid var(--border-color)", paddingBottom: "10px" }}>
@@ -119,10 +163,6 @@ function ClienteHome() {
         boxShadow: "var(--shadow-sm)"
       }}>
         <div style={{ textAlign: "center", marginBottom: "35px" }}>
-          <span className="split-image-badge" style={{ marginBottom: "12px" }}>
-            <FiAward style={{ marginRight: "4px", verticalAlign: "middle" }} />
-            Compromiso Regional
-          </span>
           <h2 style={{
             fontFamily: "var(--font-serif)",
             fontSize: "2rem",
