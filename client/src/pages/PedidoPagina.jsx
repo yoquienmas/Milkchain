@@ -19,6 +19,7 @@ function PedidoPagina() {
   const [busqueda, setBusqueda] = useState("");
   const [pedidoAEditar, setPedidoAEditar] = useState(null);
   const [detalleSeleccionado, setDetalleSeleccionado] = useState(null);
+  const [pedidoCompletoAEditar, setPedidoCompletoAEditar] = useState(null);
 
   const mapaEstados = {
     "Pendiente": 1,
@@ -113,6 +114,38 @@ function PedidoPagina() {
     } catch (err) { 
       // PASO 4.1.2: Error de conexión
       mostrarToast("No se pudo actualizar el estado", "error"); 
+    }
+  };
+
+  const abrirModalEdicionDesdeDetalle = (detalle) => {
+    const metadata = detalle.productos[0] || {};
+    let fechaFormateada = "";
+    if (metadata.fecha) {
+      const d = new Date(metadata.fecha);
+      const offset = d.getTimezoneOffset();
+      const dLocal = new Date(d.getTime() - (offset * 60 * 1000));
+      fechaFormateada = dLocal.toISOString().split('T')[0];
+    }
+    setPedidoCompletoAEditar({
+      id_pedido: detalle.id,
+      fecha: fechaFormateada,
+      Total: metadata.total_pedido || 0,
+    });
+  };
+
+  const actualizarPedidoCompleto = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.put(`http://localhost:3000/api/pedidos/${pedidoCompletoAEditar.id_pedido}`, {
+        Total: Number(pedidoCompletoAEditar.Total),
+        fecha: pedidoCompletoAEditar.fecha,
+      });
+      setPedidoCompletoAEditar(null);
+      setDetalleSeleccionado(null);
+      obtenerTodosLosPedidos();
+      mostrarToast("Pedido actualizado con éxito.", "success");
+    } catch (err) {
+      mostrarToast("Error al actualizar el pedido.", "error");
     }
   };
 
@@ -445,14 +478,32 @@ function PedidoPagina() {
               </span>
             </div>
 
-            <div style={{ marginTop: "35px" }} className="no-print">
+            <div style={{ marginTop: "35px", display: "flex", gap: "10px" }} className="no-print">
               <button 
                 onClick={manejarImpresionNativa} 
                 className="btn-green"
-                style={{ width: "100%", padding: "12px", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "8px" }}
+                style={{ flex: 1, padding: "12px", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "8px" }}
               >
                 <FiPrinter /> Imprimir Factura
               </button>
+              {esAdmin && (
+                <button 
+                  onClick={() => abrirModalEdicionDesdeDetalle(detalleSeleccionado)} 
+                  className="btn-green"
+                  style={{ 
+                    flex: 1, 
+                    padding: "12px", 
+                    display: "inline-flex", 
+                    alignItems: "center", 
+                    justifyContent: "center", 
+                    gap: "8px", 
+                    backgroundColor: "var(--color-caramel)", 
+                    color: "white" 
+                  }}
+                >
+                  <FiEdit2 /> Editar Pedido
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -513,6 +564,79 @@ function PedidoPagina() {
               <button 
                 type="button" 
                 onClick={() => setPedidoAEditar(null)} 
+                className="btn-logout"
+                style={{ flex: 1, padding: "12px", justifyContent: "center", fontWeight: "600" }}
+              >
+                Cancelar
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* MODAL EDITAR PEDIDO COMPLETO (Solo Admin) */}
+      {pedidoCompletoAEditar && (
+        <div style={modalOverlayStyle}>
+          <form onSubmit={actualizarPedidoCompleto} style={modalContentStyle}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "25px" }}>
+              <h3 style={{ fontFamily: "var(--font-serif)", fontSize: "1.5rem", color: "var(--text-dark)", margin: 0 }}>
+                Editar Pedido #{pedidoCompletoAEditar.id_pedido}
+              </h3>
+              <button 
+                type="button"
+                style={{ background: 'none', border: 'none', fontSize: '1.4rem', cursor: 'pointer', color: "var(--text-muted)" }} 
+                onClick={() => setPedidoCompletoAEditar(null)}
+              >
+                <FiX />
+              </button>
+            </div>
+            
+            <div style={{ display: "flex", flexDirection: "column", gap: "18px", textAlign: "left" }}>
+              <div>
+                <label style={{ fontWeight: "700", fontSize: "0.9rem", color: "var(--text-dark)", display: "block", marginBottom: "6px" }}>
+                  Fecha:
+                </label>
+                <input 
+                  type="date"
+                  style={{ 
+                    width: "100%", 
+                    padding: "12px", 
+                    border: "1.5px solid var(--border-color)", 
+                    borderRadius: "var(--radius-sm)" 
+                  }} 
+                  value={pedidoCompletoAEditar.fecha}
+                  required
+                  onChange={(e) => setPedidoCompletoAEditar({ ...pedidoCompletoAEditar, fecha: e.target.value })}
+                />
+              </div>
+
+              <div>
+                <label style={{ fontWeight: "700", fontSize: "0.9rem", color: "var(--text-dark)", display: "block", marginBottom: "6px" }}>
+                  Total:
+                </label>
+                <input 
+                  type="number"
+                  step="0.01"
+                  style={{ 
+                    width: "100%", 
+                    padding: "12px", 
+                    border: "1.5px solid var(--border-color)", 
+                    borderRadius: "var(--radius-sm)" 
+                  }} 
+                  value={pedidoCompletoAEditar.Total}
+                  required
+                  onChange={(e) => setPedidoCompletoAEditar({ ...pedidoCompletoAEditar, Total: e.target.value })}
+                />
+              </div>
+             </div>
+
+            <div style={{ display: "flex", gap: "10px", marginTop: "35px" }}>
+              <button type="submit" className="btn-green" style={{ flex: 1, padding: "12px" }}>
+                Guardar Cambios
+              </button>
+              <button 
+                type="button" 
+                onClick={() => setPedidoCompletoAEditar(null)} 
                 className="btn-logout"
                 style={{ flex: 1, padding: "12px", justifyContent: "center", fontWeight: "600" }}
               >

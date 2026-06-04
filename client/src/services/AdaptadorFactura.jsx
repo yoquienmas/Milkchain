@@ -41,50 +41,57 @@ export class ImpresorFactura {
  * Adaptee A: Generador de PDF usando la librería externa jsPDF
  */
 export class SistemaPdfExterno {
-  /**
-   * Método de firma incompatible que requiere procesamiento específico
-   */
   generarDocumentoPdf(pedido, usuario, items) {
-    console.log("SistemaPdfExterno: Ejecutando generación de documento PDF...");
     const doc = new jsPDF();
     
     // Encabezado
+    doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
     doc.text("Factura de Compra - MilkChain", 20, 20);
     
     // Metadatos
-    doc.setFontSize(12);
-    const fechaFormateada = new Date(pedido.fecha || Date.now()).toLocaleDateString();
-    doc.text(`Fecha: ${fechaFormateada}`, 20, 30);
-    doc.text(`Cliente: ${usuario?.nombre || "Consumidor"} ${usuario?.apellido || "Final"}`, 20, 40);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+    const fechaFormateada = new Date().toLocaleDateString();
+    doc.text(`Fecha: ${fechaFormateada}`, 20, 35);
+    doc.text(`Cliente: ${usuario?.nombre || "Consumidor"}`, 20, 42);
+    doc.text(`Dirección: ${pedido.calle || ""} ${pedido.numero || ""}`, 20, 49);
     
-    const calle = pedido.calle || "";
-    const numero = pedido.numero || "";
-    if (calle) {
-      doc.text(`Dirección de Entrega: ${calle} ${numero}`, 20, 50);
-    }
+    // Encabezado de la tabla
+    doc.setFont("helvetica", "bold");
+    doc.setDrawColor(0);
+    doc.line(20, 60, 190, 60); // Línea horizontal
+    doc.text("Producto", 20, 65);
+    doc.text("Cant.", 120, 65);
+    doc.text("Precio", 145, 65);
+    doc.text("Subtotal", 170, 65);
+    doc.line(20, 68, 190, 68);
     
-    doc.text("Detalle de la compra:", 20, 70);
+    // Detalles de la compra
+    doc.setFont("helvetica", "normal");
+    let y = 75;
     
-    // Grilla
-    let y = 80;
     items.forEach((item) => {
-      const cantidad = item.cantidad || item.Cantidad || 1;
-      const precioUnitario = item.precio || item.precio_unitario || item.Precio_Unitario || 0;
-      const subtotal = (precioUnitario * cantidad).toFixed(2);
+      // FORZAR CONVERSIÓN A NÚMERO
+      const cantidad = parseInt(item.cantidad) || 0;
+      const precioUnitario = parseFloat(item.precio) || 0;
+      const subtotal = cantidad * precioUnitario;
       
-      doc.text(`${cantidad}x ${item.nombre} - $${subtotal}`, 20, y);
+      doc.text(item.nombre || "Producto", 20, y);
+      doc.text(cantidad.toString(), 125, y);
+      doc.text(`$${precioUnitario.toFixed(2)}`, 145, y);
+      doc.text(`$${subtotal.toFixed(2)}`, 170, y);
+      
       y += 10;
     });
 
-    // Formatear total
-    const totalAbonado = parseFloat(pedido.Total || pedido.total || 0).toFixed(2);
-    doc.setFontSize(14);
-    doc.text(`Total Abonado: $${totalAbonado.replace(".", ",")}`, 20, y + 10);
+    // Total
+    doc.line(20, y, 190, y);
+    doc.setFont("helvetica", "bold");
+    const totalAbonado = parseFloat(pedido.Total || 0).toFixed(2);
+    doc.text(`Total: $${totalAbonado.replace(".", ",")}`, 160, y + 10);
     
-    const idFactura = pedido.id_pedido || pedido.id || "reciente";
-    doc.save(`Factura_MilkChain_#${idFactura}.pdf`);
-    console.log("SistemaPdfExterno: PDF generado con éxito.");
+    doc.save(`Factura_MilkChain_${new Date().getTime()}.pdf`);
   }
 }
 
@@ -149,4 +156,6 @@ export class AdaptadorWindowPrint extends ImpresorFactura {
     }
     this.sistemaNativo.lanzarImpresionPantalla();
   }
+
+  
 }

@@ -150,69 +150,66 @@ function CarritoPagina() {
 
   // Función finalizarCompra unificada (Paso 5 de la Conversación UML)
   const finalizarCompra = async () => {
-    if (!pagoSeleccionado) return mostrarToast("Por favor, selecciona un medio de pago", "info");
-    if (!user) return mostrarToast("Debes iniciar sesión para comprar", "info");
-    if (!direccionGuardada) return mostrarToast("Por favor, registra una dirección de envío", "info");
+  if (!pagoSeleccionado) return mostrarToast("Por favor, selecciona un medio de pago", "info");
+  if (!user) return mostrarToast("Debes iniciar sesión para comprar", "info");
+  if (!direccionGuardada) return mostrarToast("Por favor, registra una dirección de envío", "info");
 
-    try {
-      setLoading(true);
-      const datosPedido = {
-        id_usuario: user.id,
-        id_direccion: direccionGuardada.id,
-        id_metodo_pago: pagoSeleccionado,
-        Total: calcularMontoTotal ? calcularMontoTotal() : total, 
-        detalles: cart
-      };
+  try {
+    setLoading(true);
+    const montoFinal = calcularMontoTotal ? calcularMontoTotal() : total;
+    
+    const datosPedido = {
+      id_usuario: user.id,
+      id_direccion: direccionGuardada.id,
+      id_metodo_pago: pagoSeleccionado,
+      Total: montoFinal,
+      detalles: cart
+    };
 
-      const res = await axios.post("http://localhost:3000/api/pedidos", datosPedido);
+    const res = await axios.post("http://localhost:3000/api/pedidos", datosPedido);
+    
+    if (res.data.success || res.status === 201) {
+      // --- CAMBIO AQUÍ: Guardamos los datos antes de vaciar ---
+      setItemsComprados(cart); 
+      setTotalComprado(montoFinal);
+      // --------------------------------------------------------
       
-      if (res.data.success || res.status === 201) {
-        mostrarToast("¡Pedido confirmado con éxito! Gracias por tu compra.", "success");
-        setCompraExitosa(true);
-        vaciarCarrito(); // Paso 5.3: Limpia el estado de la aplicación
-      }
-    } catch (error) {
-      console.error("Error al finalizar pedido:", error);
-      mostrarToast("Error al procesar la compra: " + (error.response?.data?.error || error.message), "error");
-    } finally { 
-      setLoading(false); 
+      mostrarToast("¡Pedido confirmado con éxito!", "success");
+      setCompraExitosa(true);
+      vaciarCarrito(); // Ahora al vaciar, los datos persisten en itemsComprados
     }
-  };
+  } catch (error) {
+    console.error("Error al finalizar pedido:", error);
+    mostrarToast("Error al procesar la compra", "error");
+  } finally { 
+    setLoading(false); 
+  }
+};
 
   // Método unificado de frontend que utiliza el Adaptador de Objetos (Paso 6.1)
   const imprimirFactura = () => {
-    try {
-      console.log("CarritoPagina: Iniciando impresión usando AdaptadorJsPDF...");
-      
-      // 1. Instanciamos el Adaptee (sistema incompatible externo)
-      const sistemaPdf = new SistemaPdfExterno();
-      
-      // 2. Instanciamos el Adaptador pasándole el Adaptee por composición
-      const adaptador = new AdaptadorJsPDF(sistemaPdf);
-      
-      // 3. Generamos los datos formateados para la factura
-      const montoFinal = calcularMontoTotal ? calcularMontoTotal() : total;
-      const pedidoParaComprobante = {
-        id_pedido: "reciente",
-        fecha: new Date(),
-        Total: montoFinal,
-        calle: direccionGuardada?.calle,
-        numero: direccionGuardada?.numero
-      };
-      
-      // 4. El cliente llama de forma uniforme al método del Target
-      adaptador.imprimir(pedidoParaComprobante, user, cart);
-      mostrarToast("¡Factura descargada con éxito!", "success");
-    } catch (error) {
-      console.error("Error al generar PDF con adaptador, aplicando fallback de impresión nativa:", error);
-      
-      // Fallback usando el adaptador de impresión nativo del navegador
-      const sistemaNativo = new SistemaImpresionNativa();
-      const adaptadorFallback = new AdaptadorWindowPrint(sistemaNativo);
-      adaptadorFallback.imprimir();
-    }
-  };
-
+  try {
+    const sistemaPdf = new SistemaPdfExterno();
+    const adaptador = new AdaptadorJsPDF(sistemaPdf);
+    
+    const pedidoParaComprobante = {
+      id_pedido: "reciente",
+      Total: totalComprado, // Usamos el estado guardado
+      calle: direccionGuardada?.calle || "No especificada",
+      numero: direccionGuardada?.numero || ""
+    };
+    
+    // Pasamos itemsComprados en lugar de cart
+    adaptador.imprimir(pedidoParaComprobante, user, itemsComprados);
+    
+    mostrarToast("¡Factura generada!", "success");
+  } catch (error) {
+    console.error(error);
+    new AdaptadorWindowPrint(new SistemaImpresionNativa()).imprimir();
+  }
+};
+   
+    
   if (loading) return <div style={{ textAlign: 'center', padding: '100px 20px', fontFamily: 'var(--font-sans)', color: 'var(--text-dark)', fontWeight: '600' }}>Cargando MilkChain...</div>;
 
   return (

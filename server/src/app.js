@@ -118,6 +118,8 @@ app.get('/api/pedidos/all', async (req, res) => {
                 p.id_pedido, 
                 p.fecha, 
                 p.Total, 
+                p.id_usuario,
+                p.id_estado,
                 e.nombre as estado, 
                 u.nombre as nombre_usuario, 
                 u.apellido as apellido_usuario,
@@ -149,6 +151,8 @@ app.get('/api/pedidos/detalle/:id_pedido', async (req, res) => {
                 pd.Cantidad as cantidad, 
                 pr.nombre, 
                 p.fecha, 
+                p.id_usuario,
+                p.id_estado,
                 p.Total as total_pedido, 
                 u.nombre as nombre_cliente,
                 u.apellido as apellido_cliente 
@@ -182,11 +186,11 @@ app.delete('/api/pedidos/:id', async (req, res) => {
 // Editar datos del pedido
 app.put('/api/pedidos/:id', async (req, res) => {
     const { id } = req.params;
-    const { Total, id_estado } = req.body; 
+    const { Total, id_estado, fecha} = req.body; 
     try {
         await pool.query(
-            'UPDATE pedido SET Total = ?, id_estado = ?, fecha_modificacion = NOW() WHERE id_pedido = ?',
-            [Total, id_estado, id]
+            'UPDATE pedido SET Total = ?, id_estado = ?, fecha = ?, id_usuario = ?, fecha_modificacion = NOW() WHERE id_pedido = ?',
+            [Total, id_estado, fecha, id]
         );
         res.json({ message: "Pedido actualizado con éxito" });
     } catch (error) {
@@ -228,16 +232,6 @@ app.get('/api/pedidos/:id_usuario', async (req, res) => {
     }
 });
 
-// Eliminar un pedido
-app.delete('/api/pedidos/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        await pool.query('DELETE FROM pedido_detalles WHERE id_pedido = ?', [id]);
-        await pool.query('DELETE FROM pedido WHERE id_pedido = ?', [id]);
-        res.json({ message: "Pedido eliminado correctamente" });
-    } catch (error) {
-        res.status(500).json({ error: "Error al eliminar el pedido" });
-    }
-});
+
 
 export default app;
