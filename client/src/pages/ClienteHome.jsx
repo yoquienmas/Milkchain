@@ -1,12 +1,62 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/ContextoAutenticacion.jsx";
 import { useToast } from "../context/ContextoToast.jsx";
-import { FiPackage, FiBookOpen, FiTruck, FiRotateCcw, FiMessageCircle, FiArrowRight, FiAward, FiShield, FiHeart, FiGlobe } from "react-icons/fi";
+import axios from "axios";
+import ProductCard from "../components/TarjetaProducto.jsx";
+import { FiPackage, FiBookOpen, FiTruck, FiRotateCcw, FiMessageCircle, FiArrowRight, FiArrowLeft, FiAward, FiShield, FiHeart, FiGlobe } from "react-icons/fi";
 import "../App.css";
 
 function ClienteHome() {
   const { user } = useAuth();
   const { mostrarToast } = useToast();
+  const [productos, setProductos] = useState([]);
+  const [indiceActual, setIndiceActual] = useState(0);
+
+  useEffect(() => {
+    const cargarProductos = async () => {
+      try {
+        const res = await axios.get("http://localhost:3000/api/productos");
+        setProductos(Array.isArray(res.data) ? res.data : []);
+      } catch (err) {
+        console.error("Error al cargar productos para el carrusel:", err);
+      }
+    };
+    cargarProductos();
+  }, []);
+
+  useEffect(() => {
+    if (productos.length === 0) return;
+    const interval = setInterval(() => {
+      setIndiceActual((prev) => {
+        let visible = 3;
+        if (window.innerWidth <= 600) visible = 1;
+        else if (window.innerWidth <= 992) visible = 2;
+        const maxIndex = Math.max(0, productos.length - visible);
+        if (prev >= maxIndex) {
+          return 0;
+        }
+        return prev + 1;
+      });
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [productos]);
+
+  const irAnterior = () => {
+    let visible = 3;
+    if (window.innerWidth <= 600) visible = 1;
+    else if (window.innerWidth <= 992) visible = 2;
+    const maxIndex = Math.max(0, productos.length - visible);
+    setIndiceActual((prev) => (prev === 0 ? maxIndex : prev - 1));
+  };
+
+  const irSiguiente = () => {
+    let visible = 3;
+    if (window.innerWidth <= 600) visible = 1;
+    else if (window.innerWidth <= 992) visible = 2;
+    const maxIndex = Math.max(0, productos.length - visible);
+    setIndiceActual((prev) => (prev >= maxIndex ? 0 : prev + 1));
+  };
 
   const manejarEnviosClick = () => {
     mostrarToast("🚚 Tu envío se encuentra en preparación por nuestro equipo de logística del Litoral.", "info");
@@ -75,6 +125,110 @@ function ClienteHome() {
           />
         </div>
       </div>
+
+      {/* Carrusel de Productos Destacados */}
+      {productos.length > 0 && (
+        <div style={{ marginBottom: "50px", position: "relative" }}>
+          <h2 style={{ 
+            fontFamily: "var(--font-serif)", 
+            fontSize: "1.6rem", 
+            marginBottom: "20px", 
+            color: "var(--text-dark)", 
+            borderBottom: "2px solid var(--border-color)", 
+            paddingBottom: "10px",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center"
+          }}>
+            <span>Productos Destacados</span>
+            <span style={{ fontSize: "0.85rem", color: "var(--text-muted)", fontWeight: "normal" }}>
+              Nuestra selección recomendada
+            </span>
+          </h2>
+          
+          {/* Botones de navegación manual */}
+          <button 
+            onClick={irAnterior}
+            style={{
+              position: "absolute",
+              left: "-15px",
+              top: "calc(50% + 15px)",
+              transform: "translateY(-50%)",
+              background: "var(--bg-white)",
+              border: "1.5px solid var(--border-color)",
+              width: "40px",
+              height: "40px",
+              borderRadius: "50%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              zIndex: 10,
+              boxShadow: "var(--shadow-md)",
+              color: "var(--text-dark)",
+              transition: "all 0.2s ease"
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.backgroundColor = "var(--color-caramel-light)";
+              e.currentTarget.style.color = "var(--color-caramel)";
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.backgroundColor = "var(--bg-white)";
+              e.currentTarget.style.color = "var(--text-dark)";
+            }}
+          >
+            <FiArrowLeft />
+          </button>
+          
+          <button 
+            onClick={irSiguiente}
+            style={{
+              position: "absolute",
+              right: "-15px",
+              top: "calc(50% + 15px)",
+              transform: "translateY(-50%)",
+              background: "var(--bg-white)",
+              border: "1.5px solid var(--border-color)",
+              width: "40px",
+              height: "40px",
+              borderRadius: "50%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              zIndex: 10,
+              boxShadow: "var(--shadow-md)",
+              color: "var(--text-dark)",
+              transition: "all 0.2s ease"
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.backgroundColor = "var(--color-caramel-light)";
+              e.currentTarget.style.color = "var(--color-caramel)";
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.backgroundColor = "var(--bg-white)";
+              e.currentTarget.style.color = "var(--text-dark)";
+            }}
+          >
+            <FiArrowRight />
+          </button>
+
+          <div className="carousel-wrapper">
+            <div 
+              className="carousel-track"
+              style={{
+                transform: `translate3d(calc(-1 * ${indiceActual} * (100% / var(--slides-visible))), 0, 0)`
+              }}
+            >
+              {productos.map((prod) => (
+                <div key={prod.id_producto} className="carousel-slide">
+                  <ProductCard producto={prod} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       <h2 style={{ fontFamily: "var(--font-serif)", fontSize: "1.6rem", marginBottom: "25px", color: "var(--text-dark)", borderBottom: "2px solid var(--border-color)", paddingBottom: "10px" }}>
         Panel de Control

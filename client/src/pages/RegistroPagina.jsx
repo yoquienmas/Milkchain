@@ -83,7 +83,7 @@ export default function RegistroPagina() {
             <input type="password" {...register("password")} placeholder="Contraseña" required />
           </div>
           
-          <button type="submit" style={{ width: "100%", marginTop: "20px", padding: "14px" }}>
+          <button type="submit" className="btn-blue" style={{ width: "100%", marginTop: "20px", padding: "14px" }}>
             <FiUserPlus /> Registrarse
           </button>
         </form>

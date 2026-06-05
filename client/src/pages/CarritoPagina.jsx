@@ -28,6 +28,7 @@ function CarritoPagina() {
   const [itemsComprados, setItemsComprados] = useState([]);
   const [totalComprado, setTotalComprado] = useState(0);
   const [direccionGuardada, setDireccionGuardada] = useState(null);
+  const [direccionOriginal, setDireccionOriginal] = useState(null);
   const [loading, setLoading] = useState(true);
 
   // ESTADOS PARA DATOS DESDE LA API
@@ -85,15 +86,18 @@ function CarritoPagina() {
         const data = await buscarDirecciones(user.id);
         if (Array.isArray(data) && data.length > 0) {
           const dir = data[0];
-          setDireccionGuardada({
+          const dirObj = {
             id: dir.id_direccion,
             calle: dir.calle,
             numero: dir.numero,
             telefono: dir.n_contacto || dir.id_telefono,
             nombre_localidad: "Dirección principal"
-          });
+          };
+          setDireccionGuardada(dirObj);
+          setDireccionOriginal(dirObj);
         } else {
           setDireccionGuardada(null);
+          setDireccionOriginal(null);
         }
       } catch (error) {
         console.error("Error en carga inicial:", error);
@@ -136,11 +140,13 @@ function CarritoPagina() {
       const datosAEnviar = { ...formData, id_usuario: user.id }; 
       const res = await axios.post("http://localhost:3000/api/direcciones", datosAEnviar);
       
-      setDireccionGuardada({ 
+      const dirObj = { 
         id: res.data.id, 
         ...formData,
         nombre_localidad: "Dirección guardada" 
-      });
+      };
+      setDireccionGuardada(dirObj);
+      setDireccionOriginal(dirObj);
       mostrarToast("¡Dirección guardada con éxito!", "success");
     } catch (err) { 
       console.error(err);
@@ -425,28 +431,43 @@ function CarritoPagina() {
                     
                     <form onSubmit={guardarDireccion}>
                       <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "12px" }}>
-                        <input name="calle" placeholder="Calle" onChange={manejarChange} required style={{ marginBottom: "15px" }} />
+                        <input name="calle" type="text" placeholder="Calle" onChange={manejarChange} required style={{ marginBottom: "15px" }} />
                         <input name="numero" type="number" placeholder="Altura" onChange={manejarChange} required style={{ marginBottom: "15px" }} />
                       </div>
-                      <input name="telefono" placeholder="Teléfono de contacto" onChange={manejarChange} required style={{ marginBottom: "15px" }} />
+                      <input name="telefono" type="text" placeholder="Teléfono de contacto" onChange={manejarChange} required style={{ marginBottom: "15px" }} />
                       
-                      <select name="id_pais" onChange={manejarPaisCambio} required value={formData.id_pais} style={{ width: "100%", padding: "12px", border: "1.5px solid var(--border-color)", borderRadius: "var(--radius-sm)", marginBottom: "15px", backgroundColor: "white", outline: "none" }}>
+                      <select name="id_pais" onChange={manejarPaisCambio} required value={formData.id_pais} style={{ width: "100%", padding: "12px", border: "1.5px solid var(--border-color)", borderRadius: "var(--radius-sm)", marginBottom: "15px", backgroundColor: "var(--bg-white)", color: "var(--text-dark)", outline: "none" }}>
                         <option value="">Seleccione un País...</option>
                         {paises.map(p => <option key={p.id || p.ID} value={p.id || p.ID}>{p.nombre || p.Nombre}</option>)}
                       </select>
 
-                      <select name="id_provincia" onChange={manejarProvinciaCambio} required disabled={!formData.id_pais} style={{ width: "100%", padding: "12px", border: "1.5px solid var(--border-color)", borderRadius: "var(--radius-sm)", marginBottom: "15px", backgroundColor: "white", outline: "none" }}>
+                      <select name="id_provincia" onChange={manejarProvinciaCambio} required disabled={!formData.id_pais} style={{ width: "100%", padding: "12px", border: "1.5px solid var(--border-color)", borderRadius: "var(--radius-sm)", marginBottom: "15px", backgroundColor: "var(--bg-white)", color: "var(--text-dark)", outline: "none" }}>
                         <option value="">Seleccione una Provincia...</option>
                         {provincias.map(prov => <option key={prov.id || prov.ID} value={prov.id || prov.ID}>{prov.nombre || prov.Nombre}</option>)}
                       </select>
 
-                      <select name="id_localidad" onChange={manejarChange} required disabled={!formData.id_provincia} style={{ width: "100%", padding: "12px", border: "1.5px solid var(--border-color)", borderRadius: "var(--radius-sm)", marginBottom: "25px", backgroundColor: "white", outline: "none" }}>
+                      <select name="id_localidad" onChange={manejarChange} required disabled={!formData.id_provincia} style={{ width: "100%", padding: "12px", border: "1.5px solid var(--border-color)", borderRadius: "var(--radius-sm)", marginBottom: "25px", backgroundColor: "var(--bg-white)", color: "var(--text-dark)", outline: "none" }}>
                         <option value="">Seleccione una Localidad...</option>
                         {localidades.map(loc => <option key={loc.id || loc.ID} value={loc.id || loc.ID}>{loc.nombre || loc.Nombre}</option>)}
                       </select>
 
                       <button type="submit" className="btn-green" style={{ width: '100%' }}>
                         Guardar dirección
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (direccionOriginal) {
+                            setDireccionGuardada(direccionOriginal);
+                          } else {
+                            setPaso(1);
+                          }
+                        }}
+                        className="btn-logout"
+                        style={{ width: '100%', marginTop: '12px', justifyContent: 'center', fontWeight: "600" }}
+                      >
+                        <FiArrowLeft /> Volver atrás
                       </button>
                     </form>
                   </div>
@@ -487,7 +508,16 @@ function CarritoPagina() {
                     </div>
 
                     <button className="btn-green" style={{ width: '100%', padding: "14px" }} onClick={() => setPaso(3)}>
-                      Continuar al pago <FiArrowRight />
+                      Continuar con el Pago <FiArrowRight />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setPaso(1)}
+                      className="btn-logout"
+                      style={{ width: '100%', marginTop: '12px', justifyContent: 'center', fontWeight: "600" }}
+                    >
+                      <FiArrowLeft /> Volver al carrito
                     </button>
                     
                     <button 

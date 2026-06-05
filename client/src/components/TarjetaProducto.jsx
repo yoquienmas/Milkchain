@@ -1,18 +1,29 @@
 import { useState } from "react";
 import { useCart } from "../context/ContextoCarrito.jsx";
 import { useToast } from "../context/ContextoToast.jsx";
+import { useNavigate } from "react-router-dom";
 import { FiShoppingCart, FiRefreshCw, FiTrash2, FiPlus, FiMinus } from "react-icons/fi";
 
 export default function TarjetaProducto({ producto }) {
   const nombreImagen = producto.nombre.toLowerCase().replace(/\s+/g, '-');
   const rutaPrueba = `/images/${nombreImagen}.jpg`;
-  const { cart, agregarProducto, eliminar_producto_carrito } = useCart();
+  const { cart, agregarProducto, eliminar_producto_carrito, actualizarCantidad } = useCart();
   const { mostrarToast } = useToast();
   const productoEnCarrito = cart.find(item => item.id_producto === producto.id_producto);
 
-  // Inicializamos cantidad en 1 si no está en el carrito para que los botones + y - funcionen intuitivamente
-  const [cantidad, setCantidad] = useState(productoEnCarrito ? productoEnCarrito.cantidad : 1);
+  const navigate = useNavigate();
+  // El contador siempre inicia en 1 para representar la cantidad a agregar
+  const [cantidad, setCantidad] = useState(1);
   const [agregado, setAgregado] = useState(!!productoEnCarrito);
+
+  const manejarIncremento = () => {
+    const cantEnCarrito = productoEnCarrito ? productoEnCarrito.cantidad : 0;
+    if (cantidad + cantEnCarrito >= producto.stock) {
+      mostrarToast("No hay suficiente stock", "error");
+      return;
+    }
+    setCantidad(prev => prev + 1);
+  };
 
   const formatearPrecio = (valor) => {
     const numero = parseFloat(valor) || 0;
@@ -43,16 +54,19 @@ export default function TarjetaProducto({ producto }) {
     }
 
     // PASO 2.1: Añade el producto mutando el estado global
-    agregarProducto({
+    const exitoAgregar = agregarProducto({
       ...producto, 
       precio: parseFloat(producto.precio), 
       cantidad: cantVal 
     });
-    setAgregado(true);
-    mostrarToast(`¡${producto.nombre} agregado al carrito!`, "success");
+    if (exitoAgregar) {
+      setAgregado(true);
+      mostrarToast(`¡${producto.nombre} agregado al carrito!`, "success");
+      setCantidad(1); // Resetea a 1
+    }
   };
 
-  // Manejador para actualizar cantidades desde el catálogo
+  // Manejador para actualizar cantidades desde el catálogo (ahora en lógica aditiva "Agregar más")
   const manejarActualizar = () => {
     const cantVal = parseInt(cantidad);
 
@@ -61,18 +75,22 @@ export default function TarjetaProducto({ producto }) {
       return;
     }
 
-    // Volvemos a evaluar las reglas de stock del flujo para la actualización
-    if (validarStock(cantVal) === false) {
+    // Validamos que la cantidad actual en el carrito más la nueva a agregar no exceda el stock
+    const cantEnCarrito = productoEnCarrito ? productoEnCarrito.cantidad : 0;
+    if (cantVal + cantEnCarrito > producto.stock) {
       mostrarToast("No hay suficiente stock", "error");
       return;
     }
 
-    agregarProducto({
+    const exitoActualizar = agregarProducto({
       ...producto,
       precio: parseFloat(producto.precio),
       cantidad: cantVal
     });
-    mostrarToast(`¡Cantidad de ${producto.nombre} actualizada!`, "success");
+    if (exitoActualizar) {
+      mostrarToast(`¡Cantidad de ${producto.nombre} actualizada!`, "success");
+      setCantidad(1); // Resetea el contador local a 1
+    }
   };
 
   const manejarEliminar = () => {
@@ -89,8 +107,8 @@ export default function TarjetaProducto({ producto }) {
         position: "absolute",
         top: "15px",
         right: "15px",
-        backgroundColor: producto.stock > 0 ? "var(--color-caramel-light)" : "#FCE8E6",
-        color: producto.stock > 0 ? "var(--color-caramel)" : "#A82E2E",
+        backgroundColor: producto.stock > 0 ? "#EAF2F8" : "#FCE8E6",
+        color: producto.stock > 0 ? "#246295" : "#A82E2E",
         fontSize: "0.88rem",
         fontWeight: "bold",
         padding: "6px 14px",
@@ -130,7 +148,6 @@ export default function TarjetaProducto({ producto }) {
               <button 
                 onClick={() => setCantidad(prev => Math.max(1, parseInt(prev || 1) - 1))}
                 className="btn-qty-control"
-                disabled={producto.stock <= 0}
                 style={{ width: "32px", height: "32px" }}
               >
                 <FiMinus />
@@ -139,9 +156,8 @@ export default function TarjetaProducto({ producto }) {
                 {cantidad}
               </span>
               <button 
-                onClick={() => setCantidad(prev => Math.min(producto.stock, parseInt(prev || 1) + 1))}
+                onClick={manejarIncremento}
                 className="btn-qty-control"
-                disabled={producto.stock <= 0 || cantidad >= producto.stock}
                 style={{ width: "32px", height: "32px" }}
               >
                 <FiPlus />
@@ -150,7 +166,7 @@ export default function TarjetaProducto({ producto }) {
             
             <button 
               onClick={manejarAgregarClick} 
-              className="btn-green"
+              className="btn-blue"
               style={{ width: "100%", padding: "12px", fontSize: "0.9rem" }}
               disabled={producto.stock <= 0}
             >
@@ -172,9 +188,8 @@ export default function TarjetaProducto({ producto }) {
                 {cantidad}
               </span>
               <button 
-                onClick={() => setCantidad(prev => Math.min(producto.stock, parseInt(prev || 1) + 1))}
+                onClick={manejarIncremento}
                 className="btn-qty-control"
-                disabled={cantidad >= producto.stock}
                 style={{ width: "32px", height: "32px" }}
               >
                 <FiPlus />
@@ -184,16 +199,14 @@ export default function TarjetaProducto({ producto }) {
             <div style={{ display: "flex", gap: "8px" }}>
               <button 
                 onClick={manejarActualizar} 
-                className="btn-green"
+                className="btn-blue-outline"
                 style={{ 
                   flex: 1, 
                   padding: "11px 14px", 
-                  fontSize: "0.85rem",
-                  backgroundColor: "#D48B45", 
-                  boxShadow: "none"
+                  fontSize: "0.85rem"
                 }}
               >
-                <FiRefreshCw /> Actualizar
+                <FiShoppingCart /> Agregar más
               </button>
               
               <button 

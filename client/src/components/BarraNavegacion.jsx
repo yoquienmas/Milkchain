@@ -101,24 +101,9 @@ export default function BarraNavegacion() {
                   <FiShoppingCart /> 
                   <span>Carrito</span>
                   {totalItems > 0 && (
-                    <span style={{
-                      position: "absolute",
-                      top: "-8px",
-                      right: "-12px",
-                      backgroundColor: "var(--color-caramel)",
-                      color: "white",
-                      fontSize: "0.7rem",
-                      fontWeight: "bold",
-                      borderRadius: "50%",
-                      width: "18px",
-                      height: "18px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      boxShadow: "0 2px 5px rgba(0,0,0,0.2)"
-                    }}>
+                    <strong className="cart-badge">
                       {totalItems}
-                    </span>
+                    </strong>
                   )}
                 </NavLink>
               </li>

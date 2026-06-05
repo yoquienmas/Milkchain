@@ -88,7 +88,7 @@ export default function InicioSesionPagina() {
             />
           </div>
 
-          <button type="submit" style={{ width: "100%", marginTop: "20px", padding: "14px" }}>
+          <button type="submit" className="btn-blue" style={{ width: "100%", marginTop: "20px", padding: "14px" }}>
             Ingresar <FiArrowRight />
           </button>
         </form>

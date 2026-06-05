@@ -8,10 +8,12 @@ import CatalogoPagina from "./pages/CatalogoPagina.jsx";
 import CarritoPagina from "./pages/CarritoPagina.jsx";
 import PedidoPagina from "./pages/PedidoPagina.jsx"; 
 import { ProtectorRuta, ProtectorCliente } from "./components/ProtectorRuta.jsx";
+import ScrollToTop from "./components/ScrollToTop.jsx";
 
 function App() {
   return (
     <>
+      <ScrollToTop />
       {/* 1. Cambiado de <Navbar /> a <BarraNavegacion /> */}
       <BarraNavegacion />
       
