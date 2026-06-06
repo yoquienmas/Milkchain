@@ -9,7 +9,8 @@ import {
   AdaptadorJsPDF, 
   AdaptadorWindowPrint, 
   SistemaPdfExterno, 
-  SistemaImpresionNativa 
+  SistemaImpresionNativa,
+  Factura
 } from "../services/AdaptadorFactura.jsx";
 
 import { 
@@ -215,6 +216,7 @@ function CarritoPagina() {
   try {
     const sistemaPdf = new SistemaPdfExterno();
     const adaptador = new AdaptadorJsPDF(sistemaPdf);
+    const facturaClient = new Factura(adaptador);
     
     const pedidoParaComprobante = {
       id_pedido: "reciente",
@@ -224,12 +226,15 @@ function CarritoPagina() {
     };
     
     // Pasamos itemsComprados en lugar de cart
-    adaptador.imprimir(pedidoParaComprobante, user, itemsComprados);
+    facturaClient.imprimirFactura(pedidoParaComprobante, itemsComprados, user);
     
     mostrarToast("¡Factura generada!", "success");
   } catch (error) {
     console.error(error);
-    new AdaptadorWindowPrint(new SistemaImpresionNativa()).imprimir();
+    const sistemaNativo = new SistemaImpresionNativa();
+    const adaptador = new AdaptadorWindowPrint(sistemaNativo);
+    const facturaClient = new Factura(adaptador);
+    facturaClient.imprimirFactura({}, [], {});
   }
 };
    

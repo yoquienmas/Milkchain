@@ -8,7 +8,7 @@ import {
   FiUser, FiCalendar, FiFileText, FiX, FiAward, FiTag, FiDollarSign 
 } from "react-icons/fi";
 import "../App.css";
-import { AdaptadorWindowPrint, SistemaImpresionNativa } from "../services/AdaptadorFactura.jsx";// Importación del Adaptador GoF para Impresión Nativa
+import { AdaptadorWindowPrint, SistemaImpresionNativa, Factura } from "../services/AdaptadorFactura.jsx";// Importación del Adaptador GoF para Impresión Nativa
 
 function PedidoPagina() {
   const { user } = useAuth();
@@ -167,8 +167,11 @@ function PedidoPagina() {
       // 2. Instanciamos el Adaptador pasándole el Adaptee por composición
       const adaptador = new AdaptadorWindowPrint(sistemaNativo);
       
-      // 3. Ejecutamos de forma uniforme el método del Target
-      adaptador.imprimir();
+      // 3. Instanciamos el cliente del patrón Adaptador (Factura)
+      const facturaClient = new Factura(adaptador);
+      
+      // 4. Ejecutamos de forma uniforme el método del Target a través del cliente
+      facturaClient.imprimirFactura({}, [], {});
     } catch (err) {
       console.error("Error en Adaptador nativo, usando fallback directo:", err);
       window.print();

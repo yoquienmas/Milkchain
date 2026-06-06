@@ -102,7 +102,7 @@ export class SistemaImpresionNativa {
   /**
    * Método de firma incompatible sin argumentos
    */
-  lanzarImpresionPantalla() {
+  printNative() {
     console.log("SistemaImpresionNativa: Abriendo diálogo de impresión del navegador...");
     window.print();
   }
@@ -154,8 +154,25 @@ export class AdaptadorWindowPrint extends ImpresorFactura {
     if (!this.sistemaNativo) {
       throw new Error("SistemaImpresionNativa no inicializado en el adaptador");
     }
-    this.sistemaNativo.lanzarImpresionPantalla();
+    this.sistemaNativo.printNative();
+  }
+}
+
+// =========================================================================
+// 4. CLIENT CLASS (Clase cliente que utiliza el adaptador)
+// =========================================================================
+export class Factura {
+  /**
+   * @param {ImpresorFactura} impresorFactura - Inyección de la clase adaptador por composición
+   */
+  constructor(impresorFactura) {
+    this.impresorFactura = impresorFactura;
   }
 
-  
+  /**
+   * Delegación uniforme de impresión
+   */
+  imprimirFactura(pedido, detalles, usuario) {
+    this.impresorFactura.imprimir(pedido, usuario, detalles);
+  }
 }
