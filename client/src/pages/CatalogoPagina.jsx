@@ -15,7 +15,7 @@ function CatalogoPagina() {
   const { cart } = useCart();
 
   useEffect(() => {
-    // MODIFICADO: Renombrado ver_catalogo por listarProductos
+    //listarProductos
     const listarProductos = async () => {
       try {
         setCargando(true);
@@ -39,7 +39,7 @@ function CatalogoPagina() {
   return (
     <div className="cow-pattern-bg" style={{ minHeight: "100vh", padding: "40px 6%" }}>
       
-      {/* Cabecera del Catálogo */}
+      {/*cabecera del Catálogo */}
       <div style={{
         backgroundColor: "var(--bg-white)",
         border: "1px solid var(--border-color)",

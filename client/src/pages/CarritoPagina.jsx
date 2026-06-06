@@ -50,14 +50,36 @@ function CarritoPagina() {
   };
 
   // PASO 4.1 de la conversación UML: buscarDirecciones()
-  const buscarDirecciones = async (userId) => {
+  const buscarDirecciones = async (id_usuario) => {
     try {
-      const res = await axios.get(`http://localhost:3000/api/direcciones/${userId}`);
+      const res = await axios.get(`http://localhost:3000/api/direcciones/${id_usuario}`);
       return res.data;
     } catch (err) {
       console.error("Error al buscar direcciones:", err);
       return [];
     }
+  };
+
+  // PASO 4.2 de la conversación UML: agregarDireccionPedido()
+  const agregarDireccionPedido = (id_direccion, listaDirecciones) => {
+    const dir = listaDirecciones.find(d => d.id_direccion === id_direccion);
+    if (dir) {
+      const dirObj = {
+        id: dir.id_direccion,
+        calle: dir.calle,
+        numero: dir.numero,
+        telefono: dir.n_contacto || dir.id_telefono,
+        nombre_localidad: "Dirección principal"
+      };
+      setDireccionGuardada(dirObj);
+      setDireccionOriginal(dirObj);
+    }
+  };
+
+  // PASO 4.3 de la conversación UML: validaDireccion()
+  const validaDireccion = () => {
+    if (!direccionGuardada) return false;
+    return !!(direccionGuardada.calle && direccionGuardada.numero && direccionGuardada.telefono);
   };
 
   // CARGA INICIAL DE DATOS
@@ -85,16 +107,7 @@ function CarritoPagina() {
         // Invocación idéntica al diagrama UML
         const data = await buscarDirecciones(user.id);
         if (Array.isArray(data) && data.length > 0) {
-          const dir = data[0];
-          const dirObj = {
-            id: dir.id_direccion,
-            calle: dir.calle,
-            numero: dir.numero,
-            telefono: dir.n_contacto || dir.id_telefono,
-            nombre_localidad: "Dirección principal"
-          };
-          setDireccionGuardada(dirObj);
-          setDireccionOriginal(dirObj);
+          agregarDireccionPedido(data[0].id_direccion, data);
         } else {
           setDireccionGuardada(null);
           setDireccionOriginal(null);
@@ -136,21 +149,26 @@ function CarritoPagina() {
   // PASO 4.1.2 de la conversación UML: guardarDireccion()
   const guardarDireccion = async (e) => {
     e.preventDefault();
+    // Validación según contrato: Campos obligatorios vacíos
+    if (!formData.calle || !formData.numero || !formData.telefono || !formData.id_localidad) {
+      return mostrarToast("Campos no válidos", "error");
+    }
     try {
       const datosAEnviar = { ...formData, id_usuario: user.id }; 
       const res = await axios.post("http://localhost:3000/api/direcciones", datosAEnviar);
       
-      const dirObj = { 
-        id: res.data.id, 
-        ...formData,
-        nombre_localidad: "Dirección guardada" 
-      };
-      setDireccionGuardada(dirObj);
-      setDireccionOriginal(dirObj);
+      const mockList = [{
+        id_direccion: res.data.id,
+        calle: formData.calle,
+        numero: formData.numero,
+        n_contacto: formData.telefono
+      }];
+      agregarDireccionPedido(res.data.id, mockList);
       mostrarToast("¡Dirección guardada con éxito!", "success");
     } catch (err) { 
       console.error(err);
-      mostrarToast("Error al guardar la dirección: " + err.message, "error"); 
+      // Mensaje de error según el contrato
+      mostrarToast("No se pudo guardar la dirección", "error"); 
     }
   };
 
@@ -507,7 +525,17 @@ function CarritoPagina() {
                       </div>
                     </div>
 
-                    <button className="btn-green" style={{ width: '100%', padding: "14px" }} onClick={() => setPaso(3)}>
+                    <button 
+                      className="btn-green" 
+                      style={{ width: '100%', padding: "14px" }} 
+                      onClick={() => {
+                        if (validaDireccion()) {
+                          setPaso(3);
+                        } else {
+                          mostrarToast("La dirección seleccionada no es válida o está incompleta", "error");
+                        }
+                      }}
+                    >
                       Continuar con el Pago <FiArrowRight />
                     </button>
 
@@ -563,7 +591,7 @@ function CarritoPagina() {
                     
                     <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', flexWrap: "wrap" }}>
                       <button 
-                        onClick={() => navigate("/pedidos")} 
+                        onClick={() => navigate("/mis-pedidos")} 
                         className="btn-green"
                         style={{ padding: '12px 28px' }}
                       >

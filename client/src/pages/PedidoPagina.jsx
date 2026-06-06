@@ -102,9 +102,18 @@ function PedidoPagina() {
     setPedidoAEditar({ ...pedidoAEditar, id_estado: Number(e.target.value) });
   };
 
+  // Método de validación local del modal de selección según contrato
+  const validarSeleccion = (Estado) => {
+    return Estado !== undefined && Estado !== null && Estado !== "";
+  };
+
   // PASO 4.1: Persiste el cambio y gestiona flujo alternativo
   const actualizarEstado = async (e, Pedido, Estado) => {
     e.preventDefault();
+    // Validación según contrato: Falta de selección / Campos no válidos
+    if (!validarSeleccion(Estado)) {
+      return mostrarToast("Campos no válidos", "error");
+    }
     try {
       await axios.patch(`http://localhost:3000/api/pedidos/estado/${Pedido}`, { nuevoEstadoId: Estado });
       setPedidoAEditar(null);
@@ -270,12 +279,6 @@ function PedidoPagina() {
         overflow: "hidden"
       }}>
         <div style={{ position: "relative", zIndex: 2 }}>
-          {esAdmin && (
-            <span className="split-image-badge" style={{ marginBottom: "12px" }}>
-              <FiAward style={{ marginRight: "4px", verticalAlign: "middle" }} /> 
-              Consola de Administración
-            </span>
-          )}
           <h1 style={{ fontFamily: "var(--font-serif)", fontSize: "2.2rem", color: "var(--text-dark)", marginBottom: "8px" }}>
             {esAdmin ? "Panel de Gestión de Pedidos" : "Mis Pedidos"}
           </h1>
@@ -283,17 +286,6 @@ function PedidoPagina() {
             <p style={{ color: "var(--text-muted)", fontSize: "0.95rem", display: "flex", alignItems: "center", gap: "6px" }}>
               <FiUser style={{ color: "var(--color-caramel)" }} />
               <span>Conectado como: <strong>{user?.nombre} {user?.apellido || ""}</strong></span>
-              <span style={{
-                backgroundColor: "var(--color-caramel-light)",
-                color: "var(--color-caramel)",
-                fontSize: "0.75rem",
-                fontWeight: 700,
-                padding: "2px 8px",
-                borderRadius: "10px",
-                textTransform: "uppercase"
-              }}>
-                Administrador
-              </span>
             </p>
           )}
         </div>

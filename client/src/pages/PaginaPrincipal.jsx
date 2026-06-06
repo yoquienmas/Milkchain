@@ -5,7 +5,7 @@ import ClienteHome from "./ClienteHome.jsx";
 function PaginaPrincipal() {
   const { user } = useAuth();
 
-  if (!user) return null; // or loading spinner
+  if (!user) return null; // loading spinner
 
   return (user?.id_rol === 1 || user?.idRol === 1) ? <AdminHome /> : <ClienteHome />;
 }

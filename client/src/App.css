@@ -924,13 +924,14 @@ body.dark-mode .logo-themed {
 }
 
 .cart-table th {
-  background-color: var(--bg-cream);
-  color: var(--text-dark);
-  font-family: var(--font-sans);
-  font-weight: 700;
+  background-color: var(--color-caramel);
+  color: #FAF6F0;
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: 0.95rem;
   padding: 16px 20px;
   text-align: left;
-  border-bottom: 1.5px solid var(--border-color);
+  border-bottom: 2px solid var(--color-caramel-hover);
 }
 
 .cart-table td {
@@ -1085,7 +1086,9 @@ body.dark-mode .cart-table-card {
 }
 
 body.dark-mode .cart-table th {
-  background-color: #120A07;
+  background-color: var(--color-caramel-light);
+  color: var(--text-dark) !important;
+  border-bottom: 2px solid var(--border-color);
 }
 
 body.dark-mode .cart-table td {
