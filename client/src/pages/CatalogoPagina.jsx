@@ -15,7 +15,7 @@ function CatalogoPagina() {
   const { cart } = useCart();
 
   useEffect(() => {
-    // MODIFICADO: Renombrado ver_catalogo por listarProductos
+    //listarProductos
     const listarProductos = async () => {
       try {
         setCargando(true);
@@ -39,7 +39,7 @@ function CatalogoPagina() {
   return (
     <div className="cow-pattern-bg" style={{ minHeight: "100vh", padding: "40px 6%" }}>
       
-      {/* Cabecera del Catálogo */}
+      {/*cabecera del Catálogo */}
       <div style={{
         backgroundColor: "var(--bg-white)",
         border: "1px solid var(--border-color)",
@@ -141,20 +141,33 @@ function CatalogoPagina() {
         >
           <FiArrowLeft /> Volver al Inicio
         </button>
-        
-        {cart.length > 0 && (
-          <button 
-            onClick={() => navigate("/cart")}
-            className="btn-green"
-            style={{ 
-              padding: "12px 30px",
-              boxShadow: "0 4px 14px rgba(176, 101, 47, 0.3)"
-            }}
-          >
-            <FiShoppingCart /> Confirmar y Comprar ({totalItems})
-          </button>
-        )}
       </footer>
+
+      {/* Botón flotante Confirmar y Comprar */}
+      {cart.length > 0 && (
+        <button 
+          onClick={() => navigate("/cart")}
+          className="btn-green floating-cart-btn"
+          style={{ 
+            position: "fixed",
+            bottom: "35px",
+            right: "40px",
+            zIndex: 9999,
+            padding: "15px 35px",
+            borderRadius: "50px", // Píldora redondeada premium
+            fontSize: "1.02rem",
+            boxShadow: "0 8px 30px rgba(176, 101, 47, 0.45)",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "10px",
+            border: "2px solid var(--bg-white)",
+            fontWeight: "bold"
+          }}
+        >
+          <FiShoppingCart style={{ fontSize: "1.25rem" }} /> 
+          Confirmar y Comprar ({totalItems})
+        </button>
+      )}
     </div>
   );
 }
