@@ -7,7 +7,7 @@ import cookieParser from 'cookie-parser';
 import productRoutes from './routes/producto.rutas.js';
 import authRoutes from './routes/autenticacion.rutas.js'; 
 import { pool } from './db.js';
-import { finalizarPedido } from './controllers/pago.controlador.js';
+import { finalizarPedido, guardarDireccion, actualizarEstado } from './controllers/pago.controlador.js';
 
 const app = express();
 app.use(express.json());
@@ -59,16 +59,25 @@ app.get('/api/localidades/:id_provincia', async (req, res) => {
 });
 
 // 4. Obtener direcciones
-// BUSCAR ESTA PARTE EN TU index.js Y REEMPLAZARLA:
 app.get('/api/direcciones/:id_usuario', async (req, res) => {
     const { id_usuario } = req.params; // Captura el ID que viene de la URL
     try {
         const [rows] = await pool.query(
-            'SELECT * FROM direccion WHERE id_usuario = ?', 
+            `SELECT 
+                d.*, 
+                l.nombre AS nombre_localidad, 
+                pr.nombre AS nombre_provincia, 
+                pa.nombre AS nombre_pais
+             FROM direccion d
+             LEFT JOIN localidad l ON d.id_localidad = l.id_localidad
+             LEFT JOIN provincia pr ON l.id_provincia = pr.id_provincia
+             LEFT JOIN pais pa ON pr.id_Pais = pa.id_pais
+             WHERE d.id_usuario = ? AND d.activo = 1`, 
             [id_usuario]
         ); 
         res.json(rows); // Si no tiene, devolverá [] y aparecerá el formulario
     } catch (error) {
+        console.error("Error al obtener direcciones:", error);
         res.status(500).json({ error: "Error al obtener direcciones" });
     }
 });
@@ -84,24 +93,7 @@ app.get('/api/pagos', async (req, res) => {
 });
 
 // --- GUARDAR NUEVA DIRECCIÓN (POST) ---
-app.post('/api/direcciones', async (req, res) => {
-    // Asegúrate de que 'telefono' venga desde el frontend
-    const { calle, numero, telefono, id_localidad, id_usuario } = req.body;
-
-    try {
-        // CAMBIO AQUÍ: Usamos 'id_telefono' en lugar de 'n_contacto'
-        const [result] = await pool.query(
-            `INSERT INTO direccion (calle, numero, id_telefono, id_localidad, id_usuario, activo) 
-             VALUES (?, ?, ?, ?, ?, 1)`,
-            [calle, numero, telefono, id_localidad, id_usuario]
-        );
-        
-        res.status(201).json({ id: result.insertId });
-    } catch (error) {
-        console.error("Error al guardar dirección:", error);
-        res.status(500).json({ error: "Error al guardar en base de datos" });
-    }
-});
+app.post('/api/direcciones', guardarDireccion);
 
 
 // ==========================================
@@ -200,17 +192,7 @@ app.put('/api/pedidos/:id', async (req, res) => {
 });
 
 // Cambiar estado automáticamente
-app.patch('/api/pedidos/estado/:id', async (req, res) => {
-    const { id } = req.params;
-    const { nuevoEstadoId } = req.body;
-    try {
-        await pool.query('UPDATE pedido SET id_estado = ?, fecha_modificacion = NOW() WHERE id_pedido = ?', [nuevoEstadoId, id]);
-        res.json({ message: "Estado actualizado correctamente", id_estado: nuevoEstadoId });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "Error al cambiar el estado" });
-    }
-});
+app.patch('/api/pedidos/estado/:id', actualizarEstado);
 
 // Obtener pedidos de un usuario específico (ESTA VA ÚLTIMA DE TODO EL ARCHIVO)
 app.get('/api/pedidos/:id_usuario', async (req, res) => {

@@ -107,3 +107,43 @@ export const imprimirFactura = (pedido, detalles, user) => {
     // Lógica interna para rellenar la tabla del pdf...
     doc.save(`factura_${pedido.id_pedido || 'pedido'}.pdf`);
 };
+
+// 5. Guardar una nueva dirección (Operación guardarDireccion)
+export const guardarDireccion = async (req, res) => {
+    const { calle, numero, telefono, id_localidad, id_usuario } = req.body;
+
+    if (!calle || !numero || !telefono || !id_localidad || !id_usuario) {
+        return res.status(400).json({ message: "Campos no válidos" });
+    }
+
+    try {
+        const [result] = await pool.query(
+            `INSERT INTO direccion (calle, numero, id_telefono, id_localidad, id_usuario, activo) 
+             VALUES (?, ?, ?, ?, ?, 1)`,
+            [calle, numero, telefono, id_localidad, id_usuario]
+        );
+        
+        res.status(201).json({ id: result.insertId });
+    } catch (error) {
+        console.error("Error al guardar dirección:", error);
+        res.status(500).json({ error: "Error al guardar en base de datos" });
+    }
+};
+
+// 6. Actualizar el estado de un pedido (Operación actualizarEstado)
+export const actualizarEstado = async (req, res) => {
+    const { id } = req.params;
+    const { nuevoEstadoId } = req.body;
+
+    if (nuevoEstadoId === undefined || nuevoEstadoId === null || nuevoEstadoId === "") {
+        return res.status(400).json({ message: "Campos no válidos" });
+    }
+
+    try {
+        await pool.query('UPDATE pedido SET id_estado = ?, fecha_modificacion = NOW() WHERE id_pedido = ?', [nuevoEstadoId, id]);
+        res.json({ message: "Estado actualizado correctamente", id_estado: nuevoEstadoId });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Error al cambiar el estado" });
+    }
+};

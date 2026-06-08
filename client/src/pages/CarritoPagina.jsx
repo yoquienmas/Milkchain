@@ -68,8 +68,10 @@ function CarritoPagina() {
         id: dir.id_direccion,
         calle: dir.calle,
         numero: dir.numero,
-        telefono: dir.n_contacto || dir.id_telefono,
-        nombre_localidad: "Dirección principal"
+        telefono: dir.n_contacto || dir.id_telefono || dir.telefono,
+        nombre_localidad: dir.nombre_localidad || "Dirección principal",
+        nombre_provincia: dir.nombre_provincia || "",
+        nombre_pais: dir.nombre_pais || ""
       };
       setDireccionGuardada(dirObj);
       setDireccionOriginal(dirObj);
@@ -157,11 +159,18 @@ function CarritoPagina() {
       const datosAEnviar = { ...formData, id_usuario: user.id }; 
       const res = await axios.post("http://localhost:3000/api/direcciones", datosAEnviar);
       
+      const locSeleccionada = localidades.find(l => String(l.id || l.ID) === String(formData.id_localidad));
+      const provSeleccionada = provincias.find(p => String(p.id || p.ID) === String(formData.id_provincia));
+      const paisSeleccionado = paises.find(pa => String(pa.id || pa.ID) === String(formData.id_pais));
+
       const mockList = [{
         id_direccion: res.data.id,
         calle: formData.calle,
         numero: formData.numero,
-        n_contacto: formData.telefono
+        n_contacto: formData.telefono,
+        nombre_localidad: locSeleccionada ? (locSeleccionada.nombre || locSeleccionada.Nombre) : "Dirección principal",
+        nombre_provincia: provSeleccionada ? (provSeleccionada.nombre || provSeleccionada.Nombre) : "",
+        nombre_pais: paisSeleccionado ? (paisSeleccionado.nombre || paisSeleccionado.Nombre) : ""
       }];
       agregarDireccionPedido(res.data.id, mockList);
       mostrarToast("¡Dirección guardada con éxito!", "success");
@@ -519,8 +528,10 @@ function CarritoPagina() {
                         <p style={{ color: "#3B693E", fontSize: "0.9rem" }}>
                           <strong>Teléfono de contacto:</strong> {direccionGuardada.telefono}
                         </p>
-                        <span style={{ fontSize: "0.75rem", backgroundColor: "#C2E6C2", color: "#1E4620", padding: "2px 8px", borderRadius: "10px", fontWeight: "bold", display: "inline-block", marginTop: "6px" }}>
+                        <span style={{ fontSize: "0.75rem", backgroundColor: "#C2E6C2", color: "#1E4620", padding: "4px 10px", borderRadius: "10px", fontWeight: "bold", display: "inline-block", marginTop: "8px" }}>
                           {direccionGuardada.nombre_localidad}
+                          {direccionGuardada.nombre_provincia ? `, ${direccionGuardada.nombre_provincia}` : ""}
+                          {direccionGuardada.nombre_pais ? ` (${direccionGuardada.nombre_pais})` : ""}
                         </span>
                       </div>
                     </div>
