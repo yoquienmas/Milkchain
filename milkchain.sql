@@ -370,12 +370,14 @@ CREATE TABLE `producto` (
 --
 
 INSERT INTO `producto` (`id_producto`, `nombre`, `descripcion`, `precio`, `stock`, `activo`, `id_categoria`, `id_marca`, `f_Creacion`, `vencimiento`, `id_direccion`) VALUES
-(1, 'Queso Manchego', 'Queso tradicional español de leche de oveja.', 22278.55, 48, 1, 1, 1, '2026-05-11 21:42:30', '2026-07-30 23:59:59', NULL),
-(2, 'Queso Parmesano', 'Queso italiano duro de leche de vaca, perfecto para pastas.', 26124.00, 28, 1, 1, 1, '2026-05-11 21:42:30', '2026-07-30 23:59:59', NULL),
+(1, 'Queso Sardo Correntino', 'Queso semiduro de sabor intenso y salado, madurado de forma artesanal en la provincia de Corrientes.', 22278.55, 48, 1, 1, 1, '2026-05-11 21:42:30', '2026-07-30 23:59:59', NULL),
+(2, 'Queso Goya Correntino', 'El clásico queso de pasta dura originario de la ciudad de Goya, Corrientes, con maduración óptima y sabor picante.', 26124.00, 28, 1, 1, 1, '2026-05-11 21:42:30', '2026-07-30 23:59:59', NULL),
 (3, 'Queso Reggianito Correntino', 'Queso de pasta dura, madurado y de sabor intenso. Excelente para rallar.', 18500.00, 35, 1, 1, 1, '2026-06-04 15:20:00', '2026-09-30 23:59:59', NULL),
 (4, 'Queso Provoleta Litoral', 'Queso hilado de pasta semidura, ideal para dorar a la parrilla.', 12200.00, 50, 1, 1, 1, '2026-06-04 15:20:00', '2026-08-31 23:59:59', NULL),
-(5, 'Queso Sardo Especial', 'Queso duro de sabor picante y salado, ideal para acompañar picadas.', 19800.00, 40, 1, 1, 1, '2026-06-04 15:20:00', '2026-09-30 23:59:59', NULL),
-(6, 'Queso Goya Premium', 'Queso duro madurado originario de la ciudad de Goya, Corrientes.', 21500.00, 30, 1, 1, 1, '2026-06-04 15:20:00', '2026-10-31 23:59:59', NULL);
+(5, 'Leche Entera La Campina', 'Leche fresca de campo pasteurizada, de ordeñe diario de vacas criadas a pastura.', 1800.00, 120, 1, 1, 1, '2026-06-04 15:20:00', '2026-09-30 23:59:59', NULL),
+(6, 'Miel Organica de Abeja', 'Miel natural multifloral pura de campo del Litoral, sin agregados ni conservantes.', 3200.00, 85, 1, 1, 1, '2026-06-04 15:20:00', '2026-10-31 23:59:59', NULL),
+(7, 'Dulce de Leche Artesanal', 'El clasico dulce de leche de campo, cocido a fuego lento con vainilla natural.', 2800.00, 60, 1, 1, 1, '2026-06-04 15:20:00', '2026-12-31 23:59:59', NULL),
+(8, 'Yogur de Bufala Cremoso', 'Yogur natural elaborado con leche pura de bufala correntina, espeso y nutritivo.', 2400.00, 45, 1, 1, 1, '2026-06-04 15:20:00', '2026-12-31 23:59:59', NULL);
 
 -- --------------------------------------------------------
 
@@ -396,12 +398,14 @@ CREATE TABLE `producto_imagen` (
 --
 
 INSERT INTO `producto_imagen` (`id_imagen`, `ruta`, `id_producto`) VALUES
-(1, '/images/queso-manchego.jpg', 1),
-(2, '/images/queso-parmesano.jpg', 2),
+(1, '/images/queso-sardo.jpg', 1),
+(2, '/images/queso-goya.jpg', 2),
 (3, '/images/queso-reggianito.jpg', 3),
 (4, '/images/queso-provoleta.jpg', 4),
-(5, '/images/queso-sardo.jpg', 5),
-(6, '/images/queso-goya.jpg', 6);
+(5, '/images/leche-entera-la-campina.jpg', 5),
+(6, '/images/miel-organica-de-abeja.jpg', 6),
+(7, '/images/dulce-de-leche-artesanal.jpg', 7),
+(8, '/images/yogur-de-bufala-cremoso.jpg', 8);
 
 -- --------------------------------------------------------
 

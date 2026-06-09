@@ -1,17 +1,22 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/ContextoAutenticacion.jsx";
 import { useToast } from "../context/ContextoToast.jsx";
+import { useCart } from "../context/ContextoCarrito.jsx";
 import axios from "axios";
 import ProductCard from "../components/TarjetaProducto.jsx";
-import { FiPackage, FiBookOpen, FiTruck, FiRotateCcw, FiMessageCircle, FiArrowRight, FiArrowLeft, FiAward, FiShield, FiHeart, FiGlobe } from "react-icons/fi";
+import { FiPackage, FiBookOpen, FiTruck, FiRotateCcw, FiMessageCircle, FiArrowRight, FiArrowLeft, FiAward, FiShield, FiHeart, FiGlobe, FiShoppingCart } from "react-icons/fi";
 import "../App.css";
 
 function ClienteHome() {
   const { user } = useAuth();
   const { mostrarToast } = useToast();
+  const { cart } = useCart();
+  const navigate = useNavigate();
   const [productos, setProductos] = useState([]);
   const [indiceActual, setIndiceActual] = useState(0);
+
+  const totalItems = cart.reduce((acc, item) => acc + (parseInt(item.cantidad) || 0), 0);
 
   useEffect(() => {
     const cargarProductos = async () => {
@@ -384,6 +389,32 @@ function ClienteHome() {
           </div>
         </div>
       </div>
+
+      {/* Botón flotante Confirmar y Comprar */}
+      {cart.length > 0 && (
+        <button 
+          onClick={() => navigate("/cart")}
+          className="btn-green floating-cart-btn"
+          style={{ 
+            position: "fixed",
+            bottom: "35px",
+            right: "40px",
+            zIndex: 9999,
+            padding: "15px 35px",
+            borderRadius: "50px",
+            fontSize: "1.02rem",
+            boxShadow: "0 8px 30px rgba(176, 101, 47, 0.45)",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "10px",
+            border: "2px solid var(--bg-white)",
+            fontWeight: "bold"
+          }}
+        >
+          <FiShoppingCart style={{ fontSize: "1.25rem" }} /> 
+          Confirmar y Comprar ({totalItems})
+        </button>
+      )}
     </div>
   );
 }
