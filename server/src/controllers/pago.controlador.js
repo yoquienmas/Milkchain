@@ -1,6 +1,13 @@
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-import { pool } from '../db.js'; // MODIFICADO: Ajustada la ruta correcta a la DB
+import { pool } from '../db.js';
+
+class CustomError extends Error {
+    constructor(message, status) {
+        super(message);
+        this.status = status;
+    }
+}
 
 // 1. Método del Paso 5.1
 export const crearPedido = async (connection, Total, id_usuario, id_metodo_pago) => {
@@ -13,7 +20,6 @@ export const crearPedido = async (connection, Total, id_usuario, id_metodo_pago)
 
 // 2. Método del Paso 5.2
 export const registrarDetalles = async (connection, pedidoId, detalles) => {
-    // Generar la lista de tuplas para inserción masiva (bulk insert)
     const detallesValues = detalles.map(d => [
         parseFloat(d.Precio_Unitario || d.precio || 0), 
         parseInt(d.Cantidad || d.cantidad || 1), 
@@ -55,16 +61,13 @@ export const validarStockDisponibilidad = async (connection, detalles) => {
   }
 };
 
+// =====================================================================================
+//  METODOS PUROS DE OPERACIONES CRÍTICAS (CONTRATO DE NEGOCIO)
+// =====================================================================================
 
-// Orquestador de la ruta del API que manda a llamar a las sub-operaciones orientadas a objetos
-export const finalizarPedido = async (req, res) => {
-    const { id_usuario, id_metodo_pago, Total, detalles } = req.body;
-    
-    // Soporte tolerante a id_pago o id_metodo_pago para mayor flexibilidad
-    const metodoPagoId = id_metodo_pago || req.body.id_pago;
-
-    if (!id_usuario || !metodoPagoId || !detalles || !detalles.length) {
-        return res.status(400).json({ message: "Faltan datos requeridos para procesar el pedido" });
+export const finalizarPedidoMetodo = async (id_usuario, id_metodo_pago, Total, detalles) => {
+    if (!id_usuario || !id_metodo_pago || !detalles || !detalles.length) {
+        throw new CustomError("Faltan datos requeridos para procesar el pedido", 400);
     }
 
     const connection = await pool.getConnection();
@@ -72,48 +75,28 @@ export const finalizarPedido = async (req, res) => {
         await connection.beginTransaction();
 
         // Paso 5.1
-        const pedidoId = await crearPedido(connection, Total, id_usuario, metodoPagoId);
+        const pedidoId = await crearPedido(connection, Total, id_usuario, id_metodo_pago);
         
         // Paso 5.2
         await registrarDetalles(connection, pedidoId, detalles);
         
         // Paso 5.3
         await validarStockDisponibilidad(connection, detalles);
-await descontarStock(connection, detalles);
+        await descontarStock(connection, detalles);
 
         await connection.commit();
-        res.status(201).json({ success: true, message: "Pedido registrado y stock actualizado con éxito", id: pedidoId });
+        return { success: true, message: "Pedido registrado y stock actualizado con éxito", id: pedidoId };
     } catch (error) {
         await connection.rollback();
-        console.error("Error en finalizarPedido:", error);
-        res.status(500).json({ message: "Error en el servidor al registrar el pedido: " + error.message });
+        throw new CustomError(error.message, error.status || 500);
     } finally {
         connection.release();
     }
 };
 
-// 4. Método del Paso 6.1 (Renombrado de descargarFactura a imprimirFactura)
-export const imprimirFactura = (pedido, detalles, user) => {
-    const doc = new jsPDF();
-    
-    doc.setFontSize(18);
-    doc.text(`Factura N° ${pedido.id_pedido || pedido.id || 'N/A'}`, 20, 20);
-    doc.setFontSize(12);
-    doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 20, 30);
-    
-    doc.text("Datos del Cliente", 20, 50);
-    doc.text(`Nombre: ${user?.nombre || 'Cliente'} ${user?.apellido || ''}`, 20, 60);
-
-    // Lógica interna para rellenar la tabla del pdf...
-    doc.save(`factura_${pedido.id_pedido || 'pedido'}.pdf`);
-};
-
-// 5. Guardar una nueva dirección (Operación guardarDireccion)
-export const guardarDireccion = async (req, res) => {
-    const { calle, numero, telefono, id_localidad, id_usuario } = req.body;
-
+export const guardarDireccionMetodo = async (calle, numero, telefono, id_localidad, id_usuario) => {
     if (!calle || !numero || !telefono || !id_localidad || !id_usuario) {
-        return res.status(400).json({ message: "Campos no válidos" });
+        throw new CustomError("Campos no válidos", 400);
     }
 
     try {
@@ -123,37 +106,85 @@ export const guardarDireccion = async (req, res) => {
             [calle, numero, telefono, id_localidad, id_usuario]
         );
         
-        res.status(201).json({ id: result.insertId });
+        return { id: result.insertId };
     } catch (error) {
-        console.error("Error al guardar dirección:", error);
-        res.status(500).json({ error: "Error al guardar en base de datos" });
+        throw new CustomError("Error al guardar en base de datos", 500);
     }
 };
 
-// 6. Actualizar el estado de un pedido (Operación actualizarEstado)
-export const actualizarEstado = async (req, res) => {
-    const { id } = req.params;
-    const { nuevoEstadoId } = req.body;
-
+export const actualizarEstadoMetodo = async (id, nuevoEstadoId) => {
     if (nuevoEstadoId === undefined || nuevoEstadoId === null || nuevoEstadoId === "") {
-        return res.status(400).json({ message: "Campos no válidos" });
+        throw new CustomError("Campos no válidos", 400);
     }
 
     try {
         const [rows] = await pool.query('SELECT id_estado FROM pedido WHERE id_pedido = ?', [id]);
         if (rows.length === 0) {
-            return res.status(404).json({ message: "Pedido no encontrado" });
+            throw new CustomError("Pedido no encontrado", 404);
         }
 
         const estadoActualId = rows[0].id_estado;
         if (Number(estadoActualId) === Number(nuevoEstadoId)) {
-            return res.status(400).json({ message: "El pedido ya se encuentra en ese estado" });
+            throw new CustomError("El pedido ya se encuentra en ese estado", 400);
         }
 
         await pool.query('UPDATE pedido SET id_estado = ?, fecha_modificacion = NOW() WHERE id_pedido = ?', [nuevoEstadoId, id]);
-        res.json({ message: "Estado actualizado correctamente", id_estado: nuevoEstadoId });
+        return { message: "Estado actualizado correctamente", id_estado: nuevoEstadoId };
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "Error al cambiar el estado" });
+        if (error instanceof CustomError) throw error;
+        throw new CustomError("Error al cambiar el estado", 500);
     }
-};
+};
+
+// =====================================================================================
+//  CONTROLADORES / HTTP ENDPOINTS (Llaman a los métodos puros)
+// =====================================================================================
+
+export const finalizarPedido = async (req, res) => {
+    const { id_usuario, id_metodo_pago, Total, detalles } = req.body;
+    const metodoPagoId = id_metodo_pago || req.body.id_pago;
+
+    try {
+        const result = await finalizarPedidoMetodo(id_usuario, metodoPagoId, Total, detalles);
+        res.status(201).json(result);
+    } catch (error) {
+        res.status(error.status || 500).json({ message: error.message });
+    }
+};
+
+export const guardarDireccion = async (req, res) => {
+    const { calle, numero, telefono, id_localidad, id_usuario } = req.body;
+
+    try {
+        const result = await guardarDireccionMetodo(calle, numero, telefono, id_localidad, id_usuario);
+        res.status(201).json(result);
+    } catch (error) {
+        res.status(error.status || 500).json({ message: error.message });
+    }
+};
+
+export const actualizarEstado = async (req, res) => {
+    const { id } = req.params;
+    const { nuevoEstadoId } = req.body;
+
+    try {
+        const result = await actualizarEstadoMetodo(id, nuevoEstadoId);
+        res.json(result);
+    } catch (error) {
+        res.status(error.status || 500).json({ message: error.message });
+    }
+};
+
+// 4. Método del Paso 6.1 (Impresión Factura PDF)
+export const imprimirFactura = (pedido, detalles, user) => {
+    const doc = new jsPDF();
+    doc.setFontSize(18);
+    doc.text(`Factura N° ${pedido.id_pedido || pedido.id || 'N/A'}`, 20, 20);
+    doc.setFontSize(12);
+    doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 20, 30);
+    
+    doc.text("Datos del Cliente", 20, 50);
+    doc.text(`Nombre: ${user?.nombre || 'Cliente'} ${user?.apellido || ''}`, 20, 60);
+
+    doc.save(`factura_${pedido.id_pedido || 'pedido'}.pdf`);
+};
