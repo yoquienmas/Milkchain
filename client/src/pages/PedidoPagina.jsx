@@ -114,6 +114,14 @@ function PedidoPagina() {
     if (!validarSeleccion(Estado)) {
       return mostrarToast("Campos no válidos", "error");
     }
+
+    // Validar que no se intente cambiar al mismo estado
+    const pedidoOriginal = pedidos.find(p => p.id_pedido === Pedido);
+    const estadoOriginalId = mapaEstados[pedidoOriginal?.estado];
+    if (Number(Estado) === estadoOriginalId) {
+      return mostrarToast("El pedido ya se encuentra en ese estado", "error");
+    }
+
     try {
       await axios.patch(`http://localhost:3000/api/pedidos/estado/${Pedido}`, { nuevoEstadoId: Estado });
       setPedidoAEditar(null);

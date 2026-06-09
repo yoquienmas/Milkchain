@@ -140,6 +140,16 @@ export const actualizarEstado = async (req, res) => {
     }
 
     try {
+        const [rows] = await pool.query('SELECT id_estado FROM pedido WHERE id_pedido = ?', [id]);
+        if (rows.length === 0) {
+            return res.status(404).json({ message: "Pedido no encontrado" });
+        }
+
+        const estadoActualId = rows[0].id_estado;
+        if (Number(estadoActualId) === Number(nuevoEstadoId)) {
+            return res.status(400).json({ message: "El pedido ya se encuentra en ese estado" });
+        }
+
         await pool.query('UPDATE pedido SET id_estado = ?, fecha_modificacion = NOW() WHERE id_pedido = ?', [nuevoEstadoId, id]);
         res.json({ message: "Estado actualizado correctamente", id_estado: nuevoEstadoId });
     } catch (error) {
