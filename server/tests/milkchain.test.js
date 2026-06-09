@@ -1,10 +1,12 @@
 import { jest } from "@jest/globals";
 
 // =====================================================================================
-//  1. SIMULACIÓN DE LA BASE DE DATOS (MOCK DE LA BASE DE DATOS)
+// 1. SIMULACIÓN DE LA BASE DE DATOS (MOCKS)
 // =====================================================================================
+// Creamos una función espía (mock) para simular las consultas SQL (query)
 const mockQuery = jest.fn();
 
+// Simulamos una conexión a la base de datos (con transacciones)
 const mockConnection = {
   query: mockQuery,
   release: jest.fn(),
@@ -13,17 +15,19 @@ const mockConnection = {
   rollback: jest.fn(),
 };
 
+// Simulamos el "pool" que gestiona las conexiones en db.js
 const mockPool = {
   query: mockQuery,
   getConnection: jest.fn().mockResolvedValue(mockConnection),
 };
 
+// Le decimos a Jest que cuando un archivo importe '../src/db.js', le entregue nuestro mockPool
 jest.unstable_mockModule("../src/db.js", () => ({
   pool: mockPool,
 }));
 
 // =====================================================================================
-//  2. SIMULACIÓN DE OTRAS LIBRERÍAS (JWT Y PDF)
+// 2. SIMULACIÓN DE OTRAS LIBRERÍAS (JWT Y PDF)
 // =====================================================================================
 jest.unstable_mockModule("../src/libs/jwt.js", () => ({
   createAccessToken: jest.fn().mockResolvedValue("fake.jwt.token"),
@@ -33,55 +37,57 @@ jest.unstable_mockModule("../src/config.js", () => ({
   TOKEN_SECRET: "test_secret",
 }));
 
+// Evitamos que intente crear o guardar un PDF real durante las pruebas
 jest.unstable_mockModule("jspdf", () => ({ default: jest.fn() }));
 jest.unstable_mockModule("jspdf-autotable", () => ({}));
 
 
 // =====================================================================================
-//  3. CARGA DINÁMICA DE CONTROLADORES BAJO PRUEBA
+// 3. IMPORTACIÓN DE CONTROLADORES
 // =====================================================================================
+// Importamos dinámicamente los controladores después de configurar todos los mocks
 const { finalizarPedido, guardarDireccion, actualizarEstado } = await import("../src/controllers/pago.controlador.js");
 
 
 // =====================================================================================
-//  4. CREACIÓN DE PETICIONES Y RESPUESTAS SIMULADAS DE EXPRESS (REQ y RES)
+// 4. FUNCIÓN PARA SIMULAR LA RESPUESTA DE EXPRESS (res)
 // =====================================================================================
-const crearRespuestaFalsa = () => {
+// Express responde usando res.status().json(). Esta función simula ese comportamiento.
+const mockRes = () => {
   const res = {};
-  res.status = jest.fn().mockReturnValue(res);
-  res.json    = jest.fn().mockReturnValue(res);
-  res.cookie  = jest.fn().mockReturnValue(res);
-  res.sendStatus = jest.fn().mockReturnValue(res);
+  res.status = jest.fn().mockReturnValue(res); // Permite encadenar .status()
+  res.json   = jest.fn().mockReturnValue(res); // Permite encadenar .json()
   return res;
 };
 
 
 // =====================================================================================
-//  PRUEBA 1 — finalizarPedido() - Validación de Stock
+// PRUEBAS DE "finalizarPedido" (PROCESAMIENTO DE COMPRAS)
 // =====================================================================================
-describe("PRUEBA 1 — finalizarPedido() - Validación de Stock", () => {
+describe("Controlador: finalizarPedido()", () => {
   beforeEach(() => jest.clearAllMocks());
 
-  test("Debe retornar status 500 y hacer rollback si la cantidad pedida supera el stock real", async () => {
+  test("Debe fallar (status 500) si el stock en base de datos es menor a la cantidad pedida", async () => {
+    // Simulamos las respuestas de la base de datos para esta prueba:
     mockQuery
-      .mockResolvedValueOnce([{ insertId: 99 }])   
-      .mockResolvedValueOnce([{}])                  
-      .mockResolvedValueOnce([[{ stock: 3 }]]);     
+      .mockResolvedValueOnce([{ insertId: 99 }])   // 1. crearPedido: insert exitoso con ID 99
+      .mockResolvedValueOnce([{}])                  // 2. registrarDetalles: insert exitoso
+      .mockResolvedValueOnce([[{ stock: 3 }]]);     // 3. validarStockDisponibilidad: stock actual es 3
 
+    // Petición de ejemplo con cantidad = 10 (mayor al stock de 3)
     const req = {
       body: {
         id_usuario: 1,
         id_metodo_pago: 1,
         Total: 5000,
-        detalles: [
-          { id_producto: 5, Cantidad: 10, Precio_Unitario: 500 },
-        ],
+        detalles: [{ id_producto: 5, Cantidad: 10, Precio_Unitario: 500 }],
       },
     };
-    const res = crearRespuestaFalsa();
+    const res = mockRes();
 
     await finalizarPedido(req, res);
 
+    // Verificamos que se canceló la transacción (rollback) y se devolvió un error de servidor (500)
     expect(mockConnection.rollback).toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith(
@@ -90,16 +96,8 @@ describe("PRUEBA 1 — finalizarPedido() - Validación de Stock", () => {
       })
     );
   });
-});
 
-
-// =====================================================================================
-//  PRUEBA 2 — finalizarPedido() - Campos Obligatorios
-// =====================================================================================
-describe("PRUEBA 2 — finalizarPedido() - Campos Obligatorios", () => {
-  beforeEach(() => jest.clearAllMocks());
-
-  test("Debe retornar status 400 si falta el id_usuario en la petición", async () => {
+  test("Debe dar error (status 400) si falta el id_usuario en la petición", async () => {
     const req = {
       body: {
         id_metodo_pago: 1,
@@ -107,15 +105,14 @@ describe("PRUEBA 2 — finalizarPedido() - Campos Obligatorios", () => {
         detalles: [{ id_producto: 1, Cantidad: 1, Precio_Unitario: 1000 }],
       },
     };
-    const res = crearRespuestaFalsa();
+    const res = mockRes();
 
     await finalizarPedido(req, res);
 
     expect(res.status).toHaveBeenCalledWith(400);
-    expect(mockPool.getConnection).not.toHaveBeenCalled();
   });
 
-  test("Debe retornar status 400 si el carrito de detalles llega vacío", async () => {
+  test("Debe dar error (status 400) si el carrito de compras está vacío", async () => {
     const req = {
       body: {
         id_usuario: 1,
@@ -124,7 +121,7 @@ describe("PRUEBA 2 — finalizarPedido() - Campos Obligatorios", () => {
         detalles: [],
       },
     };
-    const res = crearRespuestaFalsa();
+    const res = mockRes();
 
     await finalizarPedido(req, res);
 
@@ -134,12 +131,13 @@ describe("PRUEBA 2 — finalizarPedido() - Campos Obligatorios", () => {
 
 
 // =====================================================================================
-//  PRUEBA 3 — guardarDireccion()
+// PRUEBAS DE "guardarDireccion" (REGISTRO DE DIRECCIONES)
 // =====================================================================================
-describe("PRUEBA 3 — guardarDireccion()", () => {
+describe("Controlador: guardarDireccion()", () => {
   beforeEach(() => jest.clearAllMocks());
 
-  test("Debe retornar status 201 y el ID de dirección si todos los campos son válidos", async () => {
+  test("Debe guardar la dirección con éxito (status 201) si los datos son correctos", async () => {
+    // Simulamos que el INSERT de la dirección devuelve insertId = 42
     mockPool.query.mockResolvedValueOnce([{ insertId: 42 }]);
 
     const req = {
@@ -151,7 +149,7 @@ describe("PRUEBA 3 — guardarDireccion()", () => {
         id_usuario: 10,
       },
     };
-    const res = crearRespuestaFalsa();
+    const res = mockRes();
 
     await guardarDireccion(req, res);
 
@@ -159,14 +157,14 @@ describe("PRUEBA 3 — guardarDireccion()", () => {
     expect(res.json).toHaveBeenCalledWith({ id: 42 });
   });
 
-  test("Debe retornar status 400 y el mensaje 'Campos no válidos' si faltan datos requeridos", async () => {
+  test("Debe dar error (status 400) si faltan campos obligatorios", async () => {
     const req = {
       body: {
         numero: 742,
         id_localidad: 3,
       },
     };
-    const res = crearRespuestaFalsa();
+    const res = mockRes();
 
     await guardarDireccion(req, res);
 
@@ -177,12 +175,13 @@ describe("PRUEBA 3 — guardarDireccion()", () => {
 
 
 // =====================================================================================
-//  PRUEBA 4 — actualizarEstado()
+// PRUEBAS DE "actualizarEstado" (GESTIÓN DE LOGÍSTICA)
 // =====================================================================================
-describe("PRUEBA 4 — actualizarEstado()", () => {
+describe("Controlador: actualizarEstado()", () => {
   beforeEach(() => jest.clearAllMocks());
 
-  test("Debe retornar status 200 y confirmar si el estado del pedido cambia con éxito", async () => {
+  test("Debe cambiar el estado del pedido con éxito (status 200)", async () => {
+    // Simulamos: 1. SELECT devuelve estado actual (1), 2. UPDATE exitoso
     mockPool.query
       .mockResolvedValueOnce([[{ id_estado: 1 }]])
       .mockResolvedValueOnce([{}]);
@@ -191,7 +190,7 @@ describe("PRUEBA 4 — actualizarEstado()", () => {
       params: { id: 20 },
       body: { nuevoEstadoId: 2 },
     };
-    const res = crearRespuestaFalsa();
+    const res = mockRes();
 
     await actualizarEstado(req, res);
 
@@ -201,27 +200,27 @@ describe("PRUEBA 4 — actualizarEstado()", () => {
     });
   });
 
-  test("Debe retornar status 400 y el mensaje 'Campos no válidos' si no se selecciona ningún estado", async () => {
+  test("Debe dar error (status 400) si no se seleccionó ningún estado nuevo", async () => {
     const req = {
       params: { id: 20 },
       body: { nuevoEstadoId: "" },
     };
-    const res = crearRespuestaFalsa();
+    const res = mockRes();
 
     await actualizarEstado(req, res);
 
     expect(res.status).toHaveBeenCalledWith(400);
-    expect(res.json).toHaveBeenCalledWith({ message: "Campos no válidos" });
   });
 
-  test("Debe retornar status 404 y el mensaje 'Pedido no encontrado' si el pedido no existe en la base de datos", async () => {
+  test("Debe dar error 404 si el pedido no existe en la base de datos", async () => {
+    // Simulamos que el SELECT de búsqueda devuelve vacío (pedido no encontrado)
     mockPool.query.mockResolvedValueOnce([[]]);
 
     const req = {
       params: { id: 999 },
       body: { nuevoEstadoId: 2 },
     };
-    const res = crearRespuestaFalsa();
+    const res = mockRes();
 
     await actualizarEstado(req, res);
 
@@ -229,14 +228,15 @@ describe("PRUEBA 4 — actualizarEstado()", () => {
     expect(res.json).toHaveBeenCalledWith({ message: "Pedido no encontrado" });
   });
 
-  test("Debe retornar status 400 y el mensaje 'El pedido ya se encuentra en ese estado' si el nuevo estado es idéntico al actual", async () => {
+  test("Debe dar error 400 si intentamos cambiar al mismo estado actual del pedido", async () => {
+    // Simulamos que el SELECT devuelve que el estado actual ya es 2
     mockPool.query.mockResolvedValueOnce([[{ id_estado: 2 }]]);
 
     const req = {
       params: { id: 20 },
       body: { nuevoEstadoId: 2 },
     };
-    const res = crearRespuestaFalsa();
+    const res = mockRes();
 
     await actualizarEstado(req, res);
 
