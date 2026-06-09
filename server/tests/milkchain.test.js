@@ -58,9 +58,17 @@ jest.unstable_mockModule("jspdf-autotable", () => ({}));
 // =====================================================================================
 //  3. CARGA DINÁMICA DE CONTROLADORES BAJO PRUEBA
 // =====================================================================================
-// IMPORTANTE: En ES Modules de Node.js, debemos importar las funciones reales del proyecto
+// En ES Modules de Node.js, debemos importar las funciones reales del proyecto
 // de forma dinámica con "await import" DESPUÉS de haber definido los mocks anteriores.
-const { finalizarPedido, guardarDireccion, actualizarEstado } = await import("../src/controllers/pago.controlador.js");
+const { 
+  finalizarPedido, 
+  guardarDireccion, 
+  actualizarEstado,
+  crearPedido,
+  registrarDetalles,
+  descontarStock,
+  validarStockDisponibilidad
+} = await import("../src/controllers/pago.controlador.js");
 
 
 // =====================================================================================
@@ -315,5 +323,76 @@ describe("PRUEBA 4 — actualizarEstado()", () => {
     // - Debe responder con status 400.
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({ message: "El pedido ya se encuentra en ese estado" });
+  });
+});
+
+
+// =====================================================================================
+//  5. PRUEBAS DE MÉTODOS DE OPERACIONES CRÍTICAS (CONTRATO DE NEGOCIO)
+// =====================================================================================
+
+describe("PRUEBAS DE MÉTODOS INTERNOS - crearPedido()", () => {
+  test("Debe insertar el pedido y retornar su insertId con datos válidos", async () => {
+    const mockConnection = {
+      query: jest.fn().mockResolvedValue([{ insertId: 77 }]),
+    };
+    const insertId = await crearPedido(mockConnection, 3000, 5, 2);
+    expect(insertId).toBe(77);
+    expect(mockConnection.query).toHaveBeenCalledWith(
+      expect.stringContaining("INSERT INTO pedido"),
+      [3000, 5, 2]
+    );
+  });
+});
+
+describe("PRUEBAS DE MÉTODOS INTERNOS - registrarDetalles()", () => {
+  test("Debe ejecutar un bulk insert con los detalles mapeados", async () => {
+    const mockConnection = {
+      query: jest.fn().mockResolvedValue([{}]),
+    };
+    const detalles = [
+      { id_producto: 3, Cantidad: 4, Precio_Unitario: 150 },
+    ];
+    await registrarDetalles(mockConnection, 77, detalles);
+    expect(mockConnection.query).toHaveBeenCalledWith(
+      expect.stringContaining("INSERT INTO pedido_detalles"),
+      [[[150, 4, 3, 77]]]
+    );
+  });
+});
+
+describe("PRUEBAS DE MÉTODOS INTERNOS - descontarStock()", () => {
+  test("Debe ejecutar un UPDATE para reducir el stock en la BD", async () => {
+    const mockConnection = {
+      query: jest.fn().mockResolvedValue([{}]),
+    };
+    const detalles = [
+      { id_producto: 3, Cantidad: 4 },
+    ];
+    await descontarStock(mockConnection, detalles);
+    expect(mockConnection.query).toHaveBeenCalledWith(
+      expect.stringContaining("UPDATE producto SET stock = stock - ? WHERE id_producto = ?"),
+      [4, 3]
+    );
+  });
+});
+
+describe("PRUEBAS DE MÉTODOS INTERNOS - validarStockDisponibilidad()", () => {
+  test("Debe pasar con éxito si el stock disponible es suficiente", async () => {
+    const mockConnection = {
+      query: jest.fn().mockResolvedValue([[{ stock: 10 }]]),
+    };
+    const detalles = [{ id_producto: 3, Cantidad: 5 }];
+    await expect(validarStockDisponibilidad(mockConnection, detalles)).resolves.not.toThrow();
+  });
+
+  test("Debe lanzar una excepción si la cantidad supera el stock disponible", async () => {
+    const mockConnection = {
+      query: jest.fn().mockResolvedValue([[{ stock: 3 }]]),
+    };
+    const detalles = [{ id_producto: 3, Cantidad: 10 }];
+    await expect(validarStockDisponibilidad(mockConnection, detalles)).rejects.toThrow(
+      "Stock insuficiente para el producto ID 3. Disponible: 3, solicitado: 10"
+    );
   });
 });

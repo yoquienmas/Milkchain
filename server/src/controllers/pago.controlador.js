@@ -3,7 +3,7 @@ import 'jspdf-autotable';
 import { pool } from '../db.js'; // MODIFICADO: Ajustada la ruta correcta a la DB
 
 // 1. Método del Paso 5.1
-const crearPedido = async (connection, Total, id_usuario, id_metodo_pago) => {
+export const crearPedido = async (connection, Total, id_usuario, id_metodo_pago) => {
     const [pedido] = await connection.query(
         "INSERT INTO pedido (fecha, id_estado, Total, id_usuario, id_metodo_pago) VALUES (NOW(), 1, ?, ?, ?)",
         [Total, id_usuario, id_metodo_pago]
@@ -12,7 +12,7 @@ const crearPedido = async (connection, Total, id_usuario, id_metodo_pago) => {
 };
 
 // 2. Método del Paso 5.2
-const registrarDetalles = async (connection, pedidoId, detalles) => {
+export const registrarDetalles = async (connection, pedidoId, detalles) => {
     // Generar la lista de tuplas para inserción masiva (bulk insert)
     const detallesValues = detalles.map(d => [
         parseFloat(d.Precio_Unitario || d.precio || 0), 
@@ -28,7 +28,7 @@ const registrarDetalles = async (connection, pedidoId, detalles) => {
 };
 
 // 3. Método del Paso 5.3
-const descontarStock = async (connection, detalles) => {
+export const descontarStock = async (connection, detalles) => {
     for (const item of detalles) {
         const cantidad = parseInt(item.Cantidad || item.cantidad || 1);
         const id_producto = parseInt(item.id_producto || item.id);
@@ -40,7 +40,7 @@ const descontarStock = async (connection, detalles) => {
 };
 
 // 5.0 Validar que haya stock suficiente antes de crear el pedido
-const validarStockDisponibilidad = async (connection, detalles) => {
+export const validarStockDisponibilidad = async (connection, detalles) => {
   for (const item of detalles) {
     const cantidad = parseInt(item.Cantidad || item.cantidad || 1);
     const id_producto = parseInt(item.id_producto || item.id);
