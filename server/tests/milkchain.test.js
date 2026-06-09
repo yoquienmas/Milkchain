@@ -235,8 +235,10 @@ describe("PRUEBA 4 — actualizarEstado()", () => {
   beforeEach(() => jest.clearAllMocks());
 
   test("Debe retornar status 200 y confirmar si el estado del pedido cambia con éxito", async () => {
-    // 1. SIMULACIÓN: La base de datos acepta el UPDATE correctamente.
-    mockPool.query.mockResolvedValueOnce([{}]);
+    // 1. SIMULACIÓN: La base de datos responde al SELECT con el estado actual (1) y acepta el UPDATE.
+    mockPool.query
+      .mockResolvedValueOnce([[{ id_estado: 1 }]])
+      .mockResolvedValueOnce([{}]);
 
     // 2. ENTRADA: Enviamos el ID del pedido a actualizar (20) y el nuevo ID del estado (2).
     const req = {
@@ -271,5 +273,47 @@ describe("PRUEBA 4 — actualizarEstado()", () => {
     // - El servidor bloquea el guardado retornando status 400 y mensaje de error de selección.
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({ message: "Campos no válidos" });
+    // - La base de datos no se consulta ya que falla la validación previa.
+    expect(mockPool.query).not.toHaveBeenCalled();
+  });
+
+  test("Debe retornar status 404 y el mensaje 'Pedido no encontrado' si el pedido no existe en la base de datos", async () => {
+    // 1. SIMULACIÓN: La base de datos responde con 0 filas para la búsqueda (pedido no existe).
+    mockPool.query.mockResolvedValueOnce([[]]);
+
+    // 2. ENTRADA: Enviamos el ID de un pedido inexistente (e.g. 999).
+    const req = {
+      params: { id: 999 },
+      body: { nuevoEstadoId: 2 },
+    };
+    const res = crearRespuestaFalsa();
+
+    // 3. EJECUCIÓN: Intentamos actualizar.
+    await actualizarEstado(req, res);
+
+    // 4. VERIFICACIÓN:
+    // - Debe responder con status 404.
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.json).toHaveBeenCalledWith({ message: "Pedido no encontrado" });
+  });
+
+  test("Debe retornar status 400 y el mensaje 'El pedido ya se encuentra en ese estado' si el nuevo estado es idéntico al actual", async () => {
+    // 1. SIMULACIÓN: El pedido ya tiene estado 2 en la base de datos.
+    mockPool.query.mockResolvedValueOnce([[{ id_estado: 2 }]]);
+
+    // 2. ENTRADA: Enviamos nuevoEstadoId: 2 (el mismo estado).
+    const req = {
+      params: { id: 20 },
+      body: { nuevoEstadoId: 2 },
+    };
+    const res = crearRespuestaFalsa();
+
+    // 3. EJECUCIÓN: Intentamos actualizar.
+    await actualizarEstado(req, res);
+
+    // 4. VERIFICACIÓN:
+    // - Debe responder con status 400.
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ message: "El pedido ya se encuentra en ese estado" });
   });
 });
