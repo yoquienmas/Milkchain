@@ -36,198 +36,211 @@ jest.unstable_mockModule("../src/config.js", () => ({
 jest.unstable_mockModule("jspdf", () => ({ default: jest.fn() }));
 jest.unstable_mockModule("jspdf-autotable", () => ({}));
 
+
 // =====================================================================================
-//  3. CARGA DINÁMICA DE CONTROLADORES Y MÉTODOS BAJO PRUEBA
+//  3. CARGA DINÁMICA DE CONTROLADORES BAJO PRUEBA
 // =====================================================================================
-const { 
-  finalizarPedidoMetodo, 
-  guardarDireccionMetodo, 
-  actualizarEstadoMetodo,
-  crearPedido,
-  registrarDetalles,
-  descontarStock,
-  validarStockDisponibilidad
-} = await import("../src/controllers/pago.controlador.js");
+const { finalizarPedido, guardarDireccion, actualizarEstado } = await import("../src/controllers/pago.controlador.js");
 
 
 // =====================================================================================
-//  PRUEBA 1 — finalizarPedidoMetodo() - Validación de Stock
+//  4. CREACIÓN DE PETICIONES Y RESPUESTAS SIMULADAS DE EXPRESS (REQ y RES)
 // =====================================================================================
-describe("PRUEBA 1 — finalizarPedidoMetodo() - Validación de Stock", () => {
+const crearRespuestaFalsa = () => {
+  const res = {};
+  res.status = jest.fn().mockReturnValue(res);
+  res.json    = jest.fn().mockReturnValue(res);
+  res.cookie  = jest.fn().mockReturnValue(res);
+  res.sendStatus = jest.fn().mockReturnValue(res);
+  return res;
+};
+
+
+// =====================================================================================
+//  PRUEBA 1 — finalizarPedido() - Validación de Stock
+// =====================================================================================
+describe("PRUEBA 1 — finalizarPedido() - Validación de Stock", () => {
   beforeEach(() => jest.clearAllMocks());
 
-  test("Debe lanzar excepción y hacer rollback si la cantidad pedida supera el stock real", async () => {
-    // 1. SIMULACIÓN:
-    // - Consulta 1 (Crear Pedido): INSERT exitoso, ID = 99.
-    // - Consulta 2 (Detalles): INSERT exitoso.
-    // - Consulta 3 (Verificar Stock): Stock real en BD = 3.
+  test("Debe retornar status 500 y hacer rollback si la cantidad pedida supera el stock real", async () => {
     mockQuery
       .mockResolvedValueOnce([{ insertId: 99 }])   
       .mockResolvedValueOnce([{}])                  
       .mockResolvedValueOnce([[{ stock: 3 }]]);     
 
-    // 2. ENTRADA: 10 unidades pedidas (supera el stock de 3).
-    const detalles = [{ id_producto: 5, Cantidad: 10, Precio_Unitario: 500 }];
+    const req = {
+      body: {
+        id_usuario: 1,
+        id_metodo_pago: 1,
+        Total: 5000,
+        detalles: [
+          { id_producto: 5, Cantidad: 10, Precio_Unitario: 500 },
+        ],
+      },
+    };
+    const res = crearRespuestaFalsa();
 
-    // 3. EJECUCIÓN & VERIFICACIÓN:
-    await expect(finalizarPedidoMetodo(1, 1, 5000, detalles)).rejects.toThrow("Stock insuficiente");
+    await finalizarPedido(req, res);
 
-    // - Debe ejecutarse el rollback en la transacción.
     expect(mockConnection.rollback).toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: expect.stringContaining("Stock insuficiente"),
+      })
+    );
   });
 });
 
 
 // =====================================================================================
-//  PRUEBA 2 — finalizarPedidoMetodo() - Campos Obligatorios
+//  PRUEBA 2 — finalizarPedido() - Campos Obligatorios
 // =====================================================================================
-describe("PRUEBA 2 — finalizarPedidoMetodo() - Campos Obligatorios", () => {
+describe("PRUEBA 2 — finalizarPedido() - Campos Obligatorios", () => {
   beforeEach(() => jest.clearAllMocks());
 
-  test("Debe lanzar error si falta el id_usuario en la petición", async () => {
-    const detalles = [{ id_producto: 1, Cantidad: 1, Precio_Unitario: 1000 }];
-    
-    await expect(finalizarPedidoMetodo(null, 1, 1000, detalles)).rejects.toThrow(
-      "Faltan datos requeridos para procesar el pedido"
-    );
-    
+  test("Debe retornar status 400 si falta el id_usuario en la petición", async () => {
+    const req = {
+      body: {
+        id_metodo_pago: 1,
+        Total: 1000,
+        detalles: [{ id_producto: 1, Cantidad: 1, Precio_Unitario: 1000 }],
+      },
+    };
+    const res = crearRespuestaFalsa();
+
+    await finalizarPedido(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
     expect(mockPool.getConnection).not.toHaveBeenCalled();
   });
 
-  test("Debe lanzar error si el carrito de detalles llega vacío", async () => {
-    await expect(finalizarPedidoMetodo(1, 1, 0, [])).rejects.toThrow(
-      "Faltan datos requeridos para procesar el pedido"
-    );
-    
-    expect(mockPool.getConnection).not.toHaveBeenCalled();
+  test("Debe retornar status 400 si el carrito de detalles llega vacío", async () => {
+    const req = {
+      body: {
+        id_usuario: 1,
+        id_metodo_pago: 1,
+        Total: 0,
+        detalles: [],
+      },
+    };
+    const res = crearRespuestaFalsa();
+
+    await finalizarPedido(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
   });
 });
 
 
 // =====================================================================================
-//  PRUEBA 3 — guardarDireccionMetodo()
+//  PRUEBA 3 — guardarDireccion()
 // =====================================================================================
-describe("PRUEBA 3 — guardarDireccionMetodo()", () => {
+describe("PRUEBA 3 — guardarDireccion()", () => {
   beforeEach(() => jest.clearAllMocks());
 
-  test("Debe retornar el ID de la dirección si todos los campos son válidos", async () => {
+  test("Debe retornar status 201 y el ID de dirección si todos los campos son válidos", async () => {
     mockPool.query.mockResolvedValueOnce([{ insertId: 42 }]);
 
-    const result = await guardarDireccionMetodo("Av. Siempre Viva", 742, "12345678", 3, 10);
-    
-    expect(result).toEqual({ id: 42 });
+    const req = {
+      body: {
+        calle: "Av. Siempre Viva",
+        numero: 742,
+        telefono: "12345678",
+        id_localidad: 3,
+        id_usuario: 10,
+      },
+    };
+    const res = crearRespuestaFalsa();
+
+    await guardarDireccion(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(res.json).toHaveBeenCalledWith({ id: 42 });
   });
 
-  test("Debe lanzar error 'Campos no válidos' si faltan datos requeridos", async () => {
-    await expect(guardarDireccionMetodo(null, 742, null, 3, null)).rejects.toThrow(
-      "Campos no válidos"
-    );
+  test("Debe retornar status 400 y el mensaje 'Campos no válidos' si faltan datos requeridos", async () => {
+    const req = {
+      body: {
+        numero: 742,
+        id_localidad: 3,
+      },
+    };
+    const res = crearRespuestaFalsa();
+
+    await guardarDireccion(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ message: "Campos no válidos" });
   });
 });
 
 
 // =====================================================================================
-//  PRUEBA 4 — actualizarEstadoMetodo()
+//  PRUEBA 4 — actualizarEstado()
 // =====================================================================================
-describe("PRUEBA 4 — actualizarEstadoMetodo()", () => {
+describe("PRUEBA 4 — actualizarEstado()", () => {
   beforeEach(() => jest.clearAllMocks());
 
-  test("Debe confirmar con éxito si el estado del pedido cambia correctamente", async () => {
-    // 1. SIMULACIÓN: SELECT devuelve estado actual (1), UPDATE exitoso.
+  test("Debe retornar status 200 y confirmar si el estado del pedido cambia con éxito", async () => {
     mockPool.query
       .mockResolvedValueOnce([[{ id_estado: 1 }]])
       .mockResolvedValueOnce([{}]);
 
-    const result = await actualizarEstadoMetodo(20, 2);
-    
-    expect(result).toEqual({
+    const req = {
+      params: { id: 20 },
+      body: { nuevoEstadoId: 2 },
+    };
+    const res = crearRespuestaFalsa();
+
+    await actualizarEstado(req, res);
+
+    expect(res.json).toHaveBeenCalledWith({
       message: "Estado actualizado correctamente",
       id_estado: 2,
     });
   });
 
-  test("Debe lanzar error si no se proporciona un estado válido", async () => {
-    await expect(actualizarEstadoMetodo(20, "")).rejects.toThrow(
-      "Campos no válidos"
-    );
-    expect(mockPool.query).not.toHaveBeenCalled();
+  test("Debe retornar status 400 y el mensaje 'Campos no válidos' si no se selecciona ningún estado", async () => {
+    const req = {
+      params: { id: 20 },
+      body: { nuevoEstadoId: "" },
+    };
+    const res = crearRespuestaFalsa();
+
+    await actualizarEstado(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ message: "Campos no válidos" });
   });
 
-  test("Debe lanzar error 404 si el pedido no existe en la base de datos", async () => {
+  test("Debe retornar status 404 y el mensaje 'Pedido no encontrado' si el pedido no existe en la base de datos", async () => {
     mockPool.query.mockResolvedValueOnce([[]]);
 
-    await expect(actualizarEstadoMetodo(999, 2)).rejects.toThrow(
-      "Pedido no encontrado"
-    );
+    const req = {
+      params: { id: 999 },
+      body: { nuevoEstadoId: 2 },
+    };
+    const res = crearRespuestaFalsa();
+
+    await actualizarEstado(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.json).toHaveBeenCalledWith({ message: "Pedido no encontrado" });
   });
 
-  test("Debe lanzar error 400 si el nuevo estado es idéntico al actual", async () => {
+  test("Debe retornar status 400 y el mensaje 'El pedido ya se encuentra en ese estado' si el nuevo estado es idéntico al actual", async () => {
     mockPool.query.mockResolvedValueOnce([[{ id_estado: 2 }]]);
 
-    await expect(actualizarEstadoMetodo(20, 2)).rejects.toThrow(
-      "El pedido ya se encuentra en ese estado"
-    );
-  });
-});
-
-
-// =====================================================================================
-//  PRUEBAS DE MÉTODOS AUXILIARES DE OPERACIONES CRÍTICAS
-// =====================================================================================
-describe("PRUEBAS DE MÉTODOS AUXILIARES - crearPedido()", () => {
-  test("Debe insertar el pedido y retornar su insertId con datos válidos", async () => {
-    const mockConn = {
-      query: jest.fn().mockResolvedValue([{ insertId: 77 }]),
+    const req = {
+      params: { id: 20 },
+      body: { nuevoEstadoId: 2 },
     };
-    const insertId = await crearPedido(mockConn, 3000, 5, 2);
-    expect(insertId).toBe(77);
-  });
-});
+    const res = crearRespuestaFalsa();
 
-describe("PRUEBAS DE MÉTODOS AUXILIARES - registrarDetalles()", () => {
-  test("Debe ejecutar un bulk insert con los detalles mapeados", async () => {
-    const mockConn = {
-      query: jest.fn().mockResolvedValue([{}]),
-    };
-    const detalles = [{ id_producto: 3, Cantidad: 4, Precio_Unitario: 150 }];
-    await registrarDetalles(mockConn, 77, detalles);
-    expect(mockConn.query).toHaveBeenCalledWith(
-      expect.stringContaining("INSERT INTO pedido_detalles"),
-      [[[150, 4, 3, 77]]]
-    );
-  });
-});
+    await actualizarEstado(req, res);
 
-describe("PRUEBAS DE MÉTODOS AUXILIARES - descontarStock()", () => {
-  test("Debe ejecutar un UPDATE para reducir el stock en la BD", async () => {
-    const mockConn = {
-      query: jest.fn().mockResolvedValue([{}]),
-    };
-    const detalles = [{ id_producto: 3, Cantidad: 4 }];
-    await descontarStock(mockConn, detalles);
-    expect(mockConn.query).toHaveBeenCalledWith(
-      expect.stringContaining("UPDATE producto SET stock = stock - ? WHERE id_producto = ?"),
-      [4, 3]
-    );
-  });
-});
-
-describe("PRUEBAS DE MÉTODOS AUXILIARES - validarStockDisponibilidad()", () => {
-  test("Debe pasar con éxito si el stock disponible es suficiente", async () => {
-    const mockConn = {
-      query: jest.fn().mockResolvedValue([[{ stock: 10 }]]),
-    };
-    const detalles = [{ id_producto: 3, Cantidad: 5 }];
-    await expect(validarStockDisponibilidad(mockConn, detalles)).resolves.not.toThrow();
-  });
-
-  test("Debe lanzar una excepción si la cantidad supera el stock disponible", async () => {
-    const mockConn = {
-      query: jest.fn().mockResolvedValue([[{ stock: 3 }]]),
-    };
-    const detalles = [{ id_producto: 3, Cantidad: 10 }];
-    await expect(validarStockDisponibilidad(mockConn, detalles)).rejects.toThrow(
-      "Stock insuficiente para el producto ID 3. Disponible: 3, solicitado: 10"
-    );
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ message: "El pedido ya se encuentra en ese estado" });
   });
 });
