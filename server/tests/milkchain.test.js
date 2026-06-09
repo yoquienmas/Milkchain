@@ -55,8 +55,14 @@ const { finalizarPedido, guardarDireccion, actualizarEstado } = await import("..
 // Express responde usando res.status().json(). Esta función simula ese comportamiento.
 const mockRes = () => {
   const res = {};
-  res.status = jest.fn().mockReturnValue(res); // Permite encadenar .status()
-  res.json   = jest.fn().mockReturnValue(res); // Permite encadenar .json()
+  res.status = jest.fn().mockImplementation((code) => {
+    console.log(`      [Respuesta HTTP] Código de Estado: ${code}`);
+    return res;
+  });
+  res.json   = jest.fn().mockImplementation((data) => {
+    console.log(`      [Respuesta HTTP] Cuerpo JSON:`, JSON.stringify(data, null, 2));
+    return res;
+  });
   return res;
 };
 
