@@ -67,14 +67,16 @@ export const finalizarPedido = async (req, res) => {
     try {
         await connection.beginTransaction();
 
-        // Paso 5.1
+        // Paso 5.0 - Validar stock ANTES de insertar nada
+        await validarStockDisponibilidad(connection, detalles);
+
+        // Paso 5.1 - Crear cabecera del pedido
         const pedidoId = await crearPedido(connection, Total, id_usuario, metodoPagoId);
         
-        // Paso 5.2
+        // Paso 5.2 - Registrar los detalles del pedido
         await registrarDetalles(connection, pedidoId, detalles);
         
-        // Paso 5.3
-        await validarStockDisponibilidad(connection, detalles);
+        // Paso 5.3 - Descontar stock
         await descontarStock(connection, detalles);
 
         await connection.commit();
