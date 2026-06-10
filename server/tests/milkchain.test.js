@@ -1,8 +1,8 @@
-/**
+/*
  * =====================================================================
  *  Pruebas Unitarias — MilkChain Backend
  *  Framework : Jest (con mocks manuales para aislar la BD y bcrypt)
- *  Autor     : Maria Daniela Fernandez Gotusso
+ *  Autores     : Diaz Cristian Leandro, Maria Daniela Fernandez Gotusso
  *  Fecha     : 03/06/2026
  *
  *  Prueba 1: iniciarSesion()   → 400 si el email no existe en BD
