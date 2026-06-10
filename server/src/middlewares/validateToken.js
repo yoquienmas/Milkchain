@@ -1,7 +1,6 @@
 import { pool } from "../db.js";
 import bcrypt from "bcryptjs"; 
 import jwt from "jsonwebtoken"; 
-import { createAccessToken } from "../libs/jwt.js";
 import { TOKEN_SECRET } from "../config.js"; 
 
 // ASEGURATE DE QUE TENGA EL 'export' AQUÍ:

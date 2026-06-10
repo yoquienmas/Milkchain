@@ -11,7 +11,7 @@ export default function InicioSesionPagina() {
   const [password, setPass] = useState(""); 
   const navigate = useNavigate();
   
-  const { signin } = useAuth();
+  const { iniciarSesion } = useAuth();
   const { mostrarToast } = useToast();
 
   const manejarSubmit = async (e) => {
@@ -28,7 +28,7 @@ export default function InicioSesionPagina() {
       console.log("Respuesta del servidor:", res.data);
 
       if (res.status === 200) {
-        signin(res.data); 
+        iniciarSesion(res.data); 
         mostrarToast("¡Bienvenido a MilkChain!", "success");
         navigate("/home");
       }

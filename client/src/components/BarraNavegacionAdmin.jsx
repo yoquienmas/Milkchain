@@ -5,7 +5,7 @@ import { useCart } from "../context/ContextoCarrito.jsx";
 import { FiHome, FiBookOpen, FiPackage, FiShoppingCart, FiUser, FiLogOut, FiLogIn, FiUserPlus, FiSun, FiMoon } from "react-icons/fi";
 
 export default function BarraNavegacion() {
-  const { isAuthenticated, logout, user } = useAuth();
+  const { isAuthenticated, cerrarSesion, user } = useAuth();
   const { cart } = useCart();
 
   const [darkMode, setDarkMode] = useState(() => {
@@ -62,7 +62,7 @@ export default function BarraNavegacion() {
               <span style={{ fontWeight: 600 }}>{user?.nombre || "Usuario"}</span>
             </li>
             <li>
-              <button onClick={logout} className="btn-logout">
+              <button onClick={cerrarSesion} className="btn-logout">
                 <FiLogOut /> <span>Salir</span>
               </button>
             </li>

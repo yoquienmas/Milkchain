@@ -5,7 +5,7 @@
  *  Autor     : Maria Daniela Fernandez Gotusso
  *  Fecha     : 03/06/2026
  *
- *  Prueba 1: login()          → 400 si el email no existe en BD
+ *  Prueba 1: iniciarSesion()   → 400 si el email no existe en BD
  *  Prueba 2: validarStock()   → lanza Error si stock insuficiente
  *  Prueba 3: finalizarPedido()→ 400 si faltan datos obligatorios
  * =====================================================================
@@ -43,7 +43,7 @@ jest.unstable_mockModule("../src/db.js", () => ({
 // 2. SIMULACIÓN DE OTRAS LIBRERÍAS (JWT Y PDF)
 // =====================================================================================
 jest.unstable_mockModule("../src/libs/jwt.js", () => ({
-  createAccessToken: jest.fn().mockResolvedValue("fake.jwt.token"),
+  crearTokenAcceso: jest.fn().mockResolvedValue("fake.jwt.token"),
 }));
 
 jest.unstable_mockModule("../src/config.js", () => ({

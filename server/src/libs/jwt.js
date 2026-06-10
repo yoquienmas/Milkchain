@@ -1,9 +1,9 @@
 import jwt from 'jsonwebtoken'
 import { TOKEN_SECRET } from "../config.js";
 
-// creo la función 'createAccessToken', que recibe el 'payload' (los datos del usuario)
+// creo la función 'crearTokenAcceso', que recibe el 'payload' (los datos del usuario)
 // por parametros
-export function createAccessToken(payload) {
+export function crearTokenAcceso(payload) {
 
 // creo una promesa para poder usar async/await
 // esto puede ir bien como puede ir mal 
