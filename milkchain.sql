@@ -119,7 +119,7 @@ CREATE TABLE `direccion` (
 --
 
 INSERT INTO `direccion` (`id_direccion`, `calle`, `numero`, `activo`, `id_telefono`, `id_usuario`, `id_localidad`) VALUES
-(2, 'España', 800, NULL, '1111111111', 1, 0),
+(2, 'España', 800, NULL, '1111111111', 1, 9),
 (4, 'España', 600, 1, '3794034332', 4, 9);
 
 -- --------------------------------------------------------
@@ -545,7 +545,8 @@ ALTER TABLE `contacto`
 -- Indices de la tabla `direccion`
 --
 ALTER TABLE `direccion`
-  ADD PRIMARY KEY (`id_direccion`);
+  ADD PRIMARY KEY (`id_direccion`),
+  ADD KEY `fk_direccion_localidad` (`id_localidad`);
 
 --
 -- Indices de la tabla `encargado`
@@ -789,6 +790,7 @@ ALTER TABLE `contacto`
 -- Filtros para la tabla `direccion`
 --
 ALTER TABLE `direccion`
+  ADD CONSTRAINT `fk_direccion_localidad` FOREIGN KEY (`id_localidad`) REFERENCES `localidad` (`id_localidad`),
   ADD CONSTRAINT `fk_direccion_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`);
 
 --
