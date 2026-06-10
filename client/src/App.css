@@ -1411,22 +1411,44 @@ body.dark-mode .toast-close:hover {
 
 /* --- PRINT MEDIA STYLES (PATRÓN ADAPTADOR DE IMPRESIÓN) --- */
 @media print {
-  /* Ocultamos absolutamente todo en la página web */
-  body * {
-    visibility: hidden !important;
+  /* Ocultamos todos los elementos no imprimibles usando display: none para que no ocupen espacio */
+  .navbar,
+  .footer,
+  .no-print,
+  .cart-table-card,
+  h1,
+  input,
+  button,
+  header {
+    display: none !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
-  
-  /* Hacemos visible únicamente la factura (print-container) y sus hijos */
-  .print-container, 
-  .print-container * {
-    visibility: visible !important;
+
+  /* Si estamos imprimiendo, ocultamos los contenedores que no son el modal */
+  #root > :not(main),
+  main > :not(.print-modal-overlay) {
+    display: none !important;
   }
-  
-  /* Quitamos efectos visuales molestos, sombras y márgenes, y forzamos a una sola página */
+
+  /* Forzamos al overlay a comportarse como un contenedor de bloque normal y no como fixed */
+  .print-modal-overlay {
+    position: relative !important;
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  /* Centramos y limpiamos el contenedor de la factura */
   .print-container {
-    position: absolute !important;
-    left: 0 !important;
-    top: 0 !important;
+    position: relative !important;
     width: 100% !important;
     max-width: 100% !important;
     border: none !important;
@@ -1434,13 +1456,6 @@ body.dark-mode .toast-close:hover {
     background: white !important;
     padding: 0 !important;
     margin: 0 !important;
-  }
-
-  /* Ocultamos elementos marcados con .no-print (como botones o cruz de cerrar) */
-  .no-print, 
-  .no-print * {
-    display: none !important;
-    visibility: hidden !important;
   }
 
   /* Limpiamos el html y body para evitar que el navegador cree páginas extra en blanco */

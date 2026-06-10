@@ -442,9 +442,8 @@ function PedidoPagina() {
         </div>
       )}
 
-      {/* MODAL DE DETALLE / FACTURA COMPROBANTE */}
       {detalleSeleccionado && (
-        <div style={modalOverlayStyle}>
+        <div style={modalOverlayStyle} className="print-modal-overlay">
           <div style={{...modalContentStyle, width: "90%", maxWidth: "600px"}} className="print-container">
             <div className="no-print" style={{ display: "flex", justifyContent: "flex-end", marginBottom: "10px" }}>
               <button 

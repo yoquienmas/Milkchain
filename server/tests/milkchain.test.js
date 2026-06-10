@@ -1,13 +1,14 @@
+// exportamos el entorno de pruebas de Jest para que sea reconocido en este archivo
 import { jest } from "@jest/globals";
 
-// =====================================================================================
+// ===========================================
 // 1. SIMULACIÓN DE LA BASE DE DATOS (MOCKS)
-// =====================================================================================
-// Creamos una función espía (mock) para simular las consultas SQL (query)
+// ===========================================
+// Creamos una función espía o de mentira (mock) para simular las consultas SQL queris
 const mockQuery = jest.fn();
 
 // Simulamos una conexión a la base de datos (con transacciones)
-const mockConnection = {
+const mockConnection ={
   query: mockQuery,
   release: jest.fn(),
   beginTransaction: jest.fn(),
@@ -26,9 +27,9 @@ jest.unstable_mockModule("../src/db.js", () => ({
   pool: mockPool,
 }));
 
-// =====================================================================================
+// ===========================================
 // 2. SIMULACIÓN DE OTRAS LIBRERÍAS (JWT Y PDF)
-// =====================================================================================
+// ===========================================
 jest.unstable_mockModule("../src/libs/jwt.js", () => ({
   createAccessToken: jest.fn().mockResolvedValue("fake.jwt.token"),
 }));
@@ -42,16 +43,16 @@ jest.unstable_mockModule("jspdf", () => ({ default: jest.fn() }));
 jest.unstable_mockModule("jspdf-autotable", () => ({}));
 
 
-// =====================================================================================
+// ===========================================
 // 3. IMPORTACIÓN DE CONTROLADORES
-// =====================================================================================
+// ===========================================
 // Importamos dinámicamente los controladores después de configurar todos los mocks
 const { finalizarPedido, guardarDireccion, actualizarEstado } = await import("../src/controllers/pago.controlador.js");
 
 
-// =====================================================================================
+// ===========================================
 // 4. FUNCIÓN PARA SIMULAR LA RESPUESTA DE EXPRESS (res)
-// =====================================================================================
+// ===========================================
 // Express responde usando res.status().json(). Esta función simula ese comportamiento.
 const mockRes = () => {
   const res = {};
@@ -67,9 +68,9 @@ const mockRes = () => {
 };
 
 
-// =====================================================================================
+// ===========================================
 // PRUEBAS DE "finalizarPedido" (PROCESAMIENTO DE COMPRAS)
-// =====================================================================================
+// ===========================================
 describe("Controlador: finalizarPedido()", () => {
   beforeEach(() => jest.clearAllMocks());
 
@@ -136,9 +137,9 @@ describe("Controlador: finalizarPedido()", () => {
 });
 
 
-// =====================================================================================
-// PRUEBAS DE "guardarDireccion" (REGISTRO DE DIRECCIONES)
-// =====================================================================================
+// ==============================
+// PRUEBAS DE "guardarDireccion" 
+// ==============================
 describe("Controlador: guardarDireccion()", () => {
   beforeEach(() => jest.clearAllMocks());
 
@@ -148,7 +149,7 @@ describe("Controlador: guardarDireccion()", () => {
 
     const req = {
       body: {
-        calle: "Av. Siempre Viva",
+        calle: "Av. 3 de Abril",
         numero: 742,
         telefono: "12345678",
         id_localidad: 3,
@@ -180,9 +181,8 @@ describe("Controlador: guardarDireccion()", () => {
 });
 
 
-// =====================================================================================
-// PRUEBAS DE "actualizarEstado" (GESTIÓN DE LOGÍSTICA)
-// =====================================================================================
+// =======================================
+// PRUEBAS DE "actualizarEstado" ==========================================
 describe("Controlador: actualizarEstado()", () => {
   beforeEach(() => jest.clearAllMocks());
 
