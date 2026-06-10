@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 /**
+=======
+/*
+>>>>>>> 2a39bf545949db6311edc3aeab659d64a1e8d513
  * =====================================================================
  *  Pruebas Unitarias — MilkChain Backend
  *  Framework : Jest (con mocks manuales para aislar la BD y bcrypt)
@@ -87,11 +91,11 @@ describe("Controlador: finalizarPedido()", () => {
   beforeEach(() => jest.clearAllMocks());
 
   test("Debe fallar (status 500) si el stock en base de datos es menor a la cantidad pedida", async () => {
-    // Simulamos las respuestas de la base de datos para esta prueba:
+    // El controlador valida el stock PRIMERO antes de insertar nada.
+    // Si el stock es insuficiente, lanza un Error y no llega a crearPedido.
+    // Por eso solo necesitamos mockear UNA query: el SELECT de stock.
     mockQuery
-      .mockResolvedValueOnce([{ insertId: 99 }])   // 1. crearPedido: insert exitoso con ID 99
-      .mockResolvedValueOnce([{}])                  // 2. registrarDetalles: insert exitoso
-      .mockResolvedValueOnce([[{ stock: 3 }]]);     // 3. validarStockDisponibilidad: stock actual es 3
+      .mockResolvedValueOnce([[{ stock: 3 }]]);    // validarStockDisponibilidad: stock=3, pide 10 → falla
 
     // Petición de ejemplo con cantidad = 10 (mayor al stock de 3)
     const req = {
@@ -156,8 +160,9 @@ describe("Controlador: guardarDireccion()", () => {
   beforeEach(() => jest.clearAllMocks());
 
   test("Debe guardar la dirección con éxito (status 201) si los datos son correctos", async () => {
-    // Simulamos que el INSERT de la dirección devuelve insertId = 42
-    mockPool.query.mockResolvedValueOnce([{ insertId: 42 }]);
+    // MySQL2 devuelve [ResultSetHeader, fields] para INSERT → [result, fields]
+    // result.insertId = 42
+    mockPool.query.mockResolvedValueOnce([{ insertId: 42 }, undefined]);
 
     const req = {
       body: {
@@ -199,10 +204,10 @@ describe("Controlador: actualizarEstado()", () => {
   beforeEach(() => jest.clearAllMocks());
 
   test("Debe cambiar el estado del pedido con éxito (status 200)", async () => {
-    // Simulamos: 1. SELECT devuelve estado actual (1), 2. UPDATE exitoso
+    // MySQL2 devuelve [rows, fields]. El SELECT trae el estado actual, el UPDATE confirma el cambio.
     mockPool.query
-      .mockResolvedValueOnce([[{ id_estado: 1 }]])
-      .mockResolvedValueOnce([{}]);
+      .mockResolvedValueOnce([[{ id_estado: 1 }], undefined])   // SELECT id_estado FROM pedido
+      .mockResolvedValueOnce([{ affectedRows: 1 }, undefined]); // UPDATE pedido SET id_estado
 
     const req = {
       params: { id: 20 },
@@ -231,8 +236,8 @@ describe("Controlador: actualizarEstado()", () => {
   });
 
   test("Debe dar error 404 si el pedido no existe en la base de datos", async () => {
-    // Simulamos que el SELECT de búsqueda devuelve vacío (pedido no encontrado)
-    mockPool.query.mockResolvedValueOnce([[]]);
+    // pool.query devuelve [rows, fields] → rows = [] (sin resultados)
+    mockPool.query.mockResolvedValueOnce([[], undefined]);
 
     const req = {
       params: { id: 999 },
@@ -247,8 +252,8 @@ describe("Controlador: actualizarEstado()", () => {
   });
 
   test("Debe dar error 400 si intentamos cambiar al mismo estado actual del pedido", async () => {
-    // Simulamos que el SELECT devuelve que el estado actual ya es 2
-    mockPool.query.mockResolvedValueOnce([[{ id_estado: 2 }]]);
+    // pool.query devuelve [rows, fields] → rows = [{ id_estado: 2 }]
+    mockPool.query.mockResolvedValueOnce([[{ id_estado: 2 }], undefined]);
 
     const req = {
       params: { id: 20 },

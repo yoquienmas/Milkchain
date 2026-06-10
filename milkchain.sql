@@ -308,10 +308,10 @@ CREATE TABLE `pedido` (
 --
 
 INSERT INTO `pedido` (`id_pedido`, `fecha`, `id_estado`, `Total`, `id_encargado`, `id_usuario`, `id_metodo_pago`, `fecha_modificacion`) VALUES
-(12, '2026-05-13 16:58:33', 0, 48402.55, NULL, 4, 1, NULL),
-(13, '2026-05-13 16:58:42', 0, 48402.55, NULL, 4, 1, NULL),
-(14, '2026-05-13 19:51:46', 0, 48402.55, NULL, 4, 3, NULL),
-(15, '2026-05-13 19:54:59', 0, 48402.55, NULL, 4, 3, NULL);
+(12, '2026-05-13 16:58:33', 1, 48402.55, NULL, 4, 1, NULL),
+(13, '2026-05-13 16:58:42', 1, 48402.55, NULL, 4, 1, NULL),
+(14, '2026-05-13 19:51:46', 1, 48402.55, NULL, 4, 3, NULL),
+(15, '2026-05-13 19:54:59', 1, 48402.55, NULL, 4, 3, NULL);
 
 -- --------------------------------------------------------
 
@@ -592,7 +592,8 @@ ALTER TABLE `pedido`
   ADD PRIMARY KEY (`id_pedido`),
   ADD KEY `fk_pedido_metodo_pago` (`id_metodo_pago`),
   ADD KEY `fk_pedido_usuario` (`id_usuario`),
-  ADD KEY `fk_pedido_encargado` (`id_encargado`);
+  ADD KEY `fk_pedido_encargado` (`id_encargado`),
+  ADD KEY `fk_pedido_estado` (`id_estado`);
 
 --
 -- Indices de la tabla `pedido_detalles`
@@ -805,6 +806,7 @@ ALTER TABLE `localidad`
 --
 ALTER TABLE `pedido`
   ADD CONSTRAINT `fk_pedido_encargado` FOREIGN KEY (`id_encargado`) REFERENCES `encargado` (`id_encargado`),
+  ADD CONSTRAINT `fk_pedido_estado` FOREIGN KEY (`id_estado`) REFERENCES `estado` (`id_estado`),
   ADD CONSTRAINT `fk_pedido_metodo_pago` FOREIGN KEY (`id_metodo_pago`) REFERENCES `metodo_pago` (`id_metodo_pago`),
   ADD CONSTRAINT `fk_pedido_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`);
 
