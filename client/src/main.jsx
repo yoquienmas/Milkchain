@@ -1,18 +1,22 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
+import './index.css'
 import { BrowserRouter } from 'react-router-dom'
-import { AuthProvider } from './context/AuthContext'
-import { CartProvider } from './context/CartContext'
+import { AuthProvider } from './context/ContextoAutenticacion.jsx'
+import { CartProvider } from './context/ContextoCarrito.jsx';
+import { ProveedorToast } from './context/ContextoToast.jsx'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <AuthProvider>
-      <CartProvider>
-        <BrowserRouter> {/* El ÚNICO Router debe estar acá */}
+    <BrowserRouter>
+      <AuthProvider>
+        <ProveedorToast> 
+        <CartProvider>
           <App />
-        </BrowserRouter>
-      </CartProvider>
-    </AuthProvider>
-  </React.StrictMode>
+        </CartProvider>
+        </ProveedorToast> 
+      </AuthProvider>
+    </BrowserRouter>
+  </React.StrictMode>,
 )
