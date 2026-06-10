@@ -1457,6 +1457,17 @@ body.dark-mode .toast-close:hover {
     padding: 0 !important;
     overflow: visible !important;
   }
+
+  .badge {
+  position: absolute;
+  top: -8px;
+  right: -12px;
+  background-color: var(--color-caramel);
+  color: white;
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 50%;
+}
 }
 
 /* ==========================================================================

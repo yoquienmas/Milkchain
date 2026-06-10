@@ -32,12 +32,12 @@ export const AuthProvider = ({ children }) => {
     }
   }, [user]);
 
-  const signin = (userData) => {
+  const iniciarSesion = (userData) => {
     console.log("ProveedorAutenticacion: Iniciando sesión...");
     setUser(userData); // El useEffect se encarga de guardar en localStorage
   };
 
-  const logout = () => {
+  const cerrarSesion = () => {
     console.log("ProveedorAutenticacion: Cerrando sesión...");
     setUser(null);
     // Limpiamos también el carrito al cerrar sesión para seguridad
@@ -46,7 +46,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <ContextoAutenticacion.Provider value={{ user, isAuthenticated, signin, logout }}>
+    <ContextoAutenticacion.Provider value={{ user, isAuthenticated, iniciarSesion, cerrarSesion }}>
       {children}
     </ContextoAutenticacion.Provider>
   );

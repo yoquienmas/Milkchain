@@ -1,10 +1,10 @@
 import { pool } from "../db.js";
 import bcrypt from "bcryptjs"; 
 import jwt from "jsonwebtoken"; // Asegúrate de tener esta importación
-import { createAccessToken } from "../libs/jwt.js";
+import { crearTokenAcceso } from "../libs/jwt.js";
 import { TOKEN_SECRET } from "../config.js"; // Asegúrate de tener tu secreto
 
-export const login = async (req, res) => {
+export const iniciarSesion = async (req, res) => {
     const { email, password } = req.body;
     console.log("Datos recibidos del cliente:", { email, password});
     try {
@@ -28,7 +28,7 @@ export const login = async (req, res) => {
         // ASEGURAMOS EL ID: Si tu DB usa id_usuario, usa user.id_usuario
         const userId = user.id || user.id_usuario; 
         
-        const token = await createAccessToken({ id: user.id_usuario, rol: user.rol });
+        const token = await crearTokenAcceso({ id: user.id_usuario, rol: user.rol });
         res.cookie("token", token, {
             httpOnly: true,
             secure: false,
@@ -48,7 +48,7 @@ export const login = async (req, res) => {
     }
 };
 
-export const register = async (req, res) => {
+export const registrarUsuario = async (req, res) => {
     const { nombre, apellido, dni, telefono, email, password } = req.body;
     try {
         const passHash = await bcrypt.hash(password, 10);
@@ -68,7 +68,7 @@ export const register = async (req, res) => {
    }
 };
 
-export const verifyToken = async (req, res) => {
+export const verificarToken = async (req, res) => {
     const { token } = req.cookies;
     if (!token) return res.status(401).json({ message: "No autorizado" });
 
@@ -99,7 +99,7 @@ export const verifyToken = async (req, res) => {
         }
     });
 }; 
-export const logout = (req, res) => {
+export const cerrarSesion = (req, res) => {
     res.cookie("token", "", {
         expires: new Date(0),
     });

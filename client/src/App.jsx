@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import BarraNavegacion from "./components/BarraNavegacion.jsx";
+import NavbarSelector from "./components/NavbarSelector.jsx";
 import PiePagina from "./components/PiePagina.jsx";
 import InicioSesionPagina from "./pages/InicioSesionPagina.jsx";
 import RegistroPagina from "./pages/RegistroPagina.jsx";
@@ -13,9 +13,7 @@ import ScrollToTop from "./components/ScrollToTop.jsx";
 function App() {
   return (
     <>
-      <ScrollToTop />
-      {/* 1. Cambiado de <Navbar /> a <BarraNavegacion /> */}
-      <BarraNavegacion />
+      <NavbarSelector /> {/* Ahora decide dinámicamente */}
       
       <main style={{ flex: 1 }}>
         <Routes>
@@ -38,7 +36,6 @@ function App() {
         </Routes>
       </main>
 
-      {/* 2. Cambiado de <Footer /> a <PiePagina /> */}
       <PiePagina />
     </>
   );
