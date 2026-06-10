@@ -274,6 +274,7 @@ function PedidoPagina() {
 
   return (
     <div style={{ padding: "40px 6%", maxWidth: "1200px", margin: "0 auto", minHeight: "85vh" }}>
+      <div className="no-print">
       
       {/* Cabecera del Panel */}
       <div style={{
@@ -441,6 +442,7 @@ function PedidoPagina() {
           </table>
         </div>
       )}
+      </div>
 
       {detalleSeleccionado && (
         <div style={modalOverlayStyle} className="print-modal-overlay">
