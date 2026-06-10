@@ -1411,42 +1411,33 @@ body.dark-mode .toast-close:hover {
 
 /* --- PRINT MEDIA STYLES (PATRÓN ADAPTADOR DE IMPRESIÓN) --- */
 @media print {
-  /* Ocultamos todos los elementos no imprimibles usando display: none para que no ocupen espacio */
+  /* Ocultamos los componentes globales no imprimibles */
   .navbar,
   .footer,
   .no-print,
-  .cart-table-card,
-  h1,
-  input,
-  button,
-  header {
-    display: none !important;
-    height: 0 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-  }
-
-  /* Si estamos imprimiendo, ocultamos los contenedores que no son el modal */
-  #root > :not(main),
-  main > :not(.print-modal-overlay) {
+  button {
     display: none !important;
   }
 
-  /* Forzamos al overlay a comportarse como un contenedor de bloque normal y no como fixed */
+  /* Ocultamos el contenido del dashboard de pedidos, colapsando su altura a 0 */
+  .cow-pattern-bg > div:not(.print-modal-overlay) {
+    display: none !important;
+  }
+
+  /* Forzamos al overlay a posicionarse de forma absoluta en el tope para imprimir */
   .print-modal-overlay {
-    position: relative !important;
-    display: block !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
     width: 100% !important;
     height: auto !important;
-    background: transparent !important;
+    background: white !important;
     backdrop-filter: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    box-shadow: none !important;
-    border: none !important;
+    display: block !important;
+    z-index: 9999 !important;
   }
 
-  /* Centramos y limpiamos el contenedor de la factura */
+  /* Limpiamos estilos de sombreado del modal para impresión en papel */
   .print-container {
     position: relative !important;
     width: 100% !important;
@@ -1458,7 +1449,7 @@ body.dark-mode .toast-close:hover {
     margin: 0 !important;
   }
 
-  /* Limpiamos el html y body para evitar que el navegador cree páginas extra en blanco */
+  /* Evitamos páginas en blanco por desbordamientos */
   html, body {
     background: white !important;
     height: auto !important;
