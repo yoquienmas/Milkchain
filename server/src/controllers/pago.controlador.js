@@ -1,6 +1,6 @@
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-import { pool } from '../db.js'; // MODIFICADO: Ajustada la ruta correcta a la DB
+import { pool } from '../db.js';
 
 // 1. Método del Paso 5.1
 const crearPedido = async (connection, Total, id_usuario, id_metodo_pago) => {
@@ -13,7 +13,6 @@ const crearPedido = async (connection, Total, id_usuario, id_metodo_pago) => {
 
 // 2. Método del Paso 5.2
 const registrarDetalles = async (connection, pedidoId, detalles) => {
-    // Generar la lista de tuplas para inserción masiva (bulk insert)
     const detallesValues = detalles.map(d => [
         parseFloat(d.Precio_Unitario || d.precio || 0), 
         parseInt(d.Cantidad || d.cantidad || 1), 
@@ -55,12 +54,9 @@ const validarStockDisponibilidad = async (connection, detalles) => {
   }
 };
 
-
-// Orquestador de la ruta del API que manda a llamar a las sub-operaciones orientadas a objetos
+// Orquestador de la ruta del API
 export const finalizarPedido = async (req, res) => {
     const { id_usuario, id_metodo_pago, Total, detalles } = req.body;
-    
-    // Soporte tolerante a id_pago o id_metodo_pago para mayor flexibilidad
     const metodoPagoId = id_metodo_pago || req.body.id_pago;
 
     if (!id_usuario || !metodoPagoId || !detalles || !detalles.length) {
@@ -79,7 +75,7 @@ export const finalizarPedido = async (req, res) => {
         
         // Paso 5.3
         await validarStockDisponibilidad(connection, detalles);
-await descontarStock(connection, detalles);
+        await descontarStock(connection, detalles);
 
         await connection.commit();
         res.status(201).json({ success: true, message: "Pedido registrado y stock actualizado con éxito", id: pedidoId });
@@ -92,23 +88,7 @@ await descontarStock(connection, detalles);
     }
 };
 
-// 4. Método del Paso 6.1 (Renombrado de descargarFactura a imprimirFactura)
-export const imprimirFactura = (pedido, detalles, user) => {
-    const doc = new jsPDF();
-    
-    doc.setFontSize(18);
-    doc.text(`Factura N° ${pedido.id_pedido || pedido.id || 'N/A'}`, 20, 20);
-    doc.setFontSize(12);
-    doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 20, 30);
-    
-    doc.text("Datos del Cliente", 20, 50);
-    doc.text(`Nombre: ${user?.nombre || 'Cliente'} ${user?.apellido || ''}`, 20, 60);
-
-    // Lógica interna para rellenar la tabla del pdf...
-    doc.save(`factura_${pedido.id_pedido || 'pedido'}.pdf`);
-};
-
-// 5. Guardar una nueva dirección (Operación guardarDireccion)
+// Guardar una nueva dirección (Operación guardarDireccion)
 export const guardarDireccion = async (req, res) => {
     const { calle, numero, telefono, id_localidad, id_usuario } = req.body;
 
@@ -130,7 +110,7 @@ export const guardarDireccion = async (req, res) => {
     }
 };
 
-// 6. Actualizar el estado de un pedido (Operación actualizarEstado)
+// Actualizar el estado de un pedido (Operación actualizarEstado)
 export const actualizarEstado = async (req, res) => {
     const { id } = req.params;
     const { nuevoEstadoId } = req.body;
@@ -156,4 +136,18 @@ export const actualizarEstado = async (req, res) => {
         console.error(error);
         res.status(500).json({ error: "Error al cambiar el estado" });
     }
-};
+};
+
+// Método de Impresión Factura PDF
+export const imprimirFactura = (pedido, detalles, user) => {
+    const doc = new jsPDF();
+    doc.setFontSize(18);
+    doc.text(`Factura N° ${pedido.id_pedido || pedido.id || 'N/A'}`, 20, 20);
+    doc.setFontSize(12);
+    doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 20, 30);
+    
+    doc.text("Datos del Cliente", 20, 50);
+    doc.text(`Nombre: ${user?.nombre || 'Cliente'} ${user?.apellido || ''}`, 20, 60);
+
+    doc.save(`factura_${pedido.id_pedido || 'pedido'}.pdf`);
+};
