@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 /**
  * =====================================================================
  *  Pruebas Unitarias — MilkChain Backend
@@ -12,9 +11,6 @@
  * =====================================================================
  */
 
-=======
-// exportamos el entorno de pruebas de Jest para que sea reconocido en este archivo
->>>>>>> e7fee9a73e6e4b125c1b1d041c7180ae274cca64
 import { jest } from "@jest/globals";
 
 // ===========================================
