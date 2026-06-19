@@ -3,7 +3,7 @@ import 'jspdf-autotable';
 import { pool } from '../db.js';
 
 // 1. Método del Paso 5.1
-const crearPedido = async (connection, Total, id_usuario, id_metodo_pago) => {
+export const crearPedido = async (connection, Total, id_usuario, id_metodo_pago) => {
     const [pedido] = await connection.query(
         "INSERT INTO pedido (fecha, id_estado, Total, id_usuario, id_metodo_pago) VALUES (NOW(), 1, ?, ?, ?)",
         [Total, id_usuario, id_metodo_pago]

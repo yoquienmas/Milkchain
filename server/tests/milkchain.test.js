@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 /**
-=======
-/*
->>>>>>> 2a39bf545949db6311edc3aeab659d64a1e8d513
  * =====================================================================
  *  Pruebas Unitarias — MilkChain Backend
  *  Framework : Jest (con mocks manuales para aislar la BD y bcrypt)
@@ -11,7 +7,7 @@
  *
  *  Prueba 1: iniciarSesion()   → 400 si el email no existe en BD
  *  Prueba 2: validarStock()   → lanza Error si stock insuficiente
- *  Prueba 3: finalizarPedido()→ 400 si faltan datos obligatorios
+ *  Prueba 3: crearPedido()     → retorna insertId, o falla ante errores de BD
  * =====================================================================
  */
 
@@ -63,7 +59,7 @@ jest.unstable_mockModule("jspdf-autotable", () => ({}));
 // 3. IMPORTACIÓN DE CONTROLADORES
 // ===========================================
 // Importamos dinámicamente los controladores después de configurar todos los mocks
-const { finalizarPedido, guardarDireccion, actualizarEstado } = await import("../src/controllers/pago.controlador.js");
+const { crearPedido, finalizarPedido, guardarDireccion, actualizarEstado } = await import("../src/controllers/pago.controlador.js");
 
 
 // ===========================================
@@ -85,70 +81,55 @@ const mockRes = () => {
 
 
 // ===========================================
-// PRUEBAS DE "finalizarPedido" (PROCESAMIENTO DE COMPRAS)
+// PRUEBAS DE "crearPedido" (PASO 5.1 - CREACIÓN DE CABECERA DE PEDIDO)
 // ===========================================
-describe("Controlador: finalizarPedido()", () => {
+describe("Función: crearPedido()", () => {
   beforeEach(() => jest.clearAllMocks());
 
-  test("Debe fallar (status 500) si el stock en base de datos es menor a la cantidad pedida", async () => {
-    // El controlador valida el stock PRIMERO antes de insertar nada.
-    // Si el stock es insuficiente, lanza un Error y no llega a crearPedido.
-    // Por eso solo necesitamos mockear UNA query: el SELECT de stock.
-    mockQuery
-      .mockResolvedValueOnce([[{ stock: 3 }]]);    // validarStockDisponibilidad: stock=3, pide 10 → falla
+  test("Debe crear un pedido con éxito y retornar el insertId", async () => {
+    // Simulamos la respuesta de la base de datos al realizar la inserción
+    mockQuery.mockResolvedValueOnce([{ insertId: 10 }, undefined]);
 
-    // Petición de ejemplo con cantidad = 10 (mayor al stock de 3)
-    const req = {
-      body: {
-        id_usuario: 1,
-        id_metodo_pago: 1,
-        Total: 5000,
-        detalles: [{ id_producto: 5, Cantidad: 10, Precio_Unitario: 500 }],
-      },
-    };
-    const res = mockRes();
+    const total = 5000;
+    const id_usuario = 1;
+    const id_metodo_pago = 2;
 
-    await finalizarPedido(req, res);
+    const result = await crearPedido(mockConnection, total, id_usuario, id_metodo_pago);
 
-    // Verificamos que se canceló la transacción (rollback) y se devolvió un error de servidor (500)
-    expect(mockConnection.rollback).toHaveBeenCalled();
-    expect(res.status).toHaveBeenCalledWith(500);
-    expect(res.json).toHaveBeenCalledWith(
-      expect.objectContaining({
-        message: expect.stringContaining("Stock insuficiente"),
-      })
+    // Verificamos que se llamó a la base de datos con los datos correspondientes
+    expect(mockQuery).toHaveBeenCalledWith(
+      expect.stringContaining("INSERT INTO pedido"),
+      [total, id_usuario, id_metodo_pago]
     );
+    // Verificamos que retornó el id del pedido insertado
+    expect(result).toBe(10);
   });
 
-  test("Debe dar error (status 400) si falta el id_usuario en la petición", async () => {
-    const req = {
-      body: {
-        id_metodo_pago: 1,
-        Total: 1000,
-        detalles: [{ id_producto: 1, Cantidad: 1, Precio_Unitario: 1000 }],
-      },
-    };
-    const res = mockRes();
+  test("Debe lanzar un error si la consulta SQL falla por falta de id_usuario", async () => {
+    // Simulamos un error de restricción de clave foránea o columna no nula
+    mockQuery.mockRejectedValueOnce(new Error("Column 'id_usuario' cannot be null"));
 
-    await finalizarPedido(req, res);
+    const total = 1500;
+    const id_usuario = null;
+    const id_metodo_pago = 1;
 
-    expect(res.status).toHaveBeenCalledWith(400);
+    // Verificamos que la función propaga el error de la base de datos
+    await expect(
+      crearPedido(mockConnection, total, id_usuario, id_metodo_pago)
+    ).rejects.toThrow("Column 'id_usuario' cannot be null");
   });
 
-  test("Debe dar error (status 400) si el carrito de compras está vacío", async () => {
-    const req = {
-      body: {
-        id_usuario: 1,
-        id_metodo_pago: 1,
-        Total: 0,
-        detalles: [],
-      },
-    };
-    const res = mockRes();
+  test("Debe lanzar un error si la base de datos no está disponible", async () => {
+    // Simulamos un error general de conexión a la base de datos
+    mockQuery.mockRejectedValueOnce(new Error("Database connection lost"));
 
-    await finalizarPedido(req, res);
+    const total = 2500;
+    const id_usuario = 3;
+    const id_metodo_pago = 2;
 
-    expect(res.status).toHaveBeenCalledWith(400);
+    await expect(
+      crearPedido(mockConnection, total, id_usuario, id_metodo_pago)
+    ).rejects.toThrow("Database connection lost");
   });
 });
 
