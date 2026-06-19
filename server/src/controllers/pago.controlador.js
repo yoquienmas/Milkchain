@@ -3,7 +3,7 @@ import 'jspdf-autotable';
 import { pool } from '../db.js';
 
 // 1. Método del Paso 5.1
-const crearPedido = async (connection, Total, id_usuario, id_metodo_pago) => {
+export const crearPedido = async (connection, Total, id_usuario, id_metodo_pago) => {
     const [pedido] = await connection.query(
         "INSERT INTO pedido (fecha, id_estado, Total, id_usuario, id_metodo_pago) VALUES (NOW(), 1, ?, ?, ?)",
         [Total, id_usuario, id_metodo_pago]
@@ -67,14 +67,16 @@ export const finalizarPedido = async (req, res) => {
     try {
         await connection.beginTransaction();
 
-        // Paso 5.1
+        // Paso 5.0 - Validar stock ANTES de insertar nada
+        await validarStockDisponibilidad(connection, detalles);
+
+        // Paso 5.1 - Crear cabecera del pedido
         const pedidoId = await crearPedido(connection, Total, id_usuario, metodoPagoId);
         
-        // Paso 5.2
+        // Paso 5.2 - Registrar los detalles del pedido
         await registrarDetalles(connection, pedidoId, detalles);
         
-        // Paso 5.3
-        await validarStockDisponibilidad(connection, detalles);
+        // Paso 5.3 - Descontar stock
         await descontarStock(connection, detalles);
 
         await connection.commit();

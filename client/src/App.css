@@ -1411,22 +1411,35 @@ body.dark-mode .toast-close:hover {
 
 /* --- PRINT MEDIA STYLES (PATRÓN ADAPTADOR DE IMPRESIÓN) --- */
 @media print {
-  /* Ocultamos absolutamente todo en la página web */
-  body * {
-    visibility: hidden !important;
+  /* Ocultamos los componentes globales no imprimibles */
+  .navbar,
+  .footer,
+  .no-print,
+  button {
+    display: none !important;
   }
-  
-  /* Hacemos visible únicamente la factura (print-container) y sus hijos */
-  .print-container, 
-  .print-container * {
-    visibility: visible !important;
+
+  /* Ocultamos el contenido del dashboard de pedidos, colapsando su altura a 0 */
+  .cow-pattern-bg > div:not(.print-modal-overlay) {
+    display: none !important;
   }
-  
-  /* Quitamos efectos visuales molestos, sombras y márgenes, y forzamos a una sola página */
-  .print-container {
+
+  /* Forzamos al overlay a posicionarse de forma absoluta en el tope para imprimir */
+  .print-modal-overlay {
     position: absolute !important;
     left: 0 !important;
     top: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    background: white !important;
+    backdrop-filter: none !important;
+    display: block !important;
+    z-index: 9999 !important;
+  }
+
+  /* Limpiamos estilos de sombreado del modal para impresión en papel */
+  .print-container {
+    position: relative !important;
     width: 100% !important;
     max-width: 100% !important;
     border: none !important;
@@ -1436,14 +1449,7 @@ body.dark-mode .toast-close:hover {
     margin: 0 !important;
   }
 
-  /* Ocultamos elementos marcados con .no-print (como botones o cruz de cerrar) */
-  .no-print, 
-  .no-print * {
-    display: none !important;
-    visibility: hidden !important;
-  }
-
-  /* Limpiamos el html y body para evitar que el navegador cree páginas extra en blanco */
+  /* Evitamos páginas en blanco por desbordamientos */
   html, body {
     background: white !important;
     height: auto !important;

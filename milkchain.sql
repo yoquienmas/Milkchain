@@ -109,7 +109,7 @@ CREATE TABLE `direccion` (
   `calle` varchar(150) DEFAULT NULL,
   `numero` int(11) DEFAULT NULL,
   `activo` tinyint(1) DEFAULT 1,
-  `id_telefono` int(11) DEFAULT NULL,
+  `id_telefono` varchar(50) DEFAULT NULL,
   `id_usuario` int(11) DEFAULT NULL,
   `id_localidad` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -119,8 +119,8 @@ CREATE TABLE `direccion` (
 --
 
 INSERT INTO `direccion` (`id_direccion`, `calle`, `numero`, `activo`, `id_telefono`, `id_usuario`, `id_localidad`) VALUES
-(2, 'España', 800, NULL, 2147483647, 1, 0),
-(4, 'España', 600, 1, 2147483647, 4, 9);
+(2, 'España', 800, NULL, '1111111111', 1, 9),
+(4, 'España', 600, 1, '3794034332', 4, 9);
 
 -- --------------------------------------------------------
 
@@ -308,10 +308,10 @@ CREATE TABLE `pedido` (
 --
 
 INSERT INTO `pedido` (`id_pedido`, `fecha`, `id_estado`, `Total`, `id_encargado`, `id_usuario`, `id_metodo_pago`, `fecha_modificacion`) VALUES
-(12, '2026-05-13 16:58:33', 0, 48402.55, NULL, 4, 1, NULL),
-(13, '2026-05-13 16:58:42', 0, 48402.55, NULL, 4, 1, NULL),
-(14, '2026-05-13 19:51:46', 0, 48402.55, NULL, 4, 3, NULL),
-(15, '2026-05-13 19:54:59', 0, 48402.55, NULL, 4, 3, NULL);
+(12, '2026-05-13 16:58:33', 1, 48402.55, NULL, 4, 1, NULL),
+(13, '2026-05-13 16:58:42', 1, 48402.55, NULL, 4, 1, NULL),
+(14, '2026-05-13 19:51:46', 1, 48402.55, NULL, 4, 3, NULL),
+(15, '2026-05-13 19:54:59', 1, 48402.55, NULL, 4, 3, NULL);
 
 -- --------------------------------------------------------
 
@@ -361,23 +361,22 @@ CREATE TABLE `producto` (
   `id_categoria` int(11) NOT NULL,
   `id_marca` int(11) NOT NULL,
   `f_Creacion` datetime DEFAULT current_timestamp(),
-  `vencimiento` datetime DEFAULT NULL,
-  `id_direccion` int(11) DEFAULT NULL
+  `vencimiento` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `producto`
 --
 
-INSERT INTO `producto` (`id_producto`, `nombre`, `descripcion`, `precio`, `stock`, `activo`, `id_categoria`, `id_marca`, `f_Creacion`, `vencimiento`, `id_direccion`) VALUES
-(1, 'Queso Sardo Correntino', 'Queso semiduro de sabor intenso y salado, madurado de forma artesanal en la provincia de Corrientes.', 22278.55, 48, 1, 1, 1, '2026-05-11 21:42:30', '2026-07-30 23:59:59', NULL),
-(2, 'Queso Goya Correntino', 'El clásico queso de pasta dura originario de la ciudad de Goya, Corrientes, con maduración óptima y sabor picante.', 26124.00, 28, 1, 1, 1, '2026-05-11 21:42:30', '2026-07-30 23:59:59', NULL),
-(3, 'Queso Reggianito Correntino', 'Queso de pasta dura, madurado y de sabor intenso. Excelente para rallar.', 18500.00, 35, 1, 1, 1, '2026-06-04 15:20:00', '2026-09-30 23:59:59', NULL),
-(4, 'Queso Provoleta Litoral', 'Queso hilado de pasta semidura, ideal para dorar a la parrilla.', 12200.00, 50, 1, 1, 1, '2026-06-04 15:20:00', '2026-08-31 23:59:59', NULL),
-(5, 'Leche Entera La Campina', 'Leche fresca de campo pasteurizada, de ordeñe diario de vacas criadas a pastura.', 1800.00, 120, 1, 1, 1, '2026-06-04 15:20:00', '2026-09-30 23:59:59', NULL),
-(6, 'Miel Organica de Abeja', 'Miel natural multifloral pura de campo del Litoral, sin agregados ni conservantes.', 3200.00, 85, 1, 1, 1, '2026-06-04 15:20:00', '2026-10-31 23:59:59', NULL),
-(7, 'Dulce de Leche Artesanal', 'El clasico dulce de leche de campo, cocido a fuego lento con vainilla natural.', 2800.00, 60, 1, 1, 1, '2026-06-04 15:20:00', '2026-12-31 23:59:59', NULL),
-(8, 'Yogur de Bufala Cremoso', 'Yogur natural elaborado con leche pura de bufala correntina, espeso y nutritivo.', 2400.00, 45, 1, 1, 1, '2026-06-04 15:20:00', '2026-12-31 23:59:59', NULL);
+INSERT INTO `producto` (`id_producto`, `nombre`, `descripcion`, `precio`, `stock`, `activo`, `id_categoria`, `id_marca`, `f_Creacion`, `vencimiento`) VALUES
+(1, 'Queso Sardo Correntino', 'Queso semiduro de sabor intenso y salado, madurado de forma artesanal en la provincia de Corrientes.', 22278.55, 48, 1, 1, 1, '2026-05-11 21:42:30', '2026-07-30 23:59:59'),
+(2, 'Queso Goya Correntino', 'El clásico queso de pasta dura originario de la ciudad de Goya, Corrientes, con maduración óptima y sabor picante.', 26124.00, 28, 1, 1, 1, '2026-05-11 21:42:30', '2026-07-30 23:59:59'),
+(3, 'Queso Reggianito Correntino', 'Queso de pasta dura, madurado y de sabor intenso. Excelente para rallar.', 18500.00, 35, 1, 1, 1, '2026-06-04 15:20:00', '2026-09-30 23:59:59'),
+(4, 'Queso Provoleta Litoral', 'Queso hilado de pasta semidura, ideal para dorar a la parrilla.', 12200.00, 50, 1, 1, 1, '2026-06-04 15:20:00', '2026-08-31 23:59:59'),
+(5, 'Leche Entera La Campina', 'Leche fresca de campo pasteurizada, de ordeñe diario de vacas criadas a pastura.', 1800.00, 120, 1, 1, 1, '2026-06-04 15:20:00', '2026-09-30 23:59:59'),
+(6, 'Miel Organica de Abeja', 'Miel natural multifloral pura de campo del Litoral, sin agregados ni conservantes.', 3200.00, 85, 1, 1, 1, '2026-06-04 15:20:00', '2026-10-31 23:59:59'),
+(7, 'Dulce de Leche Artesanal', 'El clasico dulce de leche de campo, cocido a fuego lento con vainilla natural.', 2800.00, 60, 1, 1, 1, '2026-06-04 15:20:00', '2026-12-31 23:59:59'),
+(8, 'Yogur de Bufala Cremoso', 'Yogur natural elaborado con leche pura de bufala correntina, espeso y nutritivo.', 2400.00, 45, 1, 1, 1, '2026-06-04 15:20:00', '2026-12-31 23:59:59');
 
 -- --------------------------------------------------------
 
@@ -495,21 +494,19 @@ CREATE TABLE `usuario` (
   `nombre` varchar(100) DEFAULT NULL,
   `apellido` varchar(100) DEFAULT NULL,
   `activo` tinyint(1) DEFAULT NULL,
-  `id_telefono` int(11) DEFAULT NULL,
   `fecha_creacion` datetime DEFAULT NULL,
   `fecha_modificacion` datetime DEFAULT NULL,
-  `id_rol` int(11) DEFAULT NULL,
-  `id_direccion` int(11) DEFAULT NULL
+  `id_rol` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `usuario`
 --
 
-INSERT INTO `usuario` (`id_usuario`, `email`, `password`, `dni`, `nombre`, `apellido`, `activo`, `id_telefono`, `fecha_creacion`, `fecha_modificacion`, `id_rol`, `id_direccion`) VALUES
-(1, 'admin@gmail.com', '$2b$10$n0p/fmwIjb7caj2/s5fwfebETwR5gOwX7pFy8ww4mJ3vj/T6d55a.', 0, 'admin', 'principal', NULL, 1, NULL, NULL, 1, NULL),
-(4, 'maria_dniel@yahoo.com.ar', '$2b$10$AWwa5JHrnpB4l/yV.CQmH.ulhJWtxk3b9tKlJHBzjnMe3ajCBop4O', 43822520, 'Maria Daniela', 'Fernandez Gotusso', 1, 2, '2026-05-04 13:10:34', NULL, 2, NULL),
-(5, 'yoquienmascorreo@gmail.com', '$2b$10$oKC7HkimBpzquvgo6r3PKuvuNat84yheFuV7sYX0WJkWzasK6WpSW', 44333222, 'Yoquien', 'Mas', 1, NULL, NULL, NULL, 2, NULL);
+INSERT INTO `usuario` (`id_usuario`, `email`, `password`, `dni`, `nombre`, `apellido`, `activo`, `fecha_creacion`, `fecha_modificacion`, `id_rol`) VALUES
+(1, 'admin@gmail.com', '$2b$10$n0p/fmwIjb7caj2/s5fwfebETwR5gOwX7pFy8ww4mJ3vj/T6d55a.', 0, 'admin', 'principal', NULL, NULL, NULL, 1),
+(4, 'maria_dniel@yahoo.com.ar', '$2b$10$AWwa5JHrnpB4l/yV.CQmH.ulhJWtxk3b9tKlJHBzjnMe3ajCBop4O', 43822520, 'Maria Daniela', 'Fernandez Gotusso', 1, '2026-05-04 13:10:34', NULL, 2),
+(5, 'yoquienmascorreo@gmail.com', '$2b$10$oKC7HkimBpzquvgo6r3PKuvuNat84yheFuV7sYX0WJkWzasK6WpSW', 44333222, 'Yoquien', 'Mas', 1, NULL, NULL, 2);
 
 --
 -- Índices para tablas volcadas
@@ -548,7 +545,8 @@ ALTER TABLE `contacto`
 -- Indices de la tabla `direccion`
 --
 ALTER TABLE `direccion`
-  ADD PRIMARY KEY (`id_direccion`);
+  ADD PRIMARY KEY (`id_direccion`),
+  ADD KEY `fk_direccion_localidad` (`id_localidad`);
 
 --
 -- Indices de la tabla `encargado`
@@ -594,7 +592,8 @@ ALTER TABLE `pedido`
   ADD PRIMARY KEY (`id_pedido`),
   ADD KEY `fk_pedido_metodo_pago` (`id_metodo_pago`),
   ADD KEY `fk_pedido_usuario` (`id_usuario`),
-  ADD KEY `fk_pedido_encargado` (`id_encargado`);
+  ADD KEY `fk_pedido_encargado` (`id_encargado`),
+  ADD KEY `fk_pedido_estado` (`id_estado`);
 
 --
 -- Indices de la tabla `pedido_detalles`
@@ -644,7 +643,8 @@ ALTER TABLE `telefono`
 ALTER TABLE `usuario`
   ADD PRIMARY KEY (`id_usuario`),
   ADD UNIQUE KEY `email` (`email`),
-  ADD UNIQUE KEY `dni` (`dni`);
+  ADD UNIQUE KEY `dni` (`dni`),
+  ADD KEY `fk_usuario_rol` (`id_rol`);
 
 --
 -- AUTO_INCREMENT de las tablas volcadas
@@ -792,7 +792,7 @@ ALTER TABLE `contacto`
 -- Filtros para la tabla `direccion`
 --
 ALTER TABLE `direccion`
-  ADD CONSTRAINT `direccion_ibfk_2` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`),
+  ADD CONSTRAINT `fk_direccion_localidad` FOREIGN KEY (`id_localidad`) REFERENCES `localidad` (`id_localidad`),
   ADD CONSTRAINT `fk_direccion_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`);
 
 --
@@ -806,6 +806,7 @@ ALTER TABLE `localidad`
 --
 ALTER TABLE `pedido`
   ADD CONSTRAINT `fk_pedido_encargado` FOREIGN KEY (`id_encargado`) REFERENCES `encargado` (`id_encargado`),
+  ADD CONSTRAINT `fk_pedido_estado` FOREIGN KEY (`id_estado`) REFERENCES `estado` (`id_estado`),
   ADD CONSTRAINT `fk_pedido_metodo_pago` FOREIGN KEY (`id_metodo_pago`) REFERENCES `metodo_pago` (`id_metodo_pago`),
   ADD CONSTRAINT `fk_pedido_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`);
 
@@ -845,7 +846,7 @@ ALTER TABLE `telefono`
 -- Filtros para la tabla `usuario`
 --
 ALTER TABLE `usuario`
-  ADD CONSTRAINT `fk_usuario_direccion` FOREIGN KEY (`id_direccion`) REFERENCES `direccion` (`id_direccion`);
+  ADD CONSTRAINT `fk_usuario_rol` FOREIGN KEY (`id_rol`) REFERENCES `rol` (`id_rol`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
